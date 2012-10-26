@@ -1,0 +1,11 @@
+#!/bin/sh
+
+FROM="latest-test-tmp.user.js"
+TO_JS="latest-test-release.user.js"
+TO_META="latest-test-release.user.js"
+YUI="yuicompressor-2.4.7.jar"
+
+cd $(dirname "$0")
+cat "$FROM" | egrep '^\/\/\s+(\=\=|\@\w)' > "$TO_META"
+cp "$TO_META" "$TO_JS"
+java -jar "$YUI" "$FROM" >> "$TO_JS"
