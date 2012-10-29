@@ -4,7 +4,7 @@
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version        1.3
+// @version        1.4
 // @include        *://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! Commerce Calculator for OGame (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
@@ -419,15 +419,104 @@ var calc = function (met,cry,deu,rMet,rCry,rDeu)
 	}
 }
 
-var TPL =
-{
-	RES_LIN : "[b]%t:[/b] %r\n",
-	RES     : "[b][color=%c]%r[/color][/b] (%t)",
-	RES_SEP : " + ",
-	RATIO   : "\n[b]* %t:[/b] %m:%c:%d",
-	WHERE   : "\n[b]* %t:[/b] %p",
-	LINK    : "\n\n[b][url=%u]%n[/url][/b]"
+var messageMaker =
+({
+	DEFAULT_TPL :
+		"[b]{?b}{I18N.BUY}{/b}{?s}{I18N.SELL}{/s}:[/b] "+
+		"{?m}[b][color={COLOR.MET}]{m}[/color][/b] ({I18N.RES_MET}){?cd} + {/cd}{/m}"+
+		"{?c}[b][color={COLOR.CRY}]{c}[/color][/b] ({I18N.RES_CRY}){?d} + {/d}{/c}"+
+		"{?d}[b][color={COLOR.DEU}]{d}[/color][/b] ({I18N.RES_DEU}){/d}"+
+		"\n[b]{I18N.IN_EXCH}:[/b] "+
+		"{?M}[b][color={COLOR.MET}]{M}[/color][/b] ({I18N.RES_MET}){/M}"+
+		"{?C}[b][color={COLOR.CRY}]{C}[/color][/b] ({I18N.RES_CRY}){/C}"+
+		"{?D}[b][color={COLOR.DEU}]{D}[/color][/b] ({I18N.RES_DEU}){/D}"+
+		"\n\n[b]* {I18N.RATIO}:[/b] {rm}:{rc}:{rd}"+
+		"{?w}\n[b]* {I18N.WHERE}:[/b] {w}{/w}"+
+		"\n\n[b][url={SCRIPT.SHOW_URL}]{SCRIPT.NAME}[/url][/b]",
+	
+	parseIf : function (tpl,symbol,srch,keep)
+	{
+		var st = '{'+symbol+srch+'}', nd = '{/'+srch+'}';
+		if (keep) return tpl.split(st).join('').split(nd).join('');
+		
+		var i, j, aux, out = tpl;
+		while ((i=out.indexOf(st))>=0 && (j=out.indexOf(nd))>=0 && i<j)
+		{
+			out = out.split(st);
+			for (i=1; i<out.length; i++)
+			{
+				aux = out[i].split(nd);
+				if (aux.length>1)
+				{
+					aux.shift();
+					out[i] = nd+aux.shift()+aux.join(nd);
+				}
+			}
+			out = out.join(st).split(st+nd).join('');
+		}
+		return out;
+	},
+	parseIfs : function()
+	{
+		var out = arguments[0],
+		i=1,
+		srch,keep,
+		end=arguments.length;
+		while (true)
+		{
+			srch = arguments[i++];
+			keep = arguments[i++];
+			out=this.parseIf(out,'?',srch,keep);
+			out=this.parseIf(out,'!',srch,!keep);
+			if (i==end)
+				return out;
+		}
+	},
+	make : function (action,mIn,cIn,dIn,mOut,cOut,dOut,mRat,cRat,dRat,where)
+	{
+		var i, re = /[1-9]/,
+		out = this.parseIfs(
+			this.tpl,
+			'b',(action==I18N.BUY),
+			's',(action==I18N.SELL),
+			'm',re.test(mIn),
+			'c',re.test(cIn),
+			'd',re.test(dIn),
+			'mc',re.test(mIn+cIn),
+			'md',re.test(mIn+dIn),
+			'cd',re.test(cIn+dIn),
+			'M',re.test(mOut),
+			'C',re.test(cOut),
+			'D',re.test(dOut),
+			'w',(where!='')
+		);
+		out = out.replaceMap({
+			'{m}':mIn,
+			'{c}':cIn,
+			'{d}':dIn,
+			'{M}':mOut,
+			'{C}':cOut,
+			'{D}':dOut,
+			'{rm}':mRat,
+			'{rc}':cRat,
+			'{rd}':dRat,
+			'{w}':where
+		});
+		for (i in I18N)
+			out = out.replaceAll('{I18N.'+i+'}',I18N[i]);
+		for (i in SCRIPT)
+			out = out.replaceAll('{SCRIPT.'+i+'}',SCRIPT[i]);
+		for (i in COLOR)
+			out = out.replaceAll('{COLOR.'+i+'}',COLOR[i]);
+		return out;
+	},
+	init : function()
+	{
+		this.tpl = this.DEFAULT_TPL;
+		return this;
+	}
 }
+).init();
 
 var iface =
 ({
@@ -720,70 +809,19 @@ var iface =
 				o.removeClass('sel');
 		});
 		
-		var message = '',
-		iMet = this.inputMet.attr('value'),
-		iCry = this.inputCry.attr('value'),
-		iDeu = this.inputDeu.attr('value');
-		
-		if (/[1-9]/.test(''+iMet+iCry+iDeu))
-		{
-			message = TPL.RES_LIN.replaceAll('%t',this.actionSelect.val()).split('%r');
-			var addSep = false,
-			oMet = this.outputMet.text(),
-			oCry = this.outputCry.text(),
-			oDeu = this.outputDeu.text(),
-			aux = '',
-			inEx;
-			if (/[1-9]/.test(iMet))
-			{
-				aux += TPL.RES.replaceMap({'%c':COLOR.MET,'%r':iMet,'%t':I18N.RES_MET});
-				addSep = true;
-			}
-			if (/[1-9]/.test(iCry))
-			{
-				if (addSep) aux += TPL.RES_SEP;
-				aux += TPL.RES.replaceMap({'%c':COLOR.CRY,'%r':iCry,'%t':I18N.RES_CRY});
-				addSep = true;
-			}
-			if (/[1-9]/.test(iDeu))
-			{
-				if (addSep) aux += TPL.RES_SEP;
-				aux += TPL.RES.replaceMap({'%c':COLOR.DEU,'%r':iDeu,'%t':I18N.RES_DEU});
-			}
-			message = message.join(aux);
-			
-			message += TPL.RES_LIN.replaceAll('%t',I18N.IN_EXCH);
-			inEx = this.exchangeSelect.prop('selectedIndex');
-			aux = (inEx < 1)
-				? {'%c':COLOR.MET,'%r':oMet,'%t':I18N.RES_MET}
-				: (inEx < 2)
-					? {'%c':COLOR.CRY,'%r':oCry,'%t':I18N.RES_CRY}
-					: {'%c':COLOR.DEU,'%r':oDeu,'%t':I18N.RES_DEU};
-			message = message.replace('%r',TPL.RES.replaceMap(aux));
-			
-			message += TPL.RATIO.replaceMap(
-			{
-				'%t':I18N.RATIO,
-				'%m':this.ratioMet.val(),
-				'%c':this.ratioCry.val(),
-				'%d':this.ratioDeu.val()
-			});
-			
-			aux = this.planetSelect.val();
-			if (aux!='')
-				message += TPL.WHERE.replaceMap(
-				{
-					'%t':I18N.WHERE,
-					'%p':aux,
-				});
-			
-			message += TPL.LINK.replaceMap(
-			{
-				'%u' : SCRIPT.SHOW_URL,
-				'%n' : SCRIPT.NAME
-			});
-		}
-		this.outputMessage.text(message);
+		this.outputMessage.text(messageMaker.make(
+			this.actionSelect.val(),
+			this.inputMet.val(),
+			this.inputCry.val(),
+			this.inputDeu.val(),
+			this.outputMet.hasClass('sel') ? this.outputMet.text() : '',
+			this.outputCry.hasClass('sel') ? this.outputCry.text() : '',
+			this.outputDeu.hasClass('sel') ? this.outputDeu.text() : '',
+			this.ratioMet.val(),
+			this.ratioCry.val(),
+			this.ratioDeu.val(),
+			this.planetSelect.val()
+		));
 		
 		return this;
 	},
