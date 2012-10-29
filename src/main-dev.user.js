@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name           Commerce Calculator for OGame
-// @description    Adds a commerce calculator to the OGame interface
+// @name           OGame Trade Calculator
+// @description    Adds a trade calculator to the OGame interface
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
@@ -201,8 +201,8 @@ var I18N =
 {
 	THO_SEP : ',',
 	DEC_SEP : '.',
-	MENU    : 'Commerce C.',
-	TITLE   : 'Commerce calculator',
+	MENU    : 'Trace C.',
+	TITLE   : 'Trade calculator',
 	ACTION  : 'Action',
 	BUY     : 'I buy',
 	SELL    : 'I sell',
