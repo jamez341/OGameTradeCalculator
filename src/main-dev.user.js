@@ -4,7 +4,7 @@
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version        1.4
+// @version        1.5
 // @include        *://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! Commerce Calculator for OGame (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
