@@ -11,7 +11,14 @@ SRC=$(DIR_SRC)/main-dev.user.js
 OUT=$(DIR_DIST)/`$(MKNAME) $(SRC)`
 LATEST=$(DIR_DIST)/latest
 
-default:
+dist: $(SRC)
 	$(COMPRESS) $(SRC) > $(OUT)
 	cp $(OUT) $(LATEST).user.js
 	$(GETMETA) $(LATEST).user.js > $(LATEST).meta.js
+	git add $(OUT)
+	touch $(DIR_DIST)
+
+commit:
+	git commit -a
+
+default: dist
