@@ -124,8 +124,8 @@ String.prototype.replaceMap = function (replaceMap)
 
 var SCRIPT =
 {
-	ID_PREFIX : "o_commerce_",
-	NAME      : "Commerce Calculator for OGame",
+	ID_PREFIX : "o_trade_calc_",
+	NAME      : "OGame Trade Calculator",
 	SHOW_URL  : "http://userscripts.org/scripts/show/151002"
 }
 
