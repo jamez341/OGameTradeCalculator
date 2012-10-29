@@ -17,6 +17,72 @@ catch(e){}
 doc = win.document;
 $ = win.jQuery;
 
+/*! jCaret (C) 2010 C. F. Wong | cloudgen.w0ng.hk | www.opensource.org/licenses/mit-license.php */
+(function($,len,createRange,duplicate){
+	$.fn.caret=function(options,opt2){
+		var start,end,t=this[0],browser=$.browser.msie;
+		if(typeof options==="object" && typeof options.start==="number" && typeof options.end==="number") {
+			start=options.start;
+			end=options.end;
+		} else if(typeof options==="number" && typeof opt2==="number"){
+			start=options;
+			end=opt2;
+		} else if(typeof options==="string"){
+			if((start=t.value.indexOf(options))>-1) end=start+options[len];
+			else start=null;
+		} else if(Object.prototype.toString.call(options)==="[object RegExp]"){
+			var re=options.exec(t.value);
+			if(re != null) {
+				start=re.index;
+				end=start+re[0][len];
+			}
+		}
+		if(typeof start!="undefined"){
+			if(browser){
+				var selRange = this[0].createTextRange();
+				selRange.collapse(true);
+				selRange.moveStart('character', start);
+				selRange.moveEnd('character', end-start);
+				selRange.select();
+			} else {
+				this[0].selectionStart=start;
+				this[0].selectionEnd=end;
+			}
+			this[0].focus();
+			return this
+		} else {
+			// Modification as suggested by Андрей Юткин
+           if(browser){
+				var selection=document.selection;
+                if (this[0].tagName.toLowerCase() != "textarea") {
+                    var val = this.val(),
+                    range = selection[createRange]()[duplicate]();
+                    range.moveEnd("character", val[len]);
+                    var s = (range.text == "" ? val[len]:val.lastIndexOf(range.text));
+                    range = selection[createRange]()[duplicate]();
+                    range.moveStart("character", -val[len]);
+                    var e = range.text[len];
+                } else {
+                    var range = selection[createRange](),
+                    stored_range = range[duplicate]();
+                    stored_range.moveToElementText(this[0]);
+                    stored_range.setEndPoint('EndToEnd', range);
+                    var s = stored_range.text[len] - range.text[len],
+                    e = s + range.text[len]
+                }
+			// End of Modification
+            } else {
+				var s=t.selectionStart,
+					e=t.selectionEnd;
+			}
+			var te=t.value.substring(s,e);
+			return {start:s,end:e,text:te,replace:function(st){
+				return t.value.substring(0,s)+st+t.value.substring(e,t.value[len])
+			}}
+		}
+	}
+})($,"length","createRange","duplicate");
+
 String.prototype.replaceAll = function (search, replacement)
 {
 	return this.split(search).join(replacement);
@@ -351,7 +417,15 @@ var uID =
 var prettyInteger = function (n,writing)
 {
 	if(writing&&n=='') return '';
-	var nStr = ('0'+n+'').replace(/\D/g,'').replace(/^0+(\d)/,'$1');
+	var nStr = ('0'+n+'').replace(
+		/[kK]$/,'000' // last char is k|K => multiply by 1 thousand
+	).replace(
+		/[mM]$/,'000000' // last char is m|M => multiply by 1 million
+	).replace(
+		/\D/g,'' // delete NaN chars
+	).replace(
+		/^0+(\d)/,'$1' // delete leading zeros
+	);
 	var rgx = /(\d+)(\d{3})/;
 	while (rgx.test(nStr)) {
 		nStr = nStr.replace(rgx, '$1' + I18N.THO_SEP + '$2');
@@ -363,7 +437,14 @@ var prettyFloat = function (n,writing)
 {
 	if(writing&&n=='') return '';
 	var nStr, x, x1, x2;
-	nStr = ('0'+n+'').replace(/(\.|\,)$/,I18N.DEC_SEP).replace(new RegExp('[^0-9\\'+I18N.DEC_SEP+']','g'),'').replace(/^0+(\d)/,'$1');
+	nStr = ('0'+n+'').replace(
+		/[\.\,]$/,I18N.DEC_SEP // allow .|, as decimal separator (if last char)
+	).replace(
+		// delete NaN chars except decimal separator
+		new RegExp('[^0-9\\'+I18N.DEC_SEP+']','g'),''
+	).replace(
+		/^0+(\d)/,'$1' // delete leading zeros
+	);
 	x = nStr.split(I18N.DEC_SEP);
 	x1 = x[0];
 	x2 = x.length > 1 ? I18N.DEC_SEP + x[1] : '';
@@ -553,20 +634,23 @@ var iface =
 		var onChange = function()
 		{
 			var o = $(this),
-			value = prettyInteger(o.attr('value'),true);
-			o.attr('value', value);
+			value = o.val(),
+			end = value.length - o.caret().end;
+			value = prettyInteger(value);
+			end = value.length - end;
+			o.val(value).caret(end,end);
 			/*if (value!='')*/ _this.doIt();
 		};
-		input.attr('value',prettyInteger(value),false);
-		input.keydown(onChange).keyup(onChange).change(onChange).blur(function()
+		input.val(prettyInteger(value),false);
+		input.keyup(onChange).change(onChange).blur(function()
 		{
 			var o = $(this);
-			o.attr('value',prettyInteger(o.attr('value'),false));
+			o.val(prettyInteger(o.val(),false));
 			_this.doIt();
 		});
 		input.focus(function(){
-			$(this).attr('value','');
-			onChange();
+			var o = $(this);
+			if (o.val()=='0') o.val('');
 		});
 		return input;
 	},
@@ -578,27 +662,28 @@ var iface =
 		var onChange = function()
 		{
 			var o = $(this),
-			value = prettyFloat(o.attr('value'),true);
-			o.attr('value', value);
+			value = o.val(),
+			end = value.length - o.caret().end;
+			value = prettyFloat(o.val(),true);
+			end = value.length - end;
+			o.val(value).caret(end,end);
 			if (value!='') _this.doIt();
 		};
-		input.attr('value',prettyFloat((value+'').split('.').join(I18N.DEC_SEP),false));
-		input.keydown(onChange).keyup(onChange).change(onChange).blur(function()
+		input.val(prettyFloat((value+'').split('.').join(I18N.DEC_SEP),false));
+		input.keyup(onChange).change(onChange).blur(function()
 		{
-			var o = $(this), value = prettyFloat(o.attr('value'),false);
+			var o = $(this), value = prettyFloat(o.val(),false);
 			if (value=='0')
-				o.attr('value',backup.value);
+				o.val(backup.value);
 			else
 			{
 				backup.value = value;
-				o.attr('value',value);
+				o.val(value);
 			}
 			_this.doIt();
 		});
 		input.focus(function(){
-			var o = $(this);
-			backup.value = o.attr('value');
-			o.attr('value','');
+			backup.value = $(this).val();
 		});
 		return input.addClass('ratio');
 	},
@@ -761,23 +846,23 @@ var iface =
 	},
 	getResource : function (jqo)
 	{
-		var val = jqo.attr('value');
+		var val = jqo.val();
 		if (val=='') return 0;
-		else return parseInt(jqo.attr('value').replace(/\D/g,''))
+		else return parseInt(jqo.val().replace(/\D/g,''))
 	},
 	getRatio : function (jqo)
 	{
-		return parseFloat(jqo.attr('value').split(I18N.THO_SEP).join('').split(I18N.DEC_SEP).join('.'))
+		return parseFloat(jqo.val().split(I18N.THO_SEP).join('').split(I18N.DEC_SEP).join('.'))
 	},
 	doIt: function()
 	{
 		var _this=this,aux,i = this.ratioSelect.prop('selectedIndex');
 		if (i>0)
 		{
-			aux = this.ratioOptions[i].attr('value').split(':');
-			this.ratioMet.attr('value',aux.shift());
-			this.ratioCry.attr('value',aux.shift());
-			this.ratioDeu.attr('value',aux.shift());
+			aux = this.ratioOptions[i].val().split(':');
+			this.ratioMet.val(aux.shift());
+			this.ratioCry.val(aux.shift());
+			this.ratioDeu.val(aux.shift());
 			this.ratioSelect.prop('selectedIndex',0);
 		}
 	
