@@ -33,16 +33,16 @@ $(LATEST): $(SRC)
 	git add $(OUT)
 
 commit:
-	git commit -a
+	sh -c "git commit -a; exit 0"
 
-push:
+push: commit
 	git push
 	
 test:
 	$(TEST_NAV) $(SRC_URL) $(NO_OUT) &
 	
 install: $(LATEST)
-	$(TEST_NAV) $(SRC_URL) $(NO_OUT) &
+	$(TEST_NAV) $(LATEST_URL) $(NO_OUT) &
 
 gedit:
 	$(GEDIT) $(SRC) $(NO_OUT) &
