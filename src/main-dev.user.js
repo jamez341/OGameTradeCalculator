@@ -185,15 +185,14 @@ var COLOR =
 
 var I18N =
 ({
-	i18n : {
+	text : {
 		RES_MET : INFO.RES_MET.getName('RES_MET'),
 		RES_CRY : INFO.RES_CRY.getName('RES_CRY'),
 		RES_DEU : INFO.RES_DEU.getName('RES_DEU')
 	},
 	set : function(pattern,obj)
 	{
-		if (pattern.test(INFO.LANGUAGE))
-			this.text = $.extend(true,this.i18n,obj);
+		if (pattern.test(INFO.LANGUAGE)) $.extend(true,this.text,obj);
 		return this;
 	}
 }
