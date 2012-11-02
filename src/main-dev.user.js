@@ -7,7 +7,7 @@
 // @version        2
 // @include        *://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
-/*! Commerce Calculator for OGame (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
+/*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
 (function(){
 ////////////
 
