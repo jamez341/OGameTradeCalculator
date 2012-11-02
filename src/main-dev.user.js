@@ -609,7 +609,7 @@ var iface =
 			"background: url(\"http://gf1.geo.gfsrv.net/cdn30/aa3e8edec0a2681915b3c9c6795e6f.gif\") no-repeat scroll 2px 0px transparent;"+
 		"}"+
 		"",
-		/*! [CSS] */
+		/*! [/CSS] */
 
 	addCss : function (text)
 	{
