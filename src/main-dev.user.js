@@ -4,12 +4,19 @@
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version        1.5
+// @version        2
 // @include        *://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! Commerce Calculator for OGame (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
 (function(){
 ////////////
+
+var SCRIPT =
+{
+	ID_PREFIX : "o_trade_calc_",
+	NAME      : "OGame Trade Calculator",
+	SHOW_URL  : "http://userscripts.org/scripts/show/151002"
+}
 
 var win = window, doc, $;
 try{if (unsafeWindow) win = unsafeWindow;}
@@ -82,6 +89,7 @@ $ = win.jQuery;
 		}
 	}
 })($,"length","createRange","duplicate");
+/*! [/jCaret] */
 
 String.prototype.replaceAll = function (search, replacement)
 {
@@ -122,11 +130,8 @@ String.prototype.replaceMap = function (replaceMap)
 		return this.recursiveReplaceMap(org,rep,count-1);
 }
 
-var SCRIPT =
-{
-	ID_PREFIX : "o_trade_calc_",
-	NAME      : "OGame Trade Calculator",
-	SHOW_URL  : "http://userscripts.org/scripts/show/151002"
+String.prototype.capitalize = function() {
+	return this.charAt(0).toUpperCase() + this.slice(1);
 }
 
 var INFO =
@@ -178,9 +183,11 @@ var INFO =
 
 var COLOR =
 {
+	/*! [colors] */
 	MET : '#FF7700',
 	CRY : '#00FFFF',
 	DEU : '#FF33FF'
+	/*! [/colors] */
 }
 
 var I18N =
@@ -196,6 +203,7 @@ var I18N =
 		return this;
 	}
 }
+/*! [i18n=EN] */
 ).set(/.*/,
 {
 	THO_SEP : ',',
@@ -206,26 +214,20 @@ var I18N =
 	BUY     : 'I buy',
 	SELL    : 'I sell',
 	RATIO   : 'Ratio',
-	LEGAL   : 'legal',
 	ILLEGAL : 'illegal',
 	CUSTOM  : 'Custom',
 	IN_EXCH : 'In exchange for',
-	RES_ONE : 'A resource',
-	RES_MIX : 'Resource mix',
+	RESULT  : 'Result',
 	MESSAGE : 'Message',
 	WHERE   : 'Place of delivery',
 	PLANET  : 'Planet',
 	MOON    : 'Moon',
 	CUR_PLA : 'Current planet',
-/*	FAV_RAT : 'Ratios favoritos',
-	SEL_ACT : 'Select action',
-	ADD_RAT : 'Add current ratio to favorites',
-	DEL_RAT : 'Delete selected ratio from favorites',
-	DEF_RAT : 'Set selected ratio as default ratio',*/
 	MAX     : 'Maximum',
 	REG     : 'Regular',
 	MIN     : 'Minimum'
 }
+/*! [i18n=ES] */
 ).set(/es|ar|mx/,
 {
 	THO_SEP : '.',
@@ -236,223 +238,79 @@ var I18N =
 	BUY     : 'Compro',
 	SELL    : 'Vendo',
 	RATIO   : 'Ratio',
-	LEGAL   : 'legal',
 	ILLEGAL : 'ilegal',
 	CUSTOM  : 'Personalizado',
 	IN_EXCH : 'A cambio de',
-	RES_ONE : 'Un recurso',
-	RES_MIX : 'Mezcla de recursos',
+	RESULT  : 'Resultado',
 	MESSAGE : 'Mensaje',
 	WHERE   : 'Lugar de entrega',
 	PLANET  : 'Planeta',
 	MOON    : 'Luna',
 	CUR_PLA : 'Planeta actual',
-/*	FAV_RAT : 'Ratios favoritos',
-	SEL_ACT : 'Seleccionar acción',
-	ADD_RAT : 'Añadir ratio actual a favoritos',
-	DEL_RAT : 'Eliminar ratio seleccionado de favoritos',
-	DEF_RAT : 'Establecer ratio seleccionado como ratio por defecto',*/
 	MAX     : 'Máximo',
 	REG     : 'Normal',
 	MIN     : 'Mínimo'
 }
+/*! [/i18n] */
 ).text;
 
-var CSS = "."+SCRIPT.ID_PREFIX+"window{"+
-	"float:left;"+
-	"position:relative;"+
-	"width:670px;"+
-	"overflow:visible;"+
-	"z-index:2;"+
-"}"+
-"#galaxy ."+SCRIPT.ID_PREFIX+"window{"+
-	"top:-44px;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"header{"+
-	"height:28px;"+
-	"line-height:28px;"+
-	"text-align:center;"+
-	"color:#6F9FC8;"+
-	"font-size:12px;"+
-	"font-weight:bold;"+
-	"background: url(\"http://gf1.geo.gfsrv.net/cdn63/10e31cd5234445e4084558ea3506ea.gif\") no-repeat scroll 0px 0px transparent;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"main{"+
-	"padding:15px 25px 0 25px;"+
-	"background: url(\"http://gf1.geo.gfsrv.net/cdn9e/4f73643e86a952be4aed7fdd61805a.gif\") repeat-y scroll 5px 0px transparent;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"main *{"+
-	"font-size:11px;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"main table{"+
-	"width:620px;"+ // 670 [window] - (25+25) [main padding] - 2 [border]
-	"background-color:#0D1014;"+
-    //"border: 1px solid black;"+
-    "border-collapse:collapse;"+
-    "clear:both;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"main th{"+
-	"color:#FFF;"+
-	"text-align:center;"+
-	//"padding-right: 5px;"+
-	"font-weight:bold;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"main td.label,"+
-"."+SCRIPT.ID_PREFIX+"main td.label *{"+
-	"color:grey;"+
-	"text-align:left;"+
-"}"+
-/*"."+SCRIPT.ID_PREFIX+"main label,"+
-"."+SCRIPT.ID_PREFIX+"main input[type=\"radio\"]{"+
-	"cursor:pointer;"+
-"}"+*/
-"."+SCRIPT.ID_PREFIX+"main td.label{"+
-	"padding:0 0 0 5px;"+
-	"font-weight:bold;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"main tr,"+
-"."+SCRIPT.ID_PREFIX+"main td,"+
-"."+SCRIPT.ID_PREFIX+"main th{"+
-	"height:27px;"+
-	"line-height:27px;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"main input[type=\"text\"]{"+
-	"width:100px;"+
-	"text-align:right;"+
-"}"+
-/*"."+SCRIPT.ID_PREFIX+"main input[type=\"radio\"],"+
-"."+SCRIPT.ID_PREFIX+"main input[type=\"checkbox\"]{"+
-	"vertical-align:text-bottom;"+
-"}"+*/
-"."+SCRIPT.ID_PREFIX+"main option.highlight{"+
-	"color:lime !important;"+
-	"font-weight:bold;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"main option.moonOption{"+
-	"color:orange;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"main td.select{"+
-	"width:150px;"+
-	"text-align:left;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"main select{"+
-	"width:130px;"+
-	"text-align:center;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"main option{"+
-	"padding:1px 5px 1px 5px;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"main input[type=\"text\"].ratio{"+
-	"width:30px;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"main td.input{"+
-	"width:112px;"+
-	"padding:0 1px 0 0;"+
-	"text-align:right;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"main td.input{"+
-	"width:112px;"+
-	"padding:0 1px 0 0;"+
-	"text-align:right;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"main span.illegal{"+
-	"color:red;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"main span.legal span.illegal{"+
-	"display:none;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"main td.output{"+
-	"width:108px;"+
-	"padding:0 5px 0 0;"+
-	"text-align:right;"+
-	"color:grey;"+
-	"text-decoration:line-through;"+
-	"cursor:pointer;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"main td.output.sel{"+
-	"color:#FFF;"+
-	"text-decoration:none;"+
-	"cursor:dafault;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"main td.textarea{"+
-	"padding:0 1px 0 1px;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"main textarea{"+
-	"width:602px;"+
-	"height:50px !important;"+
-	"margin:0;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"main td.select1row select{"+
-	"width:auto;"+
-	"text-align:left;"+
-	"margin:0;"+
-"}"+
-"."+SCRIPT.ID_PREFIX+"footer{"+
-	"height:17px;"+
-	"background: url(\"http://gf1.geo.gfsrv.net/cdn30/aa3e8edec0a2681915b3c9c6795e6f.gif\") no-repeat scroll 2px 0px transparent;"+
-"}"+
-"";
-
-var addCss = function (text)
+var NumberFormat =
 {
-	var el = doc.createElement('style');
-	el.setAttribute('type','text/css');
-	
-	if (el.styleSheet)
-		el.styleSheet.cssText = text;
-	else
-		el.appendChild(doc.createTextNode(text));
-	
-	var head = doc.getElementsByTagName("head")[0];
-	head.appendChild(el);
-}
-
-var uID =
-{
-	seed : (new Date()).getTime(),
-	get : function() {return SCRIPT.ID_PREFIX+(this.seed++);}
-}
-
-var prettyInteger = function (n,writing)
-{
-	if(writing&&n=='') return '';
-	var nStr = ('0'+n+'').replace(
-		/[kK]$/,'000' // last char is k|K => multiply by 1 thousand
-	).replace(
-		/[mM]$/,'000000' // last char is m|M => multiply by 1 million
-	).replace(
-		/\D/g,'' // delete NaN chars
-	).replace(
-		/^0+(\d)/,'$1' // delete leading zeros
-	);
-	var rgx = /(\d+)(\d{3})/;
-	while (rgx.test(nStr)) {
-		nStr = nStr.replace(rgx, '$1' + I18N.THO_SEP + '$2');
+	formatI : function (n,writing)
+	{
+		if(arguments.length>1 && writing && n=='') return '';
+		var nStr;
+		if (typeof(n)=='string')
+			nStr = ('0'+n+'').replace(
+				/[kK]$/,'000' // last char is k|K => multiply by 1 thousand
+			).replace(
+				/[mM]$/,'000000' // last char is m|M => multiply by 1 million
+			).replace(
+				/\D/g,'' // delete NaN chars
+			).replace(
+				/^0+(\d)/,'$1' // delete leading zeros
+			);
+		else
+			nStr = n.toFixed()+'';
+		var rgx = /(\d+)(\d{3})/;
+		while (rgx.test(nStr)) {
+			nStr = nStr.replace(rgx, '$1' + I18N.THO_SEP + '$2');
+		}
+		return nStr;
+	},
+	formatF : function (n,writing)
+	{
+		if(arguments.length>1 && writing && n=='') return '';
+		var nStr, x, x1, x2;
+		if (typeof(n)=='string')
+			nStr = ('0'+n+'').replace(
+				/[\.\,]$/,I18N.DEC_SEP // allow .|, as decimal separator (if last char)
+			).replace(
+				// delete NaN chars except decimal separator
+				new RegExp('[^0-9\\'+I18N.DEC_SEP+']','g'),''
+			).replace(
+				/^0+(\d)/,'$1' // delete leading zeros
+			);
+		else
+			nStr = (n+'').replace('.',I18N.DEC_SEP);
+		x = nStr.split(I18N.DEC_SEP);
+		x1 = x[0];
+		x2 = x.length > 1 ? I18N.DEC_SEP + x[1] : '';
+		if (nStr[nStr.length-1]==I18N.DEC_SEP && arguments.length>1 && writing) x2 = I18N.DEC_SEP;
+		var rgx = /(\d+)(\d{3})/;
+		while (rgx.test(x1)) {
+			x1 = x1.replace(rgx, '$1' + I18N.THO_SEP + '$2');
+		}
+		return x1 + x2;
+	},
+	parseI : function (n)
+	{
+		return parseInt(n.split(I18N.THO_SEP).join(''));
+	},
+	parseF : function (n)
+	{
+		return parseFloat(n.split(I18N.THO_SEP).join('').replace(I18N.DEC_SEP,'.'));
 	}
-	return nStr;
-}
-
-var prettyFloat = function (n,writing)
-{
-	if(writing&&n=='') return '';
-	var nStr, x, x1, x2;
-	nStr = ('0'+n+'').replace(
-		/[\.\,]$/,I18N.DEC_SEP // allow .|, as decimal separator (if last char)
-	).replace(
-		// delete NaN chars except decimal separator
-		new RegExp('[^0-9\\'+I18N.DEC_SEP+']','g'),''
-	).replace(
-		/^0+(\d)/,'$1' // delete leading zeros
-	);
-	x = nStr.split(I18N.DEC_SEP);
-	x1 = x[0];
-	x2 = x.length > 1 ? I18N.DEC_SEP + x[1] : '';
-	if (nStr[nStr.length-1]==I18N.DEC_SEP && writing) x2 = I18N.DEC_SEP;
-	var rgx = /(\d+)(\d{3})/;
-	while (rgx.test(x1)) {
-		x1 = x1.replace(rgx, '$1' + I18N.THO_SEP + '$2');
-	}
-	return x1 + x2;
 }
 
 var ratioChecker =
@@ -489,34 +347,36 @@ var ratioChecker =
 ).init(INFO.RAT_MIN,INFO.RAT_MAX);
 delete ratioChecker.init;
 
-var calc = function (met,cry,deu,rMet,rCry,rDeu)
+var calc = function (met,cry,deu,rMet,rCry,rDeu,pMet,pCry,pDeu)
 {
-	//alert(met+":"+cry+":"+deu+"\n"+rMet+":"+rCry+":"+rDeu);
+	//alert(met+":"+cry+":"+deu+"\n"+rMet+":"+rCry+":"+rDeu+"\n"+pMet+":"+pCry+":"+pDeu);
 	return {
-		met : Math.round(met+(cry/rCry)*rMet+(deu/rDeu)*rMet),
-		cry : Math.round((met/rMet)*rCry+cry+(deu/rDeu)*rCry),
-		deu : Math.round((met/rMet)*rDeu+(cry/rCry)*rDeu+deu)
+		met : Math.round(((met+(cry/rCry)*rMet+(deu/rDeu)*rMet)/100)*pMet),
+		cry : Math.round((((met/rMet)*rCry+cry+(deu/rDeu)*rCry)/100)*pCry),
+		deu : Math.round((((met/rMet)*rDeu+(cry/rCry)*rDeu+deu)/100)*pDeu)
 	}
 }
 
 var messageMaker =
 ({
 	DEFAULT_TPL :
+		/*! [TPL=MESSAGE] */
 		"[b]{?b}{I18N.BUY}{/b}{?s}{I18N.SELL}{/s}:[/b] "+
 		"{?m}[b][color={COLOR.MET}]{m}[/color][/b] ({I18N.RES_MET}){?cd} + {/cd}{/m}"+
 		"{?c}[b][color={COLOR.CRY}]{c}[/color][/b] ({I18N.RES_CRY}){?d} + {/d}{/c}"+
 		"{?d}[b][color={COLOR.DEU}]{d}[/color][/b] ({I18N.RES_DEU}){/d}"+
 		"\n[b]{I18N.IN_EXCH}:[/b] "+
-		"{?M}[b][color={COLOR.MET}]{M}[/color][/b] ({I18N.RES_MET}){/M}"+
-		"{?C}[b][color={COLOR.CRY}]{C}[/color][/b] ({I18N.RES_CRY}){/C}"+
+		"{?M}[b][color={COLOR.MET}]{M}[/color][/b] ({I18N.RES_MET}){?CD} + {/CD}{/M}"+
+		"{?C}[b][color={COLOR.CRY}]{C}[/color][/b] ({I18N.RES_CRY}){?D} + {/D}{/C}"+
 		"{?D}[b][color={COLOR.DEU}]{D}[/color][/b] ({I18N.RES_DEU}){/D}"+
 		"\n\n[b]* {I18N.RATIO}:[/b] {rm}:{rc}:{rd}"+
-		"{?w}\n[b]* {I18N.WHERE}:[/b] {w}{/w}"+
+		"{?w}\n[b]* {I18N.WHERE}:[/b] {wg}:{ws}:{wp} ({wt}){/w}"+
 		"\n\n[b][url={SCRIPT.SHOW_URL}]{SCRIPT.NAME}[/url][/b]",
+		/*! [/TPL] */
 	
-	parseIf : function (tpl,symbol,srch,keep)
+	parseIf : function (tpl,srch,keep)
 	{
-		var st = '{'+symbol+srch+'}', nd = '{/'+srch+'}';
+		var st = '{?'+srch+'}', nd = '{/'+srch+'}';
 		if (keep) return tpl.split(st).join('').split(nd).join('');
 		
 		var i, j, aux, out = tpl;
@@ -536,51 +396,73 @@ var messageMaker =
 		}
 		return out;
 	},
-	parseIfs : function()
+	parseIfs : function(tpl,cond_map)
 	{
-		var out = arguments[0],
-		i=1,
-		srch,keep,
-		end=arguments.length;
-		while (true)
+		var tmp = tpl+'',
+		out = tpl+'',
+		re = /\{\?(\!?\w)+\}/,
+		cond,
+		cond_val,
+		pos,
+		end,
+		aux;
+		
+		while (re.test(tmp))
 		{
-			srch = arguments[i++];
-			keep = arguments[i++];
-			out=this.parseIf(out,'?',srch,keep);
-			out=this.parseIf(out,'!',srch,!keep);
-			if (i==end)
-				return out;
+			cond = (re.exec(tmp)+'').replace(/\}.*$/,'').replace(/^.*\{/,'');
+			tmp = tmp.split('{'+cond+'}').join('');
+			try
+			{
+				cond = cond.replace(/[^\w\!]/g,'');
+				if ((aux=cond[pos=0])=='!')
+					cond_val = !cond_map[++pos];
+				else
+					cond_val = cond_map[aux];
+				end = cond.length - 1;
+				cond_val = cond_map[cond[pos]];
+				while (pos<end)
+					if ((aux=cond[++pos])=='!')
+						cond_val = (cond_val || !cond_map[++pos]);
+					else
+						cond_val = (cond_val || cond_map[aux]);
+				out = this.parseIf(out,cond,cond_val)
+			}
+			catch (e) {alert(e);}
 		}
+		return out;
 	},
-	make : function (action,mIn,cIn,dIn,mOut,cOut,dOut,mRat,cRat,dRat,where)
+	make : function (action,input,output,ratio,where)
 	{
 		var i, re = /[1-9]/,
 		out = this.parseIfs(
 			this.tpl,
-			'b',(action==I18N.BUY),
-			's',(action==I18N.SELL),
-			'm',re.test(mIn),
-			'c',re.test(cIn),
-			'd',re.test(dIn),
-			'mc',re.test(mIn+cIn),
-			'md',re.test(mIn+dIn),
-			'cd',re.test(cIn+dIn),
-			'M',re.test(mOut),
-			'C',re.test(cOut),
-			'D',re.test(dOut),
-			'w',(where!='')
+			{
+				b : (action=='buy'),
+				s : (action=='sell'),
+				m : re.test(input.met),
+				c : re.test(input.cry),
+				d : re.test(input.deu),
+				M : re.test(output.met),
+				C : re.test(output.cry),
+				D : re.test(output.deu),
+				w : (where!=null),
+				p : (where==null) ? false : (where.type=='planet')
+			}
 		);
 		out = out.replaceMap({
-			'{m}':mIn,
-			'{c}':cIn,
-			'{d}':dIn,
-			'{M}':mOut,
-			'{C}':cOut,
-			'{D}':dOut,
-			'{rm}':mRat,
-			'{rc}':cRat,
-			'{rd}':dRat,
-			'{w}':where
+			'{m}'  : input.met,
+			'{c}'  : input.cry,
+			'{d}'  : input.deu,
+			'{M}'  : output.met,
+			'{C}'  : output.cry,
+			'{D}'  : output.deu,
+			'{rm}' : ratio.met,
+			'{rc}' : ratio.cry,
+			'{rd}' : ratio.deu,
+			'{wg}' : (where==null) ? '' : where.galaxy,
+			'{ws}' : (where==null) ? '' : where.system,
+			'{wp}' : (where==null) ? '' : where.planet,
+			'{wt}' : (where==null) ? '' : '{I18N.'+(where.type+'').toUpperCase()+'}'
 		});
 		for (i in I18N)
 			out = out.replaceAll('{I18N.'+i+'}',I18N[i]);
@@ -600,353 +482,695 @@ var messageMaker =
 
 var iface =
 ({
-	isNotBuilded: true,
-	isHidden: true,
-	mkTr: function(appendTo)
+	CSS :
+		/*! [CSS] */
+		"#"+SCRIPT.ID_PREFIX+"window{"+
+			"float:left;"+
+			"position:relative;"+
+			"width:670px;"+
+			"overflow:visible;"+
+			"z-index:2;"+
+		"}"+
+		"#galaxy #"+SCRIPT.ID_PREFIX+"window{"+
+			"top:-44px;"+
+		"}"+
+		"#"+SCRIPT.ID_PREFIX+"header{"+
+			"height:28px;"+
+			"position: relative;"+
+			"background: url(\"http://gf1.geo.gfsrv.net/cdn63/10e31cd5234445e4084558ea3506ea.gif\") no-repeat scroll 0px 0px transparent;"+
+		"}"+
+		"#"+SCRIPT.ID_PREFIX+"header h4{"+
+			"height:28px;"+
+			"line-height:28px;"+
+			"text-align:center;"+
+			"color:#6F9FC8;"+
+			"font-size:12px;"+
+			"font-weight:bold;"+
+			"position:absolute;"+
+			"top:0;left:60px;right:60px;"+
+		"}"+
+		"#"+SCRIPT.ID_PREFIX+"main{"+
+			"padding:15px 25px 0 25px;"+
+			"background: url(\"http://gf1.geo.gfsrv.net/cdn9e/4f73643e86a952be4aed7fdd61805a.gif\") repeat-y scroll 5px 0px transparent;"+
+		"}"+
+		"#"+SCRIPT.ID_PREFIX+"main *{"+
+			"font-size:11px;"+
+		"}"+
+		"#"+SCRIPT.ID_PREFIX+"main table{"+
+			"width:620px;"+ // 670 [window] - (25+25) [main padding] - 2 [border]
+			"background-color:#0D1014;"+
+			"border-collapse:collapse;"+
+			"clear:both;"+
+		"}"+
+		"#"+SCRIPT.ID_PREFIX+"main th{"+
+			"color:#FFF;"+
+			"text-align:center;"+
+			"font-weight:bold;"+
+		"}"+
+		"."+SCRIPT.ID_PREFIX+"label,"+
+		"."+SCRIPT.ID_PREFIX+"label *{"+
+			"color:grey;"+
+			"text-align:left;"+
+		"}"+
+		"."+SCRIPT.ID_PREFIX+"label{"+
+			"padding:0 0 0 5px;"+
+			"font-weight:bold;"+
+		"}"+
+		"#"+SCRIPT.ID_PREFIX+"main tr,"+
+		"#"+SCRIPT.ID_PREFIX+"main td,"+
+		"#"+SCRIPT.ID_PREFIX+"main th{"+
+			"height:28px;"+
+			"line-height:28px;"+
+		"}"+
+		"#"+SCRIPT.ID_PREFIX+"main input[type=\"text\"]{"+
+			"width:100px;"+
+			"text-align:center;"+
+		"}"+
+		"option."+SCRIPT.ID_PREFIX+"highlight{"+
+			"color:lime !important;"+
+			"font-weight:bold;"+
+		"}"+
+		"option."+SCRIPT.ID_PREFIX+"moon{"+
+			"color:orange;"+
+		"}"+
+		"."+SCRIPT.ID_PREFIX+"select{"+
+			"width:150px;"+
+			"text-align:left;"+
+		"}"+
+		"."+SCRIPT.ID_PREFIX+"select select{"+
+			"width:130px;"+
+			"text-align:center;"+
+		"}"+
+		"#"+SCRIPT.ID_PREFIX+"main option{"+
+			"padding:1px 5px 1px 5px;"+
+		"}"+
+		"."+SCRIPT.ID_PREFIX+"input{"+
+			"width:112px;"+
+			"padding:0 1px 0 1px;"+
+			"text-align:right;"+
+		"}"+
+		"#"+SCRIPT.ID_PREFIX+"ratio_illegal{"+
+			"color:red;"+
+		"}"+
+		"."+SCRIPT.ID_PREFIX+"output{"+
+			"width:108px;"+
+			"text-align:center;"+
+			"font-weight:bold;"+
+		"}"+
+		"#"+SCRIPT.ID_PREFIX+"output_met{"+
+			"color:"+COLOR.MET+";"+
+		"}"+
+		"#"+SCRIPT.ID_PREFIX+"output_cry{"+
+			"color:"+COLOR.CRY+";"+
+		"}"+
+		"#"+SCRIPT.ID_PREFIX+"output_deu{"+
+			"color:"+COLOR.DEU+";"+
+		"}"+
+		"."+SCRIPT.ID_PREFIX+"textarea{"+
+			"padding:0 3px 0 3px !important;"+
+		"}"+
+		"#"+SCRIPT.ID_PREFIX+"message{"+
+			"width:601px;"+
+			"height:50px !important;"+
+			"margin:0 !important;"+
+		"}"+
+		"#"+SCRIPT.ID_PREFIX+"planet{"+
+			"width:auto;"+
+			"text-align:left;"+
+			"margin:0;"+
+		"}"+
+		"."+SCRIPT.ID_PREFIX+"select1row select{"+
+			"width:auto;"+
+			"text-align:left;"+
+			"margin:0;"+
+		"}"+
+		"#"+SCRIPT.ID_PREFIX+"footer{"+
+			"height:17px;"+
+			"background: url(\"http://gf1.geo.gfsrv.net/cdn30/aa3e8edec0a2681915b3c9c6795e6f.gif\") no-repeat scroll 2px 0px transparent;"+
+		"}"+
+		"",
+		/*! [CSS] */
+
+	addCss : function (text)
 	{
-		return $('<tr/>'/*).mouseenter(
-			function(){$(this).addClass('over');}
-		).mouseleave(
-			function(){$(this).removeClass('over');}
-		*/).appendTo(
-			appendTo
-		);
-	},
-	/*mkRadio: function(appendTo,name,label)
-	{
-		var id = uID.get();
-		var input = $('<input id="'+id+'" type="radio" name="'+name+'"/>').appendTo(appendTo);
-		$('<label for="'+id+'">'+label+'&nbsp;</label>').appendTo(appendTo);
-		return input;
-	},
-	mkCheckbox: function(appendTo,label)
-	{
-		var id = uID.get();
-		var input = $('<input id="'+id+'" type="checkbox"/>').appendTo(appendTo);
-		$('<label for="'+id+'">'+label+'&nbsp;</label>').appendTo(appendTo);
-		return input;
-	},*/
-	mkIntegerInput: function(appendTo, value)
-	{
-		var _this = this;
-		var input = $('<input type="text" value="" />').appendTo(appendTo);
-		var onChange = function()
-		{
-			var o = $(this),
-			value = o.val(),
-			end = value.length - o.caret().end;
-			value = prettyInteger(value);
-			end = value.length - end;
-			o.val(value).caret(end,end);
-			/*if (value!='')*/ _this.doIt();
-		};
-		input.val(prettyInteger(value),false);
-		input.keyup(onChange).change(onChange).blur(function()
-		{
-			var o = $(this);
-			o.val(prettyInteger(o.val(),false));
-			_this.doIt();
-		});
-		input.focus(function(){
-			var o = $(this);
-			if (o.val()=='0') o.val('');
-		});
-		return input;
-	},
-	mkRatioInput: function(appendTo, value)
-	{
-		var _this = this;
-		var input = $('<input type="text" value="" />').appendTo(appendTo);
-		var backup = {value:''};
-		var onChange = function()
-		{
-			var o = $(this),
-			value = o.val(),
-			end = value.length - o.caret().end;
-			value = prettyFloat(o.val(),true);
-			end = value.length - end;
-			o.val(value).caret(end,end);
-			if (value!='') _this.doIt();
-		};
-		input.val(prettyFloat((value+'').split('.').join(I18N.DEC_SEP),false));
-		input.keyup(onChange).change(onChange).blur(function()
-		{
-			var o = $(this), value = prettyFloat(o.val(),false);
-			if (value=='0')
-				o.val(backup.value);
-			else
-			{
-				backup.value = value;
-				o.val(value);
-			}
-			_this.doIt();
-		});
-		input.focus(function(){
-			backup.value = $(this).val();
-		});
-		return input.addClass('ratio');
-	},
-	mkRatioOption: function(appendTo,ratio,name)
-	{
-		var rMet = (ratio[0]+'').replace('.',I18N.DEC_SEP),
-		rCry = (ratio[1]+'').replace('.',I18N.DEC_SEP),
-		rDeu = (ratio[2]+'').replace('.',I18N.DEC_SEP);
-		return $(
-			'<option value="'+rMet+':'+rCry+':'+rDeu+'">'+
-			name+' '+rMet+':'+rCry+':'+rDeu+'</option>'
-		).appendTo(appendTo);
-	},
-	build: function()
-	{
-		var _this = this, table, tbody, tr, td, select, option;
-		this.isNotBuilded = false;
-		addCss(CSS);
-		this.ogameContainer = $('#inhalt');
-		this.scriptContainer = $('<div/>').addClass(SCRIPT.ID_PREFIX+"window").hide();
-		this.ogameContainer.after(this.scriptContainer);
-		this.scriptContainer.append(
-			$('<div/>').addClass(SCRIPT.ID_PREFIX+"header").text(I18N.TITLE).append(
-				$('<a href="javascript:void(0);" />'
-				).addClass('close_details'
-				).addClass('close_ressources'
-				).click(function(){_this.hide();})
-			)
-		);
-		this.scriptContainer.append(this.scriptMain=$('<div/>').addClass(SCRIPT.ID_PREFIX+"main"));
-		this.scriptContainer.append($('<div/>').addClass(SCRIPT.ID_PREFIX+"footer"));
-		
-		table = $('<table cellpadding="0" cellspacing="0"/>').appendTo(this.scriptMain);
-		tbody = $('<tbody/>').appendTo(table);
-		
-		// title row
-		tr = $('<tr/>').appendTo(tbody);
-		$('<th/>').appendTo(tr).attr('colspan',2);
-		$('<th/>').appendTo(tr).text(I18N.RES_MET);
-		$('<th/>').appendTo(tr).text(I18N.RES_CRY);
-		$('<th/>').appendTo(tr).text(I18N.RES_DEU);
-		
-		// buy/sell row
-		tr = this.mkTr(tbody).addClass('alt');
-		$('<td/>').appendTo(tr).addClass('label').text(I18N.ACTION);
-		td = $('<td/>').appendTo(tr).addClass('select');
-		select = $('<select/>').appendTo(td);
-		this.actionOptions = [];
-		this.actionOptions.push($('<option value="'+I18N.SELL+'">'+I18N.SELL+'</option>').appendTo(select));
-		this.actionOptions.push($('<option value="'+I18N.BUY+'">'+I18N.BUY+'</option>').appendTo(select));
-		this.actionSelect = select.change(function(){_this.doIt();});
-		td = $('<td/>').appendTo(tr).addClass('input');
-		this.inputMet = this.mkIntegerInput(td,0);
-		td = $('<td/>').appendTo(tr).addClass('input');
-		this.inputCry = this.mkIntegerInput(td,0);
-		td = $('<td/>').appendTo(tr).addClass('input');
-		this.inputDeu = this.mkIntegerInput(td,0);
-		
-		// ratio row
-		tr = this.mkTr(tbody);
-		td = $('<td/>').appendTo(tr).addClass('label');
-		this.ratioIsLegal = $('<span class="legal">'+I18N.RATIO+'</span>').appendTo(td
-			).append($('<span class="illegal"> ('+I18N.ILLEGAL+')</span>'));
-		td = $('<td/>').appendTo(tr).addClass('select');
-		select = $('<select/>').appendTo(td);
-		$('<option value="">-</option>').appendTo(select);
-		this.ratioOptions = [0];
-		this.ratioOptions.push(this.mkRatioOption(select,INFO.RAT_REG,I18N.REG));
-		this.ratioOptions.push(this.mkRatioOption(select,INFO.RAT_MIN,I18N.MIN));
-		this.ratioOptions.push(this.mkRatioOption(select,INFO.RAT_MAX,I18N.MAX));
-		this.ratioSelect = select.change(function(){_this.doIt();});
-		td = $('<td/>').appendTo(tr).addClass('input');
-		this.ratioMet = this.mkRatioInput(td,INFO.RAT_REG[0]);
-		td = $('<td/>').appendTo(tr).addClass('input');
-		this.ratioCry = this.mkRatioInput(td,INFO.RAT_REG[1]);
-		td = $('<td/>').appendTo(tr).addClass('input');
-		this.ratioDeu = this.mkRatioInput(td,INFO.RAT_REG[2]);
-		
-		// "in exchange for" row
-		tr = this.mkTr(tbody).addClass('alt');
-		$('<td/>').appendTo(tr).addClass('label').text(I18N.IN_EXCH);
-		td = $('<td/>').appendTo(tr).addClass('select');
-		select = $('<select/>').appendTo(td);
-		this.exchangeOptions = [];
-		this.exchangeOptions.push($('<option value="met">'+I18N.RES_MET+'</option>').appendTo(select));
-		this.exchangeOptions.push($('<option value="cry">'+I18N.RES_CRY+'</option>').appendTo(select));
-		this.exchangeOptions.push($('<option value="deu">'+I18N.RES_DEU+'</option>').appendTo(select));
-		this.exchangeSelect = select.change(function(){_this.doIt();});
-		this.outputMet = $('<td/>').appendTo(tr).addClass('output').click(function(){
-			_this.exchangeSelect.prop('selectedIndex',0);
-			_this.doIt();
-		});
-		this.outputCry = $('<td/>').appendTo(tr).addClass('output').click(function(){
-			_this.exchangeSelect.prop('selectedIndex',1);
-			_this.doIt();
-		});
-		this.outputDeu = $('<td/>').appendTo(tr).addClass('output').click(function(){
-			_this.exchangeSelect.prop('selectedIndex',2);
-			_this.doIt();
-		});
-		
-		// empty
-		this.mkTr(tbody).append($('<td/>').appendTo(tr).attr('colspan',5).html('&nbsp;'));
-		
-		// where row
-		tr = this.mkTr(tbody).addClass('alt');
-		$('<td/>').appendTo(tr).addClass('label').attr('colspan',5).text(I18N.WHERE);
-		tr = this.mkTr(tbody).addClass('alt');
-		td = $('<td/>').appendTo(tr).addClass('select1row').attr('colspan',5);
-		select = $('<select/>').appendTo(td);
-		$('<option value="">-</option>').appendTo(select);
-		//<meta name="ogame-planet-coordinates" content="1:421:10"/>
-		var currentPCoord = '['+$('meta[name="ogame-planet-coordinates"]').attr('content')+']';
-		//<meta name="ogame-planet-type" content="planet"/>
-		var currentPType = $('meta[name="ogame-planet-type"]').attr('content').toLowerCase().trim();
-		this.planetOptions = [0];
-		$.each($('#planetList').children('div').get(),function(index,value){
-			var o = $(value), c = o.find('.planet-koords');
-			if (c.get().length==0) return;
-			c = c.text().trim();
-			option = $('<option value="'+c+' ('+I18N.PLANET+')">'+c+' '+o.find('.planet-name').text().trim()+'</option>').appendTo(select).addClass('planetOption');
-			if (c==currentPCoord && currentPType=='planet')
-				option.addClass('highlight').html(option.html()+' &laquo; '+I18N.CUR_PLA);
-			_this.planetOptions.push(option);
-			if (o.find('.moonlink').get().length>0)
-			{
-				option = $('<option value="'+c+' ('+I18N.MOON+')">'+c+' ('+I18N.MOON+')</option>').appendTo(select).addClass('moonOption');
-				if (c==currentPCoord && currentPType=='moon')
-					option.addClass('highlight').html(option.html()+' &laquo; '+I18N.CUR_PLA);
-				_this.planetOptions.push(option);
-			}
-		});
-		this.planetSelect = select.change(function(){_this.doIt();});
-		
-		// empty
-		this.mkTr(tbody).append($('<td/>').appendTo(tr).attr('colspan',5).html('&nbsp;'));
-		
-		// message row
-		tr = this.mkTr(tbody).addClass('alt');
-		$('<td/>').appendTo(tr).addClass('label').attr('colspan',5).text(I18N.MESSAGE);
-		tr = this.mkTr(tbody).addClass('alt');
-		td = $('<td/>').appendTo(tr).addClass('textarea').attr('colspan',5);
-		this.outputMessage = $('<textarea rows="1" cols="1"/>').appendTo(td).attr('readonly','readonly').click(function(){$(this).select();});
-		
-		/*// empty
-		this.mkTr(tbody).append($('<td/>').appendTo(tr).attr('colspan',5).html('&nbsp;'));
-		
-		// favorites row
-		tr = this.mkTr(tbody).addClass('alt');
-		td = $('<td/>').appendTo(tr).addClass('label').attr('colspan',5).text(I18N.FAV_RAT);
-		tr = this.mkTr(tbody).addClass('alt');
-		td = $('<td/>').appendTo(tr).addClass('select1row').attr('colspan',5);
-		select = $('<select/>').appendTo(td);
-		$('<option value="">'+I18N.SEL_ACT+'</option>').appendTo(select);
-		$('<option value="add">'+I18N.ADD_RAT+'</option>').appendTo(select);
-		$('<option value="del">'+I18N.DEL_RAT+'</option>').appendTo(select);
-		$('<option value="def">'+I18N.DEF_RAT+'</option>').appendTo(select);*/
-		
-		return this.doIt();
-	},
-	getResource : function (jqo)
-	{
-		var val = jqo.val();
-		if (val=='') return 0;
-		else return parseInt(jqo.val().replace(/\D/g,''))
-	},
-	getRatio : function (jqo)
-	{
-		return parseFloat(jqo.val().split(I18N.THO_SEP).join('').split(I18N.DEC_SEP).join('.'))
-	},
-	doIt: function()
-	{
-		var _this=this,aux,i = this.ratioSelect.prop('selectedIndex');
-		if (i>0)
-		{
-			aux = this.ratioOptions[i].val().split(':');
-			this.ratioMet.val(aux.shift());
-			this.ratioCry.val(aux.shift());
-			this.ratioDeu.val(aux.shift());
-			this.ratioSelect.prop('selectedIndex',0);
-		}
+		var el = doc.createElement('style');
+		el.setAttribute('type','text/css');
 	
-		var ratioMet = this.getRatio(this.ratioMet),
-		ratioCry = this.getRatio(this.ratioCry),
-		ratioDeu = this.getRatio(this.ratioDeu),
-		outputRes = calc(
-			this.getResource(this.inputMet),
-			this.getResource(this.inputCry),
-			this.getResource(this.inputDeu),
-			ratioMet,
-			ratioCry,
-			ratioDeu
-		);
-		
-		if (ratioChecker.isLegal(ratioMet,ratioCry,ratioDeu))
-			this.ratioIsLegal.addClass('legal');
+		if (el.styleSheet)
+			el.styleSheet.cssText = text;
 		else
-			this.ratioIsLegal.removeClass('legal');
-		
-		this.outputMet.text(prettyInteger(outputRes.met)).removeClass('sel');
-		this.outputCry.text(prettyInteger(outputRes.cry)).removeClass('sel');
-		this.outputDeu.text(prettyInteger(outputRes.deu)).removeClass('sel');
-		
-		$.each([this.outputMet,this.outputCry,this.outputDeu],function(k,o){
-			if (_this.exchangeSelect.prop('selectedIndex')==k)
-				o.addClass('sel');
-			else
-				o.removeClass('sel');
-		});
-		
-		this.outputMessage.text(messageMaker.make(
-			this.actionSelect.val(),
-			this.inputMet.val(),
-			this.inputCry.val(),
-			this.inputDeu.val(),
-			this.outputMet.hasClass('sel') ? this.outputMet.text() : '',
-			this.outputCry.hasClass('sel') ? this.outputCry.text() : '',
-			this.outputDeu.hasClass('sel') ? this.outputDeu.text() : '',
-			this.ratioMet.val(),
-			this.ratioCry.val(),
-			this.ratioDeu.val(),
-			this.planetSelect.val()
-		));
+			el.appendChild(doc.createTextNode(text));
+	
+		var head = doc.getElementsByTagName("head")[0];
+		head.appendChild(el);
 		
 		return this;
 	},
+
+	WINDOW_TPL :
+		/*! [TPL=WINDOW] */
+		'<div id="'+SCRIPT.ID_PREFIX+'window">'+
+			'<div id="'+SCRIPT.ID_PREFIX+'header">'+
+				'<h4>'+I18N.TITLE+'</h4>'+
+				'<a id="'+SCRIPT.ID_PREFIX+'close" href="javascript:void(0);" class="close_details close_ressources"></a>'+
+			'</div>'+
+			'<div id="'+SCRIPT.ID_PREFIX+'main">'+
+				'<table cellspacing="0" cellpadding="0">'+
+				'<tbody>'+
+					'<tr>'+
+						'<th colspan="2"></th>'+
+						'<th>'+I18N.RES_MET+'</th>'+
+						'<th>'+I18N.RES_CRY+'</th>'+
+						'<th>'+I18N.RES_DEU+'</th>'+
+					'</tr>'+
+					'<tr class="alt">'+
+						'<td class="'+SCRIPT.ID_PREFIX+'label">'+I18N.ACTION+'</td>'+
+						'<td class="'+SCRIPT.ID_PREFIX+'select">'+
+							'<select id="'+SCRIPT.ID_PREFIX+'action"></select>'+
+						'</td>'+
+						'<td class="'+SCRIPT.ID_PREFIX+'input">'+
+							'<input id="'+SCRIPT.ID_PREFIX+'input_met" type="text" value="">'+
+						'</td>'+
+						'<td class="'+SCRIPT.ID_PREFIX+'input">'+
+							'<input id="'+SCRIPT.ID_PREFIX+'input_cry" type="text" value="">'+
+						'</td>'+
+						'<td class="'+SCRIPT.ID_PREFIX+'input">'+
+							'<input id="'+SCRIPT.ID_PREFIX+'input_deu" type="text" value="">'+
+						'</td>'+
+					'</tr>'+
+					'<tr>'+
+						'<td class="'+SCRIPT.ID_PREFIX+'label">'+
+							I18N.RATIO+
+							'<span id="'+SCRIPT.ID_PREFIX+'ratio_illegal">'+
+								' ('+I18N.ILLEGAL+')'+
+							'</span>'+
+						'</td>'+
+						'<td class="'+SCRIPT.ID_PREFIX+'select">'+
+							'<select id="'+SCRIPT.ID_PREFIX+'ratio"></select>'+
+						'</td>'+
+						'<td class="'+SCRIPT.ID_PREFIX+'input">'+
+							'<input id="'+SCRIPT.ID_PREFIX+'ratio_met" type="text" value="">'+
+						'</td>'+
+						'<td class="'+SCRIPT.ID_PREFIX+'input">'+
+							'<input id="'+SCRIPT.ID_PREFIX+'ratio_cry" type="text" value="">'+
+						'</td>'+
+						'<td class="'+SCRIPT.ID_PREFIX+'input">'+
+							'<input id="'+SCRIPT.ID_PREFIX+'ratio_deu" type="text" value="">'+
+						'</td>'+
+					'</tr>'+
+					'<tr class="alt">'+
+						'<td class="'+SCRIPT.ID_PREFIX+'label">'+I18N.IN_EXCH+'</td>'+
+						'<td class="'+SCRIPT.ID_PREFIX+'select">'+
+							'<select id="'+SCRIPT.ID_PREFIX+'output"></select>'+
+						'</td>'+
+						'<td class="'+SCRIPT.ID_PREFIX+'input">'+
+							'<input id="'+SCRIPT.ID_PREFIX+'percent_met" type="text" value="">'+
+						'</td>'+
+						'<td class="'+SCRIPT.ID_PREFIX+'input">'+
+							'<input id="'+SCRIPT.ID_PREFIX+'percent_cry" type="text" value="">'+
+						'</td>'+
+						'<td class="'+SCRIPT.ID_PREFIX+'input">'+
+							'<input id="'+SCRIPT.ID_PREFIX+'percent_deu" type="text" value="">'+
+						'</td>'+
+					'</tr>'+
+					'<tr>'+
+						'<td class="'+SCRIPT.ID_PREFIX+'label" colspan="2">'+I18N.RESULT+'</td>'+
+						'<td class="'+SCRIPT.ID_PREFIX+'output" id="'+SCRIPT.ID_PREFIX+'output_met"></td>'+
+						'<td class="'+SCRIPT.ID_PREFIX+'output" id="'+SCRIPT.ID_PREFIX+'output_cry"></td>'+
+						'<td class="'+SCRIPT.ID_PREFIX+'output" id="'+SCRIPT.ID_PREFIX+'output_deu"></td>'+
+					'</tr>'+
+					'<tr><td colspan="5">&nbsp;</td></tr>'+
+					'<tr class="alt">'+
+						'<td class="'+SCRIPT.ID_PREFIX+'label" colspan="5">'+I18N.PLANET+'</td>'+
+					'</tr>'+
+					'<tr class="alt">'+
+						'<td class="'+SCRIPT.ID_PREFIX+'select1row" colspan="5">'+
+							'<select id="'+SCRIPT.ID_PREFIX+'planet"></select>'+
+						'</td>'+
+					'</tr>'+
+					'<tr><td colspan="5">&nbsp;</td></tr><tr class="alt">'+
+						'<td class="'+SCRIPT.ID_PREFIX+'label" colspan="5">'+I18N.MESSAGE+'</td>'+
+					'</tr>'+
+					'<tr class="alt">'+
+						'<td class="'+SCRIPT.ID_PREFIX+'textarea" colspan="5">'+
+							'<textarea id="'+SCRIPT.ID_PREFIX+'message" cols="1" rows="1" readonly="readonly"></textarea>'+
+						'</td>'+
+					'</tr>'+
+				'</tbody>'+
+				'</table>'+
+			'</div>'+
+			'<div id="'+SCRIPT.ID_PREFIX+'footer"></div>'+
+		'</div>',
+		/*! [/TPL] */
+	
+	MENUBUTTON_TPL :
+		/*! [TPL=BUTTON] */
+		'<li>'+
+			'<a id="'+SCRIPT.ID_PREFIX+'menubutton" class="menubutton" href="javascript:void(0)" accesskey="" target="_self">'+
+				'<span class="textlabel">'+I18N.MENU+'</span>'+
+			'</a>'+
+		'</li>',
+		/*! [/TPL] */
+	
+	menuButton : null,
+	menuButtonAction : function ()
+	{
+		this.menuButtonAction = function(){}
+		this.makeWindow();
+	},
+	makeMenuButton : function ()
+	{
+		var _this = this;
+		this.menuButton = $(this.MENUBUTTON_TPL).appendTo(
+			$('#menuTableTools')
+		).find(
+			'#'+SCRIPT.ID_PREFIX+'menubutton'
+		).click(
+			function(){_this.menuButtonAction();}
+		);
+		return this;
+	},
+	window    : null,
+	ogameHide : null,
+	isHidden  : true,
 	show: function()
 	{
 		this.isHidden = false;
-		this.ogameContainer.hide();
-		this.scriptContainer.show();
+		this.ogameHide.hide();
+		this.window.show();
 		return this;
 	},
 	hide: function()
 	{
 		this.isHidden = true;
-		this.scriptContainer.hide();
-		this.ogameContainer.show();
+		this.window.hide();
+		this.ogameHide.show();
 		return this;
 	},
 	toggle: function()
 	{
-		if (this.isNotBuilded)
-			return this.build().show();
-		if (this.isHidden)
-			return this.show();
+		if (this.isHidden) return this.show();
 		return this.hide();
 	},
-	menuButton:
-	$(
-		'<a target="_self" accesskey="" href="javascript:void(0)" class="menubutton">'+
-		'<span class="textlabel">'+I18N.MENU+'</span></a>'
-	).appendTo(
-		$('<li/>').appendTo($('#menuTableTools'))
-	),
-	init: function()
+	planet : null,
+	makePlanetSelect : function ()
+	{
+		var _this = this,
+		select = this.window.find('#'+SCRIPT.ID_PREFIX+'planet');
+		this.planetJqo = select;
+		$('<option value="">-</option>').appendTo(select);
+		//<meta name="ogame-planet-coordinates" content="1:421:10"/>
+		var currentPCoord = $('meta[name="ogame-planet-coordinates"]').attr('content').replace(/[^0-9\:]/g,'');
+		//<meta name="ogame-planet-type" content="planet"/>
+		var currentPType = $('meta[name="ogame-planet-type"]').attr('content').toLowerCase().trim();
+		$.each($('#planetList').children('div').get(),function(index,value){
+			var o = $(value), c = o.find('.planet-koords');
+			if (c.get().length==0) return;
+			c = c.text().replace(/[^0-9\:]/g,'');
+			option = $('<option value="planet:'+c+'">['+c+'] '+o.find('.planet-name').text().trim()+'</option>').appendTo(select);
+			if (c==currentPCoord && currentPType=='planet')
+				option.addClass(SCRIPT.ID_PREFIX+'highlight').html(option.html()+' &laquo; '+I18N.CUR_PLA);
+			if (o.find('.moonlink').get().length>0)
+			{
+				option = $('<option value="moon:'+c+'">['+c+'] ('+I18N.MOON+')</option>').appendTo(select).addClass(SCRIPT.ID_PREFIX+'moon');
+				if (c==currentPCoord && currentPType=='moon')
+					option.addClass(SCRIPT.ID_PREFIX+'highlight').html(option.html()+' &laquo; '+I18N.CUR_PLA);
+			}
+		});
+		return select.change(function()
+		{
+			var value = $(this).val().split(':');
+			if (value.length<4)
+				_this.planet = null;
+			else
+				_this.planet =
+				{
+					type   : value.shift(),
+					galaxy : value.shift(),
+					system : value.shift(),
+					planet : value.shift()
+				}
+			_this.onChange();
+		});
+	},
+	action : 'sell',
+	makeActionSelect : function ()
+	{
+		var _this = this,
+		select = this.window.find('#'+SCRIPT.ID_PREFIX+'action');
+		this.actionJqo = select;
+		$('<option value="sell">'+I18N.SELL+'</option>').appendTo(select);
+		$('<option value="buy">'+I18N.BUY+'</option>').appendTo(select);
+		return select.change(function()
+		{
+			_this.action = $(this).val();
+			_this.onChange();
+		});
+	},
+	makeResourceInput : function (type /*met|cry|deu*/,value)
 	{
 		var _this = this;
-		this.menuButton.click(function(){_this.toggle();});
+		var id = 'input'+type.capitalize();
+		var input = this.window.find('#'+SCRIPT.ID_PREFIX+'input_'+type);
+		this[id+'Jqo']=input;
+		var onChange = function()
+		{
+			var value = input.val(),
+			end = value.length - input.caret().end;
+			value = NumberFormat.formatI(value,true);
+			end = Math.max(Math.min(value.length-end,value.length),0);
+			input.val(value).caret(end,end);
+			_this[id] =
+			{
+				num : (value=='') ? 0 : NumberFormat.parseI(value),
+				txt : value
+			}
+			_this.checkOutputSelect();
+			_this.onChange();
+		};
+		input.val(NumberFormat.formatI(value)).focus(
+		function(){
+			if (input.val()=='0')
+				input.val('');
+		}
+		).keyup(onChange).change(onChange).blur(
+		function()
+		{
+			if (input.val()=='') input.val('0');
+		});
+		this[id] =
+		{
+			num : value,
+			txt : input.val()
+		}
+		return input;
+	},
+	makeRatioOption : function (ratio,title)
+	{
+		return $(
+			'<option value="'+
+			ratio[0]+':'+
+			ratio[1]+':'+
+			ratio[2]+
+			'">'+
+			NumberFormat.formatF(ratio[0])+':'+
+			NumberFormat.formatF(ratio[1])+':'+
+			NumberFormat.formatF(ratio[2])+
+			' ('+title+')</option>'
+		);
+	},
+	setRatioComponent : function (type,value)
+	{
+		var num = parseFloat(value+''),
+		id = 'ratio'+type.capitalize();
+		this[id] =
+		{
+			num : num,
+			txt : NumberFormat.formatF(num)
+		}
+		this[id+'Jqo'].val(this[id].txt);
+	},
+	makeRatioSelect : function ()
+	{
+		var _this = this,
+		select = this.window.find('#'+SCRIPT.ID_PREFIX+'ratio').append(
+			$('<option value="">-</option>')
+		).append(
+			this.makeRatioOption(INFO.RAT_REG, I18N.REG)
+		).append(
+			this.makeRatioOption(INFO.RAT_MIN, I18N.MIN)
+		).append(
+			this.makeRatioOption(INFO.RAT_MAX, I18N.MAX)
+		);
+		return select.change(function()
+		{
+			var value = $(this).val().split(':');
+			if (value.length>2)
+			{
+				_this.setRatioComponent('met',value[0]);
+				_this.setRatioComponent('cry',value[1]);
+				_this.setRatioComponent('deu',value[2]);
+				$(this).val('');
+				_this.checkRatio();
+				_this.onChange();
+			}
+		});
+	},
+	makeRatioInput: function (type /*met|cry|deu*/,value)
+	{
+		var _this = this;
+		var id = 'ratio'+type.capitalize();
+		var input = this.window.find('#'+SCRIPT.ID_PREFIX+'ratio_'+type);
+		this[id+'Jqo']=input;
+		var onChange = function()
+		{
+			var o = $(this),
+			value = o.val(),
+			end = value.length - o.caret().end;
+			value = NumberFormat.formatF(o.val(),true);
+			end = Math.max(Math.min(value.length-end,value.length),0);
+			o.val(value).caret(end,end);
+			num = NumberFormat.parseF(value);
+			if (num>0)
+			{
+				_this[id] =
+				{
+					num : num,
+					txt : NumberFormat.formatF(num)
+				}
+				_this.checkRatio();
+				_this.onChange();
+			}
+		};
+		input.val(NumberFormat.formatF(value));
+		input.keyup(onChange).change(onChange).blur(function()
+		{
+			var o = $(this),
+			value = NumberFormat.formatF(o.val());
+			if (NumberFormat.parseF(value)==0)
+			{
+				o.val(_this[id].txt);
+			}
+		}).focus(function(){
+			$(this).val('');
+		});
+		this[id] =
+		{
+			num : value,
+			txt : input.val()
+		}
+		return input;
+	},
+	checkRatio : function()
+	{
+		if (ratioChecker.isLegal(
+			this.ratioMet.num,
+			this.ratioCry.num,
+			this.ratioDeu.num
+		))
+			this.ratioIllegal.hide();
+		else
+			this.ratioIllegal.show();
+	},
+	disable : function (jqo,value)
+	{
+		jqo.attr('disabled','disabled').prop('disabled', true);
+		if (arguments.length>1) jqo.val(value);
 		return this;
+	},
+	enable : function (jqo,value)
+	{
+		jqo.prop("disabled", false).removeAttr('disabled');
+		if (arguments.length>1) jqo.val(value);
+		return this;
+	},
+	isDisabled : function (jqo)
+	{
+		return (jqo.attr('disabled')=='disabled');
+	},
+	makePercentInput : function (type /*met|cry|deu*/,value)
+	{
+		var _this = this;
+		var id = 'percent'+type.capitalize();
+		var input = this.window.find('#'+SCRIPT.ID_PREFIX+'percent_'+type);
+		this[id+'Jqo']=input;
+		var onChange = function()
+		{
+			var value = input.val(),
+			end = value.length - input.caret().end,
+			otherId = 'percentMet',
+			num;
+			if (NumberFormat.parseF(value)>100)
+				value = '100';
+			value = NumberFormat.formatF(value,true);
+			end = Math.max(Math.min(value.length-end,value.length),0);
+			input.val(value).caret(end,end);
+			num = (value=='') ? 0 : NumberFormat.parseF(value);
+			_this[id] = {
+				num : num,
+				txt : NumberFormat.formatF(num)+'%'
+			}
+			if (/Met|Cry/.test(id)&&(!_this.isDisabled(_this.percentDeuJqo)))
+				otherId = 'percentDeu'
+			else if (/Met|Deu/.test(id)&&(!_this.isDisabled(_this.percentCryJqo)))
+				otherId = 'percentCry'
+			num = 100-num;
+			value = NumberFormat.formatF(num)+'%'
+			_this[otherId+'Jqo'].val(value);
+			_this[otherId] = {
+				num : num,
+				txt : value+'%'
+			}
+			_this.onChange();
+		};
+		this.disable(input,NumberFormat.formatF(value)+'%');
+		input.focus(
+		function(){
+			if (_this.isDisabled(input)) return;
+			/*input.val(input.val().replace('%',''));
+			if (NumberFormat.parseF(input.val())==0)
+				input.val('');*/
+			input.val('');
+			onChange();
+		}
+		).keyup(onChange).change(onChange).blur(
+		function()
+		{
+			input.val(NumberFormat.formatF(input.val())+'%');
+		});
+		this[id]=
+		{
+			num : value,
+			txt : input.val()
+		}
+		return input;
+	},
+	checkOutputSelect : function ()
+	{
+		var sel = this.outputJqo.val(),
+		im = (this.inputMet.num>0),
+		ic = (this.inputCry.num>0),
+		id = (this.inputDeu.num>0),
+		om = /m/.test(sel),
+		oc = /c/.test(sel),
+		od = /d/.test(sel);
+		if (!im && !ic && id && !om && !oc && od)
+			this.changeOutputSelect('mc');
+		else if (!im && ic && !id && !om && oc && !od)
+			this.changeOutputSelect('md');
+		else if (im && !ic && !id && om && !oc && !od)
+			this.changeOutputSelect('cd');
+		else if ((!im && ic && id) || om && ((ic && oc) || (id && od)))
+			this.changeOutputSelect('m');
+		else if ((im && !ic && id) || oc && ((im && om) || (id && od)))
+			this.changeOutputSelect('c');
+		else if ((im && ic && !id) || od && ((im && om) || (ic && oc)))
+			this.changeOutputSelect('d');
+	},
+	changeOutputSelect : function (value)
+	{
+		this.outputJqo.val(value);
+		m = this.percentMetJqo,
+		c = this.percentCryJqo,
+		d = this.percentDeuJqo;
+		this.disable(m,'0%').disable(c,'0%').disable(d,'0%');
+		if (value=='m') m.val('100%');
+		else if (value=='c') c.val('100%');
+		else if (value=='d') d.val('100%');
+		else if (value=='mc') this.enable(m,'50%').enable(c,'50%');
+		else if (value=='md') this.enable(m,'50%').enable(d,'50%');
+		else this.enable(c,'50%').enable(d,'50%');
+		this.percentMet = {txt : m.val(), num : parseInt(m.val().replace('%',''))}
+		this.percentCry = {txt : c.val(), num : parseInt(c.val().replace('%',''))}
+		this.percentDeu = {txt : d.val(), num : parseInt(d.val().replace('%',''))}
+	},
+	makeOutputSelect : function ()
+	{
+		var _this = this,
+		select = this.window.find('#'+SCRIPT.ID_PREFIX+'output');
+		this.outputJqo = select;
+		$('<option value="m">'+I18N.RES_MET+'</option>').appendTo(select);
+		$('<option value="c">'+I18N.RES_CRY+'</option>').appendTo(select);
+		$('<option value="d">'+I18N.RES_DEU+'</option>').appendTo(select);
+		$('<option value="mc">'+I18N.RES_MET+' + '+I18N.RES_CRY+'</option>').appendTo(select);
+		$('<option value="md">'+I18N.RES_MET+' + '+I18N.RES_DEU+'</option>').appendTo(select);
+		$('<option value="cd">'+I18N.RES_CRY+' + '+I18N.RES_DEU+'</option>').appendTo(select);
+		select.change(function()
+		{
+			_this.changeOutputSelect($(this).val());
+			_this.onChange();
+		});
+		return this;
+	},
+	makeWindow : function ()
+	{
+		var _this = this, w;
+		this.ogameHide = $('#inhalt').after(w=(this.window=$(this.WINDOW_TPL).hide()));
+		this.addCss(this.CSS).show();
+		this.closeButton = w.find('#'+SCRIPT.ID_PREFIX+'close').click(function(){_this.hide();});
+		this.makeActionSelect();
+		this.makeResourceInput('met',0);
+		this.makeResourceInput('cry',0);
+		this.makeResourceInput('deu',0);
+		this.ratioIllegal = w.find('#'+SCRIPT.ID_PREFIX+'ratio_illegal').hide();
+		this.makeRatioSelect();
+		this.makeRatioInput('met',3);
+		this.makeRatioInput('cry',2);
+		this.makeRatioInput('deu',1);
+		this.makeOutputSelect();
+		this.makePercentInput('met',100);
+		this.makePercentInput('cry',0);
+		this.makePercentInput('deu',0);
+		this.outputMet = w.find('#'+SCRIPT.ID_PREFIX+'output_met').text(0);
+		this.outputCry = w.find('#'+SCRIPT.ID_PREFIX+'output_cry').text(0);
+		this.outputDeu = w.find('#'+SCRIPT.ID_PREFIX+'output_deu').text(0);
+		this.makePlanetSelect();
+		this.outputMessage = w.find('#'+SCRIPT.ID_PREFIX+'message');
+		this.menuButtonAction = function(){_this.toggle();}
+		return this;
+	},
+	onChange : function()
+	{
+		var out = calc(
+			this.inputMet.num,
+			this.inputCry.num,
+			this.inputDeu.num,
+			this.ratioMet.num,
+			this.ratioCry.num,
+			this.ratioDeu.num,
+			this.percentMet.num,
+			this.percentCry.num,
+			this.percentDeu.num
+		);
+		this.outputMet.text(NumberFormat.formatI(out.met));
+		this.outputCry.text(NumberFormat.formatI(out.cry));
+		this.outputDeu.text(NumberFormat.formatI(out.deu));
+		this.outputMessage.text(messageMaker.make(
+			this.action,
+			{
+				met : this.inputMet.txt,
+				cry : this.inputCry.txt,
+				deu : this.inputDeu.txt,
+			},
+			{
+				met : this.outputMet.text(),
+				cry : this.outputCry.text(),
+				deu : this.outputDeu.text(),
+			},
+			{
+				met : this.ratioMet.txt,
+				cry : this.ratioCry.txt,
+				deu : this.ratioDeu.txt,
+			},
+			this.planet
+		));
+	},
+	init : function ()
+	{
+		return this.makeMenuButton();
 	}
 }
 ).init();
-
 
 /////
 })();
