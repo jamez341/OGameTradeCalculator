@@ -215,7 +215,6 @@ var I18N =
 	SELL    : 'I sell',
 	RATIO   : 'Ratio',
 	ILLEGAL : 'illegal',
-	CUSTOM  : 'Custom',
 	IN_EXCH : 'In exchange for',
 	RESULT  : 'Result',
 	MESSAGE : 'Message',
@@ -239,7 +238,6 @@ var I18N =
 	SELL    : 'Vendo',
 	RATIO   : 'Ratio',
 	ILLEGAL : 'ilegal',
-	CUSTOM  : 'Personalizado',
 	IN_EXCH : 'A cambio de',
 	RESULT  : 'Resultado',
 	MESSAGE : 'Mensaje',
@@ -445,8 +443,7 @@ var messageMaker =
 				M : re.test(output.met),
 				C : re.test(output.cry),
 				D : re.test(output.deu),
-				w : (where!=null),
-				p : (where==null) ? false : (where.type=='planet')
+				w : (where!=null)
 			}
 		);
 		out = out.replaceMap({
