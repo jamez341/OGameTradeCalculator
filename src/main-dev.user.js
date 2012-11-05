@@ -4,7 +4,7 @@
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version        2
+// @version        2.1
 // @include        *://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
@@ -13,9 +13,10 @@
 
 var SCRIPT =
 {
-	ID_PREFIX : "o_trade_calc_",
-	NAME      : "OGame Trade Calculator",
-	SHOW_URL  : "http://userscripts.org/scripts/show/151002"
+	ID_PREFIX : 'o_trade_calc_',
+	NAME      : 'OGame Trade Calculator',
+	HOME_URL  : 'http://userscripts.org/scripts/show/151002',
+	TESTED_OGAME_VERSION : '5.2.0-beta1'
 }
 
 var win = window, doc, $;
@@ -23,6 +24,10 @@ try{if (unsafeWindow) win = unsafeWindow;}
 catch(e){}
 doc = win.document;
 $ = win.jQuery;
+
+$.getScript('/cdn/js/greasemonkey/version-check.js', function() {
+	win.oGameVersionCheck(SCRIPT.NAME, SCRIPT.TESTED_OGAME_VERSION, SCRIPT.HOME_URL);
+});
 
 /*! jCaret (C) 2010 C. F. Wong | cloudgen.w0ng.hk | www.opensource.org/licenses/mit-license.php */
 (function($,len,createRange,duplicate){
@@ -369,7 +374,7 @@ var messageMaker =
 		"{?D}[b][color={COLOR.DEU}]{D}[/color][/b] ({I18N.RES_DEU}){/D}"+
 		"\n\n[b]* {I18N.RATIO}:[/b] {rm}:{rc}:{rd}"+
 		"{?w}\n[b]* {I18N.WHERE}:[/b] {wg}:{ws}:{wp} ({wt}){/w}"+
-		"\n\n[b][url={SCRIPT.SHOW_URL}]{SCRIPT.NAME}[/url][/b]",
+		"\n\n[b][url={SCRIPT.HOME_URL}]{SCRIPT.NAME}[/url][/b]",
 		/*! [/TPL] */
 	
 	parseIf : function (tpl,srch,keep)
