@@ -4,7 +4,7 @@
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version        2.1
+// @version        2.1.2
 // @include        *://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
@@ -1127,7 +1127,7 @@ var iface =
 		this.outputCry = w.find('#'+SCRIPT.ID_PREFIX+'output_cry').text(0);
 		this.outputDeu = w.find('#'+SCRIPT.ID_PREFIX+'output_deu').text(0);
 		this.makePlanetSelect();
-		this.outputMessage = w.find('#'+SCRIPT.ID_PREFIX+'message');
+		this.outputMessage = w.find('#'+SCRIPT.ID_PREFIX+'message').click(function(){$(this).select();});
 		this.menuButtonAction = function(){_this.toggle();}
 		return this;
 	},
