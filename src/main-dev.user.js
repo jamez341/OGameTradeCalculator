@@ -4,16 +4,17 @@
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version        2.1.2
+// @version        2.2
 // @include        *://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
 (function(){
 ////////////
 
-var SCRIPT =
+var IDP,
+SCRIPT =
 {
-	ID_PREFIX : 'o_trade_calc_',
+	ID_PREFIX : (IDP='o_trade_calc_'),
 	NAME      : 'OGame Trade Calculator',
 	HOME_URL  : 'http://userscripts.org/scripts/show/151002',
 	TESTED_OGAME_VERSION : '5.2.0-beta1'
@@ -135,18 +136,18 @@ String.prototype.replaceMap = function (replaceMap)
 		return this.recursiveReplaceMap(org,rep,count-1);
 }
 
-String.prototype.capitalize = function() {
+String.prototype.capitalize = function()
+{
 	return this.charAt(0).toUpperCase() + this.slice(1);
+}
+
+String.prototype.trim = function()
+{
+	return this.replace(/^\s+/,'').replace(/\s+$/,'');
 }
 
 var INFO =
 ({
-	info :
-	{
-		RAT_MAX : [5,3,1],
-		RAT_REG : [3,2,1],
-		RAT_MIN : [2,1.5,1]
-	},
 	getMeta : function (name,def)
 	{
 		try {
@@ -177,11 +178,12 @@ var INFO =
 	},
 	init : function()
 	{
-		this.info.LANGUAGE = this.getMeta('ogame-language','');
-		this.info.RES_MET = this.getResource('metal_box');
-		this.info.RES_CRY = this.getResource('crystal_box');
-		this.info.RES_DEU = this.getResource('deuterium_box');
-		return this.info;
+		return {
+			LANGUAGE : this.getMeta('ogame-language',''),
+			RES_MET  : this.getResource('metal_box'),
+			RES_CRY  : this.getResource('crystal_box'),
+			RES_DEU  : this.getResource('deuterium_box')
+		}
 	}
 }
 ).init();
@@ -208,7 +210,7 @@ var I18N =
 		return this;
 	}
 }
-/*! [i18n=EN] */
+/*! [i18n=en] */
 ).set(/.*/,
 {
 	THO_SEP : ',',
@@ -229,9 +231,22 @@ var I18N =
 	CUR_PLA : 'Current planet',
 	MAX     : 'Maximum',
 	REG     : 'Regular',
-	MIN     : 'Minimum'
+	MIN     : 'Minimum',
+	RAT_LST : 'Ratio list',
+	NAME    : 'Name',
+	LEGAL   : 'Legal',
+	YES     : 'Yes',
+	NO      : 'No',
+	DEFAULT : 'Default',
+	NEW     : 'New',
+//	IE_CONF : 'Import / Export configuration',
+//	IMPORT  : 'Import',
+//	EXPORT  : 'Export',
+	ACCEPT  : 'Accept',
+	CANCEL  : 'Cancel',
+	RES_DEF : 'Restore default settings'
 }
-/*! [i18n=ES] */
+/*! [i18n=es] */
 ).set(/es|ar|mx/,
 {
 	THO_SEP : '.',
@@ -252,22 +267,640 @@ var I18N =
 	CUR_PLA : 'Planeta actual',
 	MAX     : 'Máximo',
 	REG     : 'Normal',
-	MIN     : 'Mínimo'
+	MIN     : 'Mínimo',
+	RAT_LST : 'Lista de ratios',
+	NAME    : 'Nombre',
+	LEGAL   : 'Legal',
+	YES     : 'Si',
+	NO      : 'No',
+	DEFAULT : 'Por defecto',
+	NEW     : 'Nuevo',
+//	IE_CONF : 'Importar / Exportar configuración',
+//	IMPORT  : 'Importar',
+//	EXPORT  : 'Exportar',
+	ACCEPT  : 'Aceptar',
+	CANCEL  : 'Cancelar',
+	RES_DEF : 'Restaurar ajustes por defecto'
 }
 /*! [/i18n] */
 ).text;
+
+var TPL =
+{
+	/*! [css] */
+	CSS :
+		"#"+IDP+"window{"+
+			"float:left;"+
+			"position:relative;"+
+			"width:670px;"+
+			"overflow:visible;"+
+			"z-index:2;"+
+		"}"+
+		"#galaxy #"+IDP+"window{"+
+			"top:-44px;"+
+		"}"+
+		"#"+IDP+"header{"+
+			"height:28px;"+
+			"position: relative;"+
+			"background: url(\"http://gf1.geo.gfsrv.net/cdn63/10e31cd5234445e4084558ea3506ea.gif\") no-repeat scroll 0px 0px transparent;"+
+		"}"+
+		"#"+IDP+"header h4{"+
+			"height:28px;"+
+			"line-height:28px;"+
+			"text-align:center;"+
+			"color:#6F9FC8;"+
+			"font-size:12px;"+
+			"font-weight:bold;"+
+			"position:absolute;"+
+			"top:0;left:100px;right:100px;"+
+		"}"+
+		"#"+IDP+"config_but{"+
+			'display:block;'+
+			'height:16px;'+
+			'width:16px;'+
+			'background:url(http://gf3.geo.gfsrv.net/cdne7/1f57d944fff38ee51d49c027f574ef.gif);'+
+			'float:right;'+
+			'margin:8px 0 0 0;'+
+			'opacity:0.5;'+
+		"}"+
+		"#"+IDP+"config_but:hover{"+
+			'opacity:1;'+
+		"}"+
+		"#"+IDP+"window.config input[type=\"button\"]{"+
+			'margin:0 5px 0 5px;'+
+		"}"+
+		"#"+IDP+"window.config #"+IDP+"config_but{"+
+			'display:none;'+
+		"}"+
+		"#"+IDP+"config,"+
+		"#"+IDP+"window.config #"+IDP+"calc{"+
+			'display:none;'+
+		"}"+
+		"#"+IDP+"window.config #"+IDP+"config{"+
+			'display:block;'+
+		"}"+
+		"#"+IDP+"main{"+
+			"padding:15px 25px 0 25px;"+
+			"background: url(\"http://gf1.geo.gfsrv.net/cdn9e/4f73643e86a952be4aed7fdd61805a.gif\") repeat-y scroll 5px 0px transparent;"+
+		"}"+
+		"#"+IDP+"main *{"+
+			"font-size:11px;"+
+		"}"+
+		"#"+IDP+"window table{"+
+			"width:620px;"+ // 670 [window] - (25+25) [main padding] - 2 [border]
+			"background-color:#0D1014;"+
+			"border-collapse:collapse;"+
+			"clear:both;"+
+		"}"+
+		"#"+IDP+"window.config table{"+
+			"width:598px;"+ // 620 [prev style] - (5+5) [box margin] - (5+5) [box paddding] - 2 [box border]
+		"}"+
+		"#"+IDP+"main th{"+
+			"color:#6F9FC8;"+
+			//"color:#FFF;"+
+			"text-align:center;"+
+			"font-weight:bold;"+
+		"}"+
+		"."+IDP+"label,"+
+		"."+IDP+"label *{"+
+			"color:grey;"+
+			"text-align:left;"+
+		"}"+
+		"."+IDP+"label{"+
+			"padding:0 5px 0 5px;"+
+			"font-weight:bold;"+
+		"}"+
+		"#"+IDP+"window.config ."+IDP+"label{"+
+			"text-align:center;"+
+		"}"+
+		"#"+IDP+"main tr,"+
+		"#"+IDP+"main td,"+
+		"#"+IDP+"main th{"+
+			"height:28px;"+
+			"line-height:28px;"+
+		"}"+
+		"#"+IDP+"main input[type=\"text\"]{"+
+			"width:100px;"+
+			"text-align:center;"+
+		"}"+
+		"option."+IDP+"highlight{"+
+			"color:lime !important;"+
+			"font-weight:bold;"+
+		"}"+
+		"option."+IDP+"moon{"+
+			"color:orange;"+
+		"}"+
+		"."+IDP+"select{"+
+			"width:150px;"+
+			"text-align:left;"+
+		"}"+
+		"."+IDP+"select select{"+
+			"width:130px;"+
+			"text-align:center;"+
+		"}"+
+		"#"+IDP+"main option{"+
+			"padding:1px 5px 1px 5px;"+
+		"}"+
+		"."+IDP+"input{"+
+			"width:112px;"+
+			"padding:0 1px 0 1px;"+
+			"text-align:right;"+
+		"}"+
+		"."+IDP+"name{"+
+			"width:142px;"+
+			"padding:0 1px 0 1px;"+
+			"text-align:right;"+
+		"}"+
+		"#"+IDP+"main ."+IDP+"name input{"+
+			"width:130px;"+
+			"text-align:center;"+
+		"}"+
+		"."+IDP+"ratio{"+
+			"width:82px;"+
+			"padding:0 1px 0 1px;"+
+			"text-align:right;"+
+		"}"+
+		"#"+IDP+"main ."+IDP+"ratio input{"+
+			"width:70px;"+
+			"text-align:center;"+
+		"}"+
+		"#"+IDP+"ratio_illegal{"+
+			"color:red;"+
+		"}"+
+		"."+IDP+"output{"+
+			"width:108px;"+
+			"text-align:center;"+
+			"font-weight:bold;"+
+		"}"+
+		"#"+IDP+"output_met{"+
+			"color:"+COLOR.MET+";"+
+		"}"+
+		"#"+IDP+"output_cry{"+
+			"color:"+COLOR.CRY+";"+
+		"}"+
+		"#"+IDP+"output_deu{"+
+			"color:"+COLOR.DEU+";"+
+		"}"+
+		"."+IDP+"textarea{"+
+			"padding:0 3px 0 3px !important;"+
+		"}"+
+		"#"+IDP+"message{"+
+			"width:601px;"+
+			"height:50px !important;"+
+			"margin:0 !important;"+
+		"}"+
+		"#"+IDP+"planet{"+
+			"width:auto;"+
+			"text-align:left;"+
+			"margin:0;"+
+		"}"+
+		"."+IDP+"select1row select{"+
+			"width:auto;"+
+			"text-align:left;"+
+			"margin:0;"+
+		"}"+
+		"#"+IDP+"footer{"+
+			"height:17px;"+
+			"background: url(\"http://gf1.geo.gfsrv.net/cdn30/aa3e8edec0a2681915b3c9c6795e6f.gif\") no-repeat scroll 2px 0px transparent;"+
+		"}"+
+		"."+IDP+"config_title{"+
+			"font-size:11px;"+
+			"font-weight:bold;"+
+			"color:#6F9FC8;"+
+			"line-height:22px;"+
+			"background:url(\"http://gf1.geo.gfsrv.net/cdn0b/d55059f8c9bab5ebf9e8a3563f26d1.gif\") no-repeat scroll 0 0 #13181D;"+
+			"height:22px;"+
+			"margin:0 0 10px 0;"+
+			"padding:0 0 0 40px;"+ /* (25+15)px :: div+label (OG options) */
+			"border:1px solid #000;"+
+			"overflow:hidden;"+
+			"cursor:pointer;"+
+		"}"+
+		"."+IDP+"config_title:hover{"+
+			"color:#A7AFB7;"+
+			"background-color:#23282D;"+
+			"border-color:#13181D;"+
+		"}"+
+		"."+IDP+"config_box{"+
+			"border:1px solid #000;"+
+			"margin:5px 5px 10px 5px;"+
+			"padding:5px;"+
+		"}"+
+		"#"+IDP+"new_ratio input{"+
+			//"border-color:#0D0;"+
+			"border-color:#9C0;"+
+		"}"+
+		"."+IDP+"check,"+
+		"."+IDP+"name_noedit{"+
+			"text-align:center;"+
+		"}"+
+		"."+IDP+"check input{"+
+			"vertical-align:text-bottom;"+
+		"}"+
+		"."+IDP+"check input[type=\"checkbox\"]{"+
+			"vertical-align:middle;"+
+		"}"+
+		"."+IDP+"action{"+
+			"text-align:center;"+
+			"padding:0 3px 0 3px;"+
+		"}"+
+		"."+IDP+"action a{"+
+			"background:url(\"http://gf1.geo.gfsrv.net/cdn94/297ee218d94064df0a66bd41a04d28.png\") scroll 0 0 no-repeat;"+
+			"width:16px;"+
+			"height:16px;"+
+			"display:inline-block;"+
+			"vertical-align:top;"+
+			"position:relative;"+
+			"top:5px;"+ // (28[line-h] - 18[this-h])/2
+			"border:1px solid #000;"+
+			"border-radius:2px;"+
+			//"margin: 0 0 0 1px;"+
+			'opacity:0.7;'+
+		"}"+
+		"a."+IDP+"icon_up,"+
+		"a."+IDP+"icon_down,"+
+		"a."+IDP+"icon_add{"+
+			"background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAwCAMAAAAvgQplAAAAAXNSR0IArs4c6QAAAvpQTFRFbomeXHaLb4mdgpyveJaxdpSweZKk////W3qXVnKNRWB6AAAANTU1PT09MUJTJzVD/6gAzAAA/9IA/wAAqsrjvtjrna25PlVsTWiCqbjESGF6YHyaOk9ldZOwTWeCPj4+PlRsVHeYRGKBUXCRQVx6VnibTGmFVnmbRWOERWSEXn+chJusPVhzU3SVQ19+TGyKU3aXPVRrTGqHkrHKPVZwUW6KQ2GAU3aZO09lcJCqYHqORV95UW6LTGeBQFlySGB5SmF6Q2B+VnmaUG2JVnSQS2qHSmeCL0RaXHmUU3WVoLzSqcTYQ2GCPFZxPVZxkaa1RWSDPFZyRl96XH2ZTGqGS2qJO1Ru1d7lV3SROk5kQVp0QVpz5erua4OWqLnGpcDUWn2ewMzVlK/EqLbCcY+qj6zESmF3r7zHob3TTGaAlqi2haO9XniNQ115TWiD8vX4k7DGZ4mqyNTdSmaBpcHWcImdjaKynbrRdY6hvMnTSWeHYXyaq7jDV3SQ6+/zo7/Ur8rd8PP1javGhaK82uLmq8bZq7vHh6a+0NrgnLjOhJqqUG+QpL/VsL7JdJOuXnmSytTcj6OxT2qE+Pn7eZm0zCszfZmxhqXBdZGpXHaOS2uKboynr73J4ebrhKO7obLAmLfR+vv9nLfNip+uX3yYXn+bdoyec42gobC9pbS/yNPbYX2aPVRtt8XPmLTLbo2odI2geI2fVHKT2OHo3OLoRGGBRmODkK7HaImkaomka4unjaCw/f7/mbjRXnyXd4+jf5Wmp8HWjq3IiqnEeZOqPlVtVHeXYH2ai6CxYYCbZIKfZn+TTGeDVnWQb5GtVnWRSWWASmWATGuKc5CpusXOU3GQlLPMXHqXUnSUZoSifJq0fJu3ZHyT/v//dpOwqcXZYHqSYnuQ7fDz7PD0XHyYWnaRkKW1TGiFTGmEj6zDYXuPPFdzPVdzrsndhpytVHaYh52uXn6c8PP2jqzFQFt5jKvFcYqeQl99gZ+52uHmRGKAyNTcV3iaqsbZDVW+rgAAAAF0Uk5TAEDm2GYAAAABYktHRACIBR1IAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3AsJFTcNV6u1fQAAAE9JREFUKM/dkjEOACAIA6tL//9jFaORqhtxsBO9CS4AyQXSKwkEpAfkIMgttNh4AUtCALQ/9NGPu4A87/erj/6DD30HBZuPwztsPmIFqY8CjdEFo21taJsAAAAASUVORK5CYII=);"+
+		"}"+
+		"a."+IDP+"icon_down{"+
+			"background-position:0px -16px"+
+		"}"+
+		"a."+IDP+"icon_add{"+
+			"background-position:0px -32px"+
+		"}"+
+		"."+IDP+"action a:hover{"+
+			'opacity:1;'+
+			"border-color:#08090b;"+
+		"}"+
+		"."+IDP+"action a.disabled,"+
+		"."+IDP+"action aldisabled:hover{"+
+			"opacity:0.1;"+
+			"cursor:default;"+
+		"}"+
+		/*"a."+IDP+"icon_checkmark{"+
+			"background-position:0px -608px"+
+		"}"+
+		/*"a."+IDP+"icon_edit{"+
+			"background-position:0px -336px"+
+		"}"+*/
+		"a."+IDP+"icon_trash{"+
+			"background-position:0px -304px"+
+		"}"+
+		"#"+IDP+"window.config .undermark,"+
+		"#"+IDP+"window.config .overmark{"+
+			"font-weight:bold;"+
+			"text-align:center;"+
+		"}"+
+		"#"+IDP+"ie_conf{"+
+			"display:block;"+
+			"width:586px;"+
+			"margin:0 0 5px 0;"+
+		"}"+
+		"."+IDP+"ie_conf{"+
+			"text-align:center"+
+		"}"+
+		"",
+
+	/*! [tpl=window] */
+	WINDOW :
+		'<div id="'+IDP+'window" class="calc">'+
+			'<div id="'+IDP+'header">'+
+				'<h4>'+I18N.TITLE+'</h4>'+
+				'<a id="'+IDP+'close" href="javascript:void(0);" class="close_details close_ressources"></a>'+
+				'<a id="'+IDP+'config_but" href="javascript:void(0);"></a>'+
+			'</div>'+
+			'<div id="'+IDP+'main">'+
+				'<div id="'+IDP+'calc">'+
+					'<table cellspacing="0" cellpadding="0">'+
+					'<tbody>'+
+						'<tr>'+
+							'<th colspan="2"></th>'+
+							'<th>'+I18N.RES_MET+'</th>'+
+							'<th>'+I18N.RES_CRY+'</th>'+
+							'<th>'+I18N.RES_DEU+'</th>'+
+						'</tr>'+
+						'<tr class="alt">'+
+							'<td class="'+IDP+'label">'+I18N.ACTION+'</td>'+
+							'<td class="'+IDP+'select">'+
+								'<select id="'+IDP+'action">'+
+									'<option value="sell">'+I18N.SELL+'</option>'+
+									'<option value="buy">'+I18N.BUY+'</option>'+
+								'</select>'+
+							'</td>'+
+							'<td class="'+IDP+'input">'+
+								'<input id="'+IDP+'input_met" type="text" value="">'+
+							'</td>'+
+							'<td class="'+IDP+'input">'+
+								'<input id="'+IDP+'input_cry" type="text" value="">'+
+							'</td>'+
+							'<td class="'+IDP+'input">'+
+								'<input id="'+IDP+'input_deu" type="text" value="">'+
+							'</td>'+
+						'</tr>'+
+						'<tr>'+
+							'<td class="'+IDP+'label">'+
+								I18N.RATIO+
+								'<span id="'+IDP+'ratio_illegal">'+
+									' ('+I18N.ILLEGAL+')'+
+								'</span>'+
+							'</td>'+
+							'<td class="'+IDP+'select">'+
+								'<select id="'+IDP+'ratio"></select>'+
+							'</td>'+
+							'<td class="'+IDP+'input">'+
+								'<input id="'+IDP+'ratio_met" type="text" value="">'+
+							'</td>'+
+							'<td class="'+IDP+'input">'+
+								'<input id="'+IDP+'ratio_cry" type="text" value="">'+
+							'</td>'+
+							'<td class="'+IDP+'input">'+
+								'<input id="'+IDP+'ratio_deu" type="text" value="">'+
+							'</td>'+
+						'</tr>'+
+						'<tr class="alt">'+
+							'<td class="'+IDP+'label">'+I18N.IN_EXCH+'</td>'+
+							'<td class="'+IDP+'select">'+
+								'<select id="'+IDP+'output">'+
+									'<option value="m">'+I18N.RES_MET+'</option>'+
+									'<option value="c">'+I18N.RES_CRY+'</option>'+
+									'<option value="d">'+I18N.RES_DEU+'</option>'+
+									'<option value="mc">'+I18N.RES_MET+' + '+I18N.RES_CRY+'</option>'+
+									'<option value="md">'+I18N.RES_MET+' + '+I18N.RES_DEU+'</option>'+
+									'<option value="cd">'+I18N.RES_CRY+' + '+I18N.RES_DEU+'</option>'+
+								'</select>'+
+							'</td>'+
+							'<td class="'+IDP+'input">'+
+								'<input id="'+IDP+'percent_met" type="text" value="">'+
+							'</td>'+
+							'<td class="'+IDP+'input">'+
+								'<input id="'+IDP+'percent_cry" type="text" value="">'+
+							'</td>'+
+							'<td class="'+IDP+'input">'+
+								'<input id="'+IDP+'percent_deu" type="text" value="">'+
+							'</td>'+
+						'</tr>'+
+						'<tr>'+
+							'<td class="'+IDP+'label" colspan="2">'+I18N.RESULT+'</td>'+
+							'<td class="'+IDP+'output" id="'+IDP+'output_met"></td>'+
+							'<td class="'+IDP+'output" id="'+IDP+'output_cry"></td>'+
+							'<td class="'+IDP+'output" id="'+IDP+'output_deu"></td>'+
+						'</tr>'+
+						'<tr><td colspan="5">&nbsp;</td></tr>'+
+						'<tr class="alt">'+
+							'<td class="'+IDP+'label" colspan="5">'+I18N.PLANET+'</td>'+
+						'</tr>'+
+						'<tr class="alt">'+
+							'<td class="'+IDP+'select1row" colspan="5">'+
+								'<select id="'+IDP+'planet"></select>'+
+							'</td>'+
+						'</tr>'+
+						'<tr><td colspan="5">&nbsp;</td></tr><tr class="alt">'+
+							'<td class="'+IDP+'label" colspan="5">'+I18N.MESSAGE+'</td>'+
+						'</tr>'+
+						'<tr class="alt">'+
+							'<td class="'+IDP+'textarea" colspan="5">'+
+								'<textarea id="'+IDP+'message" cols="1" rows="1" readonly="readonly"></textarea>'+
+							'</td>'+
+						'</tr>'+
+					'</tbody>'+
+					'</table>'+
+				'</div>'+
+				'<div id="'+IDP+'config">'+
+					'<div class="'+IDP+'config_title">'+I18N.RAT_LST+'</div>'+
+					'<div class="'+IDP+'config_box">'+
+						'<table cellspacing="0" cellpadding="0">'+
+						'<tbody id="'+IDP+'ratio_list">'+
+							'<tr>'+
+								'<th>#</th>'+
+								'<th>'+I18N.NAME+'</th>'+
+								'<th>'+I18N.RES_MET+'</th>'+
+								'<th>'+I18N.RES_CRY+'</th>'+
+								'<th>'+I18N.RES_DEU+'</th>'+
+								'<th>'+I18N.ACTION+'</th>'+
+								'<th>'+I18N.LEGAL+'</th>'+
+								'<th>'+I18N.DEFAULT+'</th>'+
+							'</tr>'+
+						'</tbody>'+
+						'</table>'+
+					'</div>'+
+					/*'<div class="'+IDP+'config_title">Valores por defecto</div>'+
+					'<div class="'+IDP+'config_title">Plantilla de mensaje</div>'+*/
+					/*'<div class="'+IDP+'config_title">'+I18N.IE_CONF+'</div>'+
+					'<div class="'+IDP+'config_box '+IDP+'ie_conf">'+
+						'<textarea id="'+IDP+'ie_conf"></textarea>'+
+						'<input id="'+IDP+'ie_import" type="button" value="'+I18N.IMPORT+'" class="btn_blue">'+
+						'<input id="'+IDP+'ie_export" type="button" value="'+I18N.EXPORT+'" class="btn_blue">'+
+						'<input id="'+IDP+'ie_default" type="button" value="'+I18N.DEFAULT+'" class="btn_blue">'+
+					'</div>'+
+					*/
+					'<div class="textCenter">'+
+						'<input id="'+IDP+'config_accept" type="button" value="'+I18N.ACCEPT+'" class="btn_blue">'+
+						'<input id="'+IDP+'config_cancel" type="button" value="'+I18N.CANCEL+'" class="btn_blue">'+
+						'<input id="'+IDP+'config_default" type="button" value="'+I18N.RES_DEF+'" class="btn_blue">'+
+					'</div>'+
+				'</div>'+
+			'</div>'+
+			'<div id="'+IDP+'footer"></div>'+
+		'</div>',
+	
+	/*! [tpl=button] */
+	MENUBUTTON :
+		'<li>'+
+			'<a id="'+IDP+'menubutton" class="menubutton" href="javascript:void(0)" accesskey="" target="_self">'+
+				'<span class="textlabel">'+I18N.MENU+'</span>'+
+			'</a>'+
+		'</li>',
+	
+	/*! [tpl=ratio_list_limit] */
+	RATIO_LIST_LIMIT :
+		'<tr>'+
+			'<td class="'+IDP+'label '+IDP+'pos"></td>'+
+			'<td class="'+IDP+'name_noedit"></td>'+
+			'<td class="'+IDP+'ratio">'+
+				'<input class="'+IDP+'edit_ratio_met" type="text" />'+
+			'</td>'+
+			'<td class="'+IDP+'ratio">'+
+				'<input class="'+IDP+'edit_ratio_cry" type="text" />'+
+			'</td>'+
+			'<td class="'+IDP+'ratio">'+
+				'<input class="'+IDP+'edit_ratio_deu" type="text" />'+
+			'</td>'+
+			'<td class="'+IDP+'action">'+
+				'<a href="javascript:void(0)" class="'+IDP+'icon_up"></a>'+
+				'<a href="javascript:void(0)" class="'+IDP+'icon_down"></a>'+
+				'<a href="javascript:void(0)" class="'+IDP+'icon_trash disabled"></a>'+
+			'</td>'+
+			'<td class="'+IDP+'label">-</td>'+
+			'<td class="'+IDP+'check">'+
+				'<input name="'+IDP+'def_ratio" type="radio" />'+
+			'</td>'+
+		'</tr>',
+	
+	/*! [tpl=ratio_list_item] */
+	RATIO_LIST_ITEM :
+		'<tr>'+
+			'<td class="'+IDP+'label '+IDP+'pos"></td>'+
+			'<td class="'+IDP+'name">'+
+				'<input class="'+IDP+'edit_ratio_name" type="text" />'+
+			'</td>'+
+			'<td class="'+IDP+'ratio">'+
+				'<input class="'+IDP+'edit_ratio_met" type="text" />'+
+			'</td>'+
+			'<td class="'+IDP+'ratio">'+
+				'<input class="'+IDP+'edit_ratio_cry" type="text" />'+
+			'</td>'+
+			'<td class="'+IDP+'ratio">'+
+				'<input class="'+IDP+'edit_ratio_deu" type="text" />'+
+			'</td>'+
+			'<td class="'+IDP+'action">'+
+				'<a href="javascript:void(0)" class="'+IDP+'icon_up"></a>'+
+				'<a href="javascript:void(0)" class="'+IDP+'icon_down"></a>'+
+				'<a href="javascript:void(0)" class="'+IDP+'icon_trash"></a>'+
+			'</td>'+
+			'<td class="'+IDP+'legal"></td>'+
+			'<td class="'+IDP+'check">'+
+				'<input name="'+IDP+'def_ratio" type="radio" />'+
+			'</td>'+
+		'</tr>',
+	
+	/*! [tpl=ratio_list_new] */
+	RATIO_LIST_NEW :
+		'<tr id="'+IDP+'new_ratio">'+
+			'<td class="undermark '+IDP+'pos"></td>'+
+			'<td class="'+IDP+'name">'+
+				'<input class="'+IDP+'edit_ratio_name" type="text" />'+
+			'</td>'+
+			'<td class="'+IDP+'ratio">'+
+				'<input class="'+IDP+'edit_ratio_met" type="text" />'+
+			'</td>'+
+			'<td class="'+IDP+'ratio">'+
+				'<input class="'+IDP+'edit_ratio_cry" type="text" />'+
+			'</td>'+
+			'<td class="'+IDP+'ratio">'+
+				'<input class="'+IDP+'edit_ratio_deu" type="text" />'+
+			'</td>'+
+			'<td class="'+IDP+'action">'+
+				'<a href="javascript:void(0)" class="'+IDP+'icon_add"></a>'+
+			'</td>'+
+			'<td class="'+IDP+'legal"></td>'+
+			'<td class="'+IDP+'label">-</td>'+
+		'</tr>',
+	/*! [/tpl] */
+}
+
+var DEFAULT_RATIOS = (function()
+{
+	var uni = $('meta[name="ogame-universe"]').attr('content');
+	/*! [default_ratios] */
+	return /^\w+\.ogame\.org$/.test(uni)
+		? [3,2,1,2,1,1,3,2,1]
+		: [5,3,1,2,1.5,1,3,2,1];
+	/*! [/default_ratios] */
+}
+)();
+
+var utime = function()
+{
+	return (new Date()).getTime();
+}
+
+var doNothing = function(){}
+
+var config =
+{
+	DEFAULT_DATA :
+	{
+		/*! [config=default] */
+		defAction : 'sell',
+		ratioList :
+		[
+			{id:'MAX', ratio:[DEFAULT_RATIOS[0],DEFAULT_RATIOS[1],DEFAULT_RATIOS[2]]},
+			{id:'MIN', ratio:[DEFAULT_RATIOS[3],DEFAULT_RATIOS[4],DEFAULT_RATIOS[5]]},
+			{id:'REG', ratio:[DEFAULT_RATIOS[6],DEFAULT_RATIOS[7],DEFAULT_RATIOS[8]]}
+		],
+		defRatio    : 'REG',
+		defOutput   : 'm',
+		millionAbb  : 'M',
+		millionKey  : 'm',
+		thousandAbb : 'K',
+		thousandKey : 'k',
+		abb         : false,
+		overUnabb   : false,
+		messageTpl  :
+			"[b]{?b}{I18N.BUY}{/b}{?s}{I18N.SELL}{/s}:[/b] "+
+			"{?m}[b][color={COLOR.MET}]{m}[/color][/b] ({I18N.RES_MET}){?cd} + {/cd}{/m}"+
+			"{?c}[b][color={COLOR.CRY}]{c}[/color][/b] ({I18N.RES_CRY}){?d} + {/d}{/c}"+
+			"{?d}[b][color={COLOR.DEU}]{d}[/color][/b] ({I18N.RES_DEU}){/d}"+
+			"\n[b]{I18N.IN_EXCH}:[/b] "+
+			"{?M}[b][color={COLOR.MET}]{M}[/color][/b] ({I18N.RES_MET}){?CD} + {/CD}{/M}"+
+			"{?C}[b][color={COLOR.CRY}]{C}[/color][/b] ({I18N.RES_CRY}){?D} + {/D}{/C}"+
+			"{?D}[b][color={COLOR.DEU}]{D}[/color][/b] ({I18N.RES_DEU}){/D}"+
+			"\n\n[b]* {I18N.RATIO}:[/b] {rm}:{rc}:{rd}"+
+			"{?w}\n[b]* {I18N.WHERE}:[/b] {wg}:{ws}:{wp} ({wt}){/w}"+
+			"\n\n[b][url={SCRIPT.HOME_URL}]{SCRIPT.NAME}[/url][/b]"
+		/*! [/config] */
+	},
+	getRatio : function (index)
+	{
+		var item = this.data.ratioList[index],
+		id = item.id+'',
+		name,
+		ratio = item.ratio.slice(0);
+		if ('name' in item)
+			name = item.name+'';
+		else
+			name = I18N[id];
+		return {
+			id    : id,
+			ratio : ratio,
+			name  : name,
+			val   : id+':'+ratio[0]+':'+ratio[1]+':'+ratio[2],
+			met   : ratio[0],
+			cry   : ratio[1],
+			deu   : ratio[2]
+		}
+	},
+	getRatioById : function (id)
+	{
+		var i,list=this.data.ratioList;
+		for (i in list)
+			if (list[i].id==id)
+				return this.getRatio(i);
+		return null;
+	},
+	save : function(data)
+	{
+		if (arguments.length>0) this.set(data);
+		win.localStorage.setItem(IDP+'config', JSON.stringify(this.data));
+		return this;
+	},
+	load : function()
+	{
+		var data = win.localStorage.getItem(IDP+'config');
+		if (data==null)
+			this.data = this.DEFAULT_DATA;
+		else
+			this.data = JSON.parse(data);
+		return this;
+	},
+	remove : function()
+	{
+		win.localStorage.removeItem(IDP+'config');
+		this.data = this.DEFAULT_DATA;
+	}
+}
 
 var NumberFormat =
 {
 	formatI : function (n,writing)
 	{
-		if(arguments.length>1 && writing && n=='') return '';
-		var nStr;
+		var nStr, w = (arguments.length>1 && writing);
+		if (w && n=='') return '';
 		if (typeof(n)=='string')
 			nStr = ('0'+n+'').replace(
-				/[kK]$/,'000' // last char is k|K => multiply by 1 thousand
+				new RegExp(config.data.thousandKey+'$','i'), '000'
 			).replace(
-				/[mM]$/,'000000' // last char is m|M => multiply by 1 million
+				new RegExp(config.data.millionKey+'$','i'), '000000'
 			).replace(
 				/\D/g,'' // delete NaN chars
 			).replace(
@@ -279,12 +912,19 @@ var NumberFormat =
 		while (rgx.test(nStr)) {
 			nStr = nStr.replace(rgx, '$1' + I18N.THO_SEP + '$2');
 		}
+		if (!w && config.data.abb) return nStr.replace(
+			/\D000\D000$/, config.data.millionAbb
+		).replace(
+			/\D(\d*[1-9]+)0*\D000$/, I18N.DEC_SEP+'$1'+config.data.millionAbb
+		).replace(
+			/\D000$/, config.data.thousandAbb
+		);
 		return nStr;
 	},
 	formatF : function (n,writing)
 	{
-		if(arguments.length>1 && writing && n=='') return '';
-		var nStr, x, x1, x2;
+		var nStr, x, x1, x2, w = (arguments.length>1 && writing);
+		if (w && n=='') return '';
 		if (typeof(n)=='string')
 			nStr = ('0'+n+'').replace(
 				/[\.\,]$/,I18N.DEC_SEP // allow .|, as decimal separator (if last char)
@@ -299,7 +939,7 @@ var NumberFormat =
 		x = nStr.split(I18N.DEC_SEP);
 		x1 = x[0];
 		x2 = x.length > 1 ? I18N.DEC_SEP + x[1] : '';
-		if (nStr[nStr.length-1]==I18N.DEC_SEP && arguments.length>1 && writing) x2 = I18N.DEC_SEP;
+		if (nStr[nStr.length-1]==I18N.DEC_SEP && w) x2 = I18N.DEC_SEP;
 		var rgx = /(\d+)(\d{3})/;
 		while (rgx.test(x1)) {
 			x1 = x1.replace(rgx, '$1' + I18N.THO_SEP + '$2');
@@ -308,16 +948,27 @@ var NumberFormat =
 	},
 	parseI : function (n)
 	{
-		return parseInt(n.split(I18N.THO_SEP).join(''));
+		var num = NumberFormat.parseF(n);
+		if (new RegExp(config.data.thousandAbb+'$','i').test(n))
+			num = num*1000;
+		else if (new RegExp(config.data.millionAbb+'$','i').test(n))
+			num = num*1000000;
+		return Math.round(num);
 	},
 	parseF : function (n)
 	{
-		return parseFloat(n.split(I18N.THO_SEP).join('').replace(I18N.DEC_SEP,'.'));
+		return parseFloat(n.replaceAll(I18N.THO_SEP,'').replace(I18N.DEC_SEP,'.').replace(/[^\d\.]/g,''));
 	}
 }
 
-var ratioChecker =
-({
+var RatioChecker = function()
+{
+	if (arguments.length<1) this.setLimits();
+	else if (arguments.length<2) this.setLimits(arguments[0]);
+	else this.setLimits(arguments[0],arguments[1]);
+}
+RatioChecker.prototype =
+{
 	limits : [], // order: m/c-min, m/c-max, m/d-min, m/d-max, c/d-min, c/d-max
 	isLegal : function ()
 	{
@@ -332,8 +983,19 @@ var ratioChecker =
 		if (rat<this.limits[i++] || rat>this.limits[i++]) return false;
 		return true;
 	},
-	init : function (limit1, limit2)
+	setLimits : function (limit1, limit2)
 	{
+		if (arguments.length<2)
+		{
+			var mx,mn,i,list = config.data.ratioList;
+			if (arguments.length>0) list = limit1;
+			for (i in list)
+			{
+				if      (list[i].id=='MAX') mx = list[i].ratio;
+				else if (list[i].id=='MIN') mn = list[i].ratio;
+			}
+			return this.setLimits(mx,mn);
+		}
 		this.limits = [];
 		var r1 = limit1[0]/limit1[1], r2 = limit2[0]/limit2[1];
 		this.limits.push(Math.min(r1,r2));
@@ -347,8 +1009,7 @@ var ratioChecker =
 		return this;
 	}
 }
-).init(INFO.RAT_MIN,INFO.RAT_MAX);
-delete ratioChecker.init;
+var calcRatioChecker, confRatioChecker;
 
 var calc = function (met,cry,deu,rMet,rCry,rDeu,pMet,pCry,pDeu)
 {
@@ -361,22 +1022,7 @@ var calc = function (met,cry,deu,rMet,rCry,rDeu,pMet,pCry,pDeu)
 }
 
 var messageMaker =
-({
-	DEFAULT_TPL :
-		/*! [TPL=MESSAGE] */
-		"[b]{?b}{I18N.BUY}{/b}{?s}{I18N.SELL}{/s}:[/b] "+
-		"{?m}[b][color={COLOR.MET}]{m}[/color][/b] ({I18N.RES_MET}){?cd} + {/cd}{/m}"+
-		"{?c}[b][color={COLOR.CRY}]{c}[/color][/b] ({I18N.RES_CRY}){?d} + {/d}{/c}"+
-		"{?d}[b][color={COLOR.DEU}]{d}[/color][/b] ({I18N.RES_DEU}){/d}"+
-		"\n[b]{I18N.IN_EXCH}:[/b] "+
-		"{?M}[b][color={COLOR.MET}]{M}[/color][/b] ({I18N.RES_MET}){?CD} + {/CD}{/M}"+
-		"{?C}[b][color={COLOR.CRY}]{C}[/color][/b] ({I18N.RES_CRY}){?D} + {/D}{/C}"+
-		"{?D}[b][color={COLOR.DEU}]{D}[/color][/b] ({I18N.RES_DEU}){/D}"+
-		"\n\n[b]* {I18N.RATIO}:[/b] {rm}:{rc}:{rd}"+
-		"{?w}\n[b]* {I18N.WHERE}:[/b] {wg}:{ws}:{wp} ({wt}){/w}"+
-		"\n\n[b][url={SCRIPT.HOME_URL}]{SCRIPT.NAME}[/url][/b]",
-		/*! [/TPL] */
-	
+{
 	parseIf : function (tpl,srch,keep)
 	{
 		var st = '{?'+srch+'}', nd = '{/'+srch+'}';
@@ -434,11 +1080,11 @@ var messageMaker =
 		}
 		return out;
 	},
-	make : function (action,input,output,ratio,where)
+	make : function (action,input,output,ratio,planet)
 	{
 		var i, re = /[1-9]/,
 		out = this.parseIfs(
-			this.tpl,
+			config.data.messageTpl,
 			{
 				b : (action=='buy'),
 				s : (action=='sell'),
@@ -448,7 +1094,7 @@ var messageMaker =
 				M : re.test(output.met),
 				C : re.test(output.cry),
 				D : re.test(output.deu),
-				w : (where!=null)
+				w : planet.use
 			}
 		);
 		out = out.replaceMap({
@@ -461,10 +1107,10 @@ var messageMaker =
 			'{rm}' : ratio.met,
 			'{rc}' : ratio.cry,
 			'{rd}' : ratio.deu,
-			'{wg}' : (where==null) ? '' : where.galaxy,
-			'{ws}' : (where==null) ? '' : where.system,
-			'{wp}' : (where==null) ? '' : where.planet,
-			'{wt}' : (where==null) ? '' : '{I18N.'+(where.type+'').toUpperCase()+'}'
+			'{wg}' : planet.galaxy,
+			'{ws}' : planet.system,
+			'{wp}' : planet.planet,
+			'{wt}' : planet.use ? '{I18N.'+(planet.type+'').toUpperCase()+'}' : 0
 		});
 		for (i in I18N)
 			out = out.replaceAll('{I18N.'+i+'}',I18N[i]);
@@ -473,146 +1119,455 @@ var messageMaker =
 		for (i in COLOR)
 			out = out.replaceAll('{COLOR.'+i+'}',COLOR[i]);
 		return out;
-	},
-	init : function()
+	}
+}
+
+var Input = function (jqo,value)
+{
+	this.jqo = jqo;
+	if (arguments.length>1) this.set(value);
+}
+
+Input.prototype =
+{
+	set : function (value)
 	{
-		this.tpl = this.DEFAULT_TPL;
+		this.jqo.val(value);
+		return this;
+	},
+	disable : function ()
+	{
+		this.jqo.attr('disabled','disabled').prop('disabled', true);
+		return this;
+	},
+	enable : function ()
+	{
+		this.jqo.prop("disabled", false).removeAttr('disabled');
+		return this;
+	},
+	isDisabled : function ()
+	{
+		return (this.jqo.attr('disabled')=='disabled');
+	}
+}
+
+/*
+	type is 'float', 'integer' or 'percent' (only the first char is used)
+*/
+var NumberInput = function (jqo,value,type,clearOnFocus/*[,allow0][,onChange]*/)
+{
+	var _this = this, input = (this.jqo = jqo), _onChange, _type = type;
+	this.allow0 = true;
+	this.focused = false;
+	this.onChange = doNothing;
+	this.clearOnFocus = clearOnFocus;
+	_type = type.substring(0,1).toUpperCase();
+	if (this.typePercent=(_type=='P')) _type = 'F';
+	this.formatFunc = NumberFormat['format'+_type];
+	this.parseFunc  = NumberFormat['parse' +_type];
+	if (arguments.length > 4)
+	{
+		if (arguments.length > 5)
+		{
+			this.allow0 = arguments[4];
+			this.onChange = arguments[5];
+		}
+		else
+			if (typeof(arguments[4])=='function') this.onChange = arguments[4];
+			else this.allow0 = (arguments[4]&&true);
+	}
+	this.set(value);
+	_onChange = function()
+	{
+		var o = _this.jqo,
+		value = o.val(),
+		caret = o.caret(),
+		len   = value.length,
+		start = len - caret.start,
+		end   = len - caret.end;
+		value = _this.formatFunc(o.val(),true);
+		len   = value.length;
+		start = Math.max(Math.min(len-start,len),0);
+		end   = Math.max(Math.min(len-end,len),0);
+		num   = (value=='') ? 0 : _this.parseFunc(value);
+		if (_this.allow0 || num>0)
+			_this.set(value,true).onChange(_this);
+		o.caret(start,end);
+	};
+	input.keyup(function(e){
+		// avoid weird stuff on tab navigation
+		if (!(/^9|16$/.test(e.which+''))) _onChange();
+	}).change(_onChange).blur(function()
+	{
+		_this.set(_this.num); // force reformat
+		//$(this).val(_this.txt);
+		_this.focused = false;
+	}).focus(function()
+	{
+		_this.focused = true;
+		var o = $(this);
+		if (_this.clearOnFocus||_this.num==0) o.val('');
+		else
+		{
+			var caret = o.caret(), len = o.val().length;
+			o.val(_this.formatFunc(_this.num,true));
+			if (caret.end==len)
+				if (caret.start==len)
+					caret.start=(--caret.end);
+				else
+					caret.end--;
+			len = o.val().length;
+			o.caret(
+				Math.min(Math.max(0,caret.start),len),
+				Math.min(Math.max(0,caret.end),len)
+			);
+		}
+	}).mouseenter(function()
+	{
+		if(config.data.overUnabb && !(_this.typePercent||_this.focused||_this.clearOnFocus))
+		{
+			var o = _this.jqo;
+			o.val(_this.formatFunc(_this.num,true));
+			if (o.val()=='') o.val(0);
+		}
+	}).mouseleave(function()
+	{
+		if(config.data.overUnabb && !(_this.typePercent||_this.focused||_this.clearOnFocus))
+			_this.jqo.val(_this.txt);
+	});
+}
+
+NumberInput.prototype = $.extend(true,{},Input.prototype,
+{
+	set : function (value,writing)
+	{
+		var txt, w = (arguments.length>1 && writing);
+		if (typeof(value)=='string')
+		{
+			txt = (value+'').replace(/\%$/,'');
+			this.num = (txt=='') ? 0 : this.parseFunc(txt);
+			this.txt = this.formatFunc(this.num)+(this.typePercent?'%':'');
+		}
+		else
+		{
+			this.num = value;
+			this.txt = (txt=this.formatFunc(value))+(this.typePercent?'%':'');
+		}
+		this.jqo.val(w?txt:this.txt);
+		return this;
+	}
+});
+
+PlanetSelect = function(jqo,onChange)
+{
+	var _this = this,
+	select = (this.jqo=jqo);
+	this.onChange = onChange;
+	select.change(function()
+	{
+		_this.set().onChange();
+	});
+	$('<option value="">-</option>').appendTo(select);
+	//<meta name="ogame-planet-coordinates" content="1:421:10"/>
+	var currentPCoord = $('meta[name="ogame-planet-coordinates"]').attr('content').replace(/[^0-9\:]/g,'');
+	//<meta name="ogame-planet-type" content="planet"/>
+	var currentPType = $('meta[name="ogame-planet-type"]').attr('content').toLowerCase().trim();
+	$.each($('#planetList').children('div').get(),function(index,value){
+		var o = $(value), c = o.find('.planet-koords');
+		if (c.get().length==0) return;
+		c = c.text().replace(/[^0-9\:]/g,'');
+		option = $('<option value="planet:'+c+'">['+c+'] '+o.find('.planet-name').text().trim()+'</option>').appendTo(select);
+		if (c==currentPCoord && currentPType=='planet')
+			option.addClass(IDP+'highlight').html(option.html()+' &laquo; '+I18N.CUR_PLA);
+		if (o.find('.moonlink').get().length>0)
+		{
+			option = $('<option value="moon:'+c+'">['+c+'] ('+I18N.MOON+')</option>').appendTo(select).addClass(IDP+'moon');
+			if (c==currentPCoord && currentPType=='moon')
+				option.addClass(IDP+'highlight').html(option.html()+' &laquo; '+I18N.CUR_PLA);
+		}
+	});
+}
+
+PlanetSelect.prototype =
+{
+	use  : false,
+	type : 0,
+	galaxy : 0,
+	system : 0,
+	planet : 0,
+	set : function (v)
+	{
+		var value = ((arguments.length>0) ? v : this.jqo.val()).split(':');
+		if (value.length<4)
+			this.use = false;
+		else
+		{
+			this.use    = true;
+			this.type   = value.shift();
+			this.galaxy = value.shift();
+			this.system = value.shift();
+			this.planet = value.shift();
+		}
 		return this;
 	}
 }
-).init();
+
+var RatioListItem = function(list,pos,info)
+{
+	var i,aux,_this = this,ratio;
+	if (arguments.length>2)
+	{
+		this.isNew = false;
+		this.name = ('name' in info)
+			? info.name
+			: (info.id == 'MAX')
+				? I18N.MAX
+				: (info.id == 'MIN')
+					? I18N.MIN
+					: I18N.REG;
+	
+		this.id  = info.id;
+		ratio = info.ratio;
+	}
+	else
+	{
+		this.isNew = true;
+		this.name = '*'+I18N.NEW;
+		ratio = config.getRatioById(config.data.defRatio).ratio;
+	}
+	this.list = list;
+	
+	if (this.isLimit = /^MIN|MAX$/.test(this.id))
+	{
+		this.jqo = $(TPL.RATIO_LIST_LIMIT).appendTo(list.jqo);
+		this.jqo.find('.'+IDP+'name_noedit').text(this.name);
+	}
+	else
+	{
+		this.jqo = $(this.isNew ? TPL.RATIO_LIST_NEW : TPL.RATIO_LIST_ITEM).appendTo(list.jqo);
+		this.nameInput = this.jqo.find('.'+IDP+'edit_ratio_name');
+		this.nameInput.change(function()
+			{_this.name = _this.nameInput.val().trim();}
+		).keyup(function()
+			{_this.nameInput.change();}
+		).val(this.name);
+	}
+	
+	this.posLabel = this.jqo.find('.'+IDP+'pos');
+	this.setPos(pos);
+	
+	aux = ['met','cry','deu'];
+	for (i in aux)
+		this[aux[i]+'Input'] = new NumberInput(
+			this.jqo.find('.'+IDP+'edit_ratio_'+aux[i]), // jQuery object
+			ratio[i], // value
+			'f',   // type : f = float
+			true,  // clearOnFocus
+			false, // allow0
+			function(){ // onChange
+				_this.list.onChange();
+			}
+		);
+	
+	this.addButton = this.jqo.find('.'+IDP+'icon_add').click(function()
+	{
+		var list = _this.list,
+		newItem = new RatioListItem(list,_this.pos,_this.getInfo());
+		newItem.disableDown().jqo.after(_this.jqo);
+		list.list[_this.pos] = newItem;
+		list.list[_this.pos-1].enableDown();
+		_this.nameInput.val(_this.name = '*'+I18N.NEW);
+		_this.setPos(++_this.pos);
+	});
+	
+	this.upButton = this.jqo.find('.'+IDP+'icon_up').click(function(){
+		_this.move(true);
+	});
+	this.upDisabled = false;
+	this.downButton = this.jqo.find('.'+IDP+'icon_down').click(function(){
+		_this.move(false);
+	});
+	this.downDisabled = false;
+	this.trashButton = this.jqo.find('.'+IDP+'icon_trash');
+	if (this.isLimit)
+		this.trashButton.addClass('disabled');
+	else
+		this.trashButton.click(function()
+		{
+			_this.remove();
+		});
+	this.radio = this.jqo.find('input[name="'+IDP+'def_ratio"]').click(function()
+	{
+		_this.list.defRatio = _this.id;
+	});
+	if (list.defRatio == this.id)
+		this.radio.click();
+		
+	this.legal = this.jqo.find('.'+IDP+'legal');
+}
+
+RatioListItem.prototype =
+{
+	getInfo : function()
+	{
+		var _this = this, info =
+		{
+			id : _this.isNew ? utime() : _this.id,
+			ratio : [
+				_this.metInput.num,
+				_this.cryInput.num,
+				_this.deuInput.num
+			]
+		}
+		if (!_this.isLimit) info.name = _this.name;
+		return info;
+	},
+	move : function (up)
+	{
+		var target,aux;
+		if (up)
+		{
+			if (this.upDisabled) return this;
+			target = this.list.list[this.pos-1];
+			this.jqo.after(target.jqo);
+		}
+		else
+		{
+			if (this.downDisabled) return this;
+			target = this.list.list[this.pos+1];
+			target.jqo.after(this.jqo);
+		}
+		aux = this.pos;
+		this.setPos(target.pos);
+		target.setPos(aux);
+		aux = target.upDisabled;
+		if (this.upDisabled) target.disableUp(); else target.enableUp();
+		if (aux) this.disableUp(); else this.enableUp();
+		aux = target.downDisabled;
+		if (this.downDisabled) target.disableDown(); else target.enableDown();
+		if (aux) this.disableDown(); else this.enableDown();
+		this.list.sortList();
+	},
+	remove : function()
+	{
+		var i,aux=[],list=this.list.list,newItem=this.list.newItem;
+		this.jqo.remove();
+		list.splice(this.pos,1);
+		for (i=0; i<list.length; i++)
+			aux[i]=(list[i].setPos(i));
+		this.list.list = aux;
+		if(this.list.defRatio==this.id)
+			aux[0].radio.click();
+		if(this.downDisabled)
+			aux[aux.length-1].disableDown();
+		if(this.upDisabled)
+			aux[0].disableUp();
+		newItem.setPos(newItem.pos-1);
+	},
+	enableUp : function()
+	{
+		this.upDisabled = false;
+		this.upButton.removeClass('disabled');
+		return this;
+	},
+	enableDown : function()
+	{
+		this.downDisabled = false;
+		this.downButton.removeClass('disabled');
+		return this;
+	},
+	disableUp : function()
+	{
+		this.upDisabled = true;
+		this.upButton.addClass('disabled');
+		return this;
+	},
+	disableDown : function()
+	{
+		this.downDisabled = true;
+		this.downButton.addClass('disabled');
+		return this;
+	},
+	setLegal : function(isLegal)
+	{
+		if (isLegal)
+			this.legal.text(I18N.YES).addClass('undermark').removeClass('overmark');
+		else
+			this.legal.text(I18N.NO).addClass('overmark').removeClass('undermark');
+		return this;
+	},
+	setPos : function(pos)
+	{
+		if (pos%2==0) this.jqo.addClass('alt');
+		else this.jqo.removeClass('alt');
+		this.pos = pos;
+		this.posLabel.html(this.isNew ? '+' : pos+1);
+		return this;
+	}
+}
+
+var ratioList =
+{
+	list : [],
+	limits : [],
+	clear : function ()
+	{
+		for (var i in this.list) this.list[i].jqo.remove();
+		this.list = (this.limits = []);
+		try{this.newItem.jqo.remove();}catch(e){}
+	},
+	sortList : function ()
+	{
+		this.list.sort(function(a,b){return a.pos-b.pos;});
+	},
+	build : function ()
+	{
+		var i, item;
+		this.clear();
+		this.defRatio = config.data.defRatio;
+		for (i=0; i<config.data.ratioList.length; i++)
+		{
+			item = new RatioListItem(this,i,config.data.ratioList[i]);
+			this.list[i]=item;
+			if (item.isLimit) this.limits[this.limits.length]=item;
+		}
+		var len = this.list.length;
+		this.newItem = new RatioListItem(this,len);
+		this.list[0].disableUp();
+		this.list[len-1].disableDown();
+		this.onChange();
+	},
+	updateData : function ()
+	{
+		config.data.ratioList = [];
+		for (var i in this.list)
+			config.data.ratioList[i] = this.list[i].getInfo();
+		config.data.defRatio = this.defRatio;
+	},
+	onChangeItem : function (item)
+	{
+		if (!item.isLimit)
+			item.setLegal(confRatioChecker.isLegal(item.getInfo().ratio));
+	},
+	onChange : function()
+	{
+		confRatioChecker.setLimits(
+			this.limits[0].getInfo().ratio,
+			this.limits[1].getInfo().ratio
+		);
+		for (var i=0; i<this.list.length; i++)
+			this.onChangeItem(this.list[i]);
+		this.onChangeItem(this.newItem);
+	},
+	init : function (jqo)
+	{
+		this.jqo = jqo;
+		this.build();
+	}
+}
 
 var iface =
 ({
-	CSS :
-		/*! [CSS] */
-		"#"+SCRIPT.ID_PREFIX+"window{"+
-			"float:left;"+
-			"position:relative;"+
-			"width:670px;"+
-			"overflow:visible;"+
-			"z-index:2;"+
-		"}"+
-		"#galaxy #"+SCRIPT.ID_PREFIX+"window{"+
-			"top:-44px;"+
-		"}"+
-		"#"+SCRIPT.ID_PREFIX+"header{"+
-			"height:28px;"+
-			"position: relative;"+
-			"background: url(\"http://gf1.geo.gfsrv.net/cdn63/10e31cd5234445e4084558ea3506ea.gif\") no-repeat scroll 0px 0px transparent;"+
-		"}"+
-		"#"+SCRIPT.ID_PREFIX+"header h4{"+
-			"height:28px;"+
-			"line-height:28px;"+
-			"text-align:center;"+
-			"color:#6F9FC8;"+
-			"font-size:12px;"+
-			"font-weight:bold;"+
-			"position:absolute;"+
-			"top:0;left:60px;right:60px;"+
-		"}"+
-		"#"+SCRIPT.ID_PREFIX+"main{"+
-			"padding:15px 25px 0 25px;"+
-			"background: url(\"http://gf1.geo.gfsrv.net/cdn9e/4f73643e86a952be4aed7fdd61805a.gif\") repeat-y scroll 5px 0px transparent;"+
-		"}"+
-		"#"+SCRIPT.ID_PREFIX+"main *{"+
-			"font-size:11px;"+
-		"}"+
-		"#"+SCRIPT.ID_PREFIX+"main table{"+
-			"width:620px;"+ // 670 [window] - (25+25) [main padding] - 2 [border]
-			"background-color:#0D1014;"+
-			"border-collapse:collapse;"+
-			"clear:both;"+
-		"}"+
-		"#"+SCRIPT.ID_PREFIX+"main th{"+
-			"color:#FFF;"+
-			"text-align:center;"+
-			"font-weight:bold;"+
-		"}"+
-		"."+SCRIPT.ID_PREFIX+"label,"+
-		"."+SCRIPT.ID_PREFIX+"label *{"+
-			"color:grey;"+
-			"text-align:left;"+
-		"}"+
-		"."+SCRIPT.ID_PREFIX+"label{"+
-			"padding:0 0 0 5px;"+
-			"font-weight:bold;"+
-		"}"+
-		"#"+SCRIPT.ID_PREFIX+"main tr,"+
-		"#"+SCRIPT.ID_PREFIX+"main td,"+
-		"#"+SCRIPT.ID_PREFIX+"main th{"+
-			"height:28px;"+
-			"line-height:28px;"+
-		"}"+
-		"#"+SCRIPT.ID_PREFIX+"main input[type=\"text\"]{"+
-			"width:100px;"+
-			"text-align:center;"+
-		"}"+
-		"option."+SCRIPT.ID_PREFIX+"highlight{"+
-			"color:lime !important;"+
-			"font-weight:bold;"+
-		"}"+
-		"option."+SCRIPT.ID_PREFIX+"moon{"+
-			"color:orange;"+
-		"}"+
-		"."+SCRIPT.ID_PREFIX+"select{"+
-			"width:150px;"+
-			"text-align:left;"+
-		"}"+
-		"."+SCRIPT.ID_PREFIX+"select select{"+
-			"width:130px;"+
-			"text-align:center;"+
-		"}"+
-		"#"+SCRIPT.ID_PREFIX+"main option{"+
-			"padding:1px 5px 1px 5px;"+
-		"}"+
-		"."+SCRIPT.ID_PREFIX+"input{"+
-			"width:112px;"+
-			"padding:0 1px 0 1px;"+
-			"text-align:right;"+
-		"}"+
-		"#"+SCRIPT.ID_PREFIX+"ratio_illegal{"+
-			"color:red;"+
-		"}"+
-		"."+SCRIPT.ID_PREFIX+"output{"+
-			"width:108px;"+
-			"text-align:center;"+
-			"font-weight:bold;"+
-		"}"+
-		"#"+SCRIPT.ID_PREFIX+"output_met{"+
-			"color:"+COLOR.MET+";"+
-		"}"+
-		"#"+SCRIPT.ID_PREFIX+"output_cry{"+
-			"color:"+COLOR.CRY+";"+
-		"}"+
-		"#"+SCRIPT.ID_PREFIX+"output_deu{"+
-			"color:"+COLOR.DEU+";"+
-		"}"+
-		"."+SCRIPT.ID_PREFIX+"textarea{"+
-			"padding:0 3px 0 3px !important;"+
-		"}"+
-		"#"+SCRIPT.ID_PREFIX+"message{"+
-			"width:601px;"+
-			"height:50px !important;"+
-			"margin:0 !important;"+
-		"}"+
-		"#"+SCRIPT.ID_PREFIX+"planet{"+
-			"width:auto;"+
-			"text-align:left;"+
-			"margin:0;"+
-		"}"+
-		"."+SCRIPT.ID_PREFIX+"select1row select{"+
-			"width:auto;"+
-			"text-align:left;"+
-			"margin:0;"+
-		"}"+
-		"#"+SCRIPT.ID_PREFIX+"footer{"+
-			"height:17px;"+
-			"background: url(\"http://gf1.geo.gfsrv.net/cdn30/aa3e8edec0a2681915b3c9c6795e6f.gif\") no-repeat scroll 2px 0px transparent;"+
-		"}"+
-		"",
-		/*! [/CSS] */
-
 	addCss : function (text)
 	{
 		var el = doc.createElement('style');
@@ -628,112 +1583,6 @@ var iface =
 		
 		return this;
 	},
-
-	WINDOW_TPL :
-		/*! [TPL=WINDOW] */
-		'<div id="'+SCRIPT.ID_PREFIX+'window">'+
-			'<div id="'+SCRIPT.ID_PREFIX+'header">'+
-				'<h4>'+I18N.TITLE+'</h4>'+
-				'<a id="'+SCRIPT.ID_PREFIX+'close" href="javascript:void(0);" class="close_details close_ressources"></a>'+
-			'</div>'+
-			'<div id="'+SCRIPT.ID_PREFIX+'main">'+
-				'<table cellspacing="0" cellpadding="0">'+
-				'<tbody>'+
-					'<tr>'+
-						'<th colspan="2"></th>'+
-						'<th>'+I18N.RES_MET+'</th>'+
-						'<th>'+I18N.RES_CRY+'</th>'+
-						'<th>'+I18N.RES_DEU+'</th>'+
-					'</tr>'+
-					'<tr class="alt">'+
-						'<td class="'+SCRIPT.ID_PREFIX+'label">'+I18N.ACTION+'</td>'+
-						'<td class="'+SCRIPT.ID_PREFIX+'select">'+
-							'<select id="'+SCRIPT.ID_PREFIX+'action"></select>'+
-						'</td>'+
-						'<td class="'+SCRIPT.ID_PREFIX+'input">'+
-							'<input id="'+SCRIPT.ID_PREFIX+'input_met" type="text" value="">'+
-						'</td>'+
-						'<td class="'+SCRIPT.ID_PREFIX+'input">'+
-							'<input id="'+SCRIPT.ID_PREFIX+'input_cry" type="text" value="">'+
-						'</td>'+
-						'<td class="'+SCRIPT.ID_PREFIX+'input">'+
-							'<input id="'+SCRIPT.ID_PREFIX+'input_deu" type="text" value="">'+
-						'</td>'+
-					'</tr>'+
-					'<tr>'+
-						'<td class="'+SCRIPT.ID_PREFIX+'label">'+
-							I18N.RATIO+
-							'<span id="'+SCRIPT.ID_PREFIX+'ratio_illegal">'+
-								' ('+I18N.ILLEGAL+')'+
-							'</span>'+
-						'</td>'+
-						'<td class="'+SCRIPT.ID_PREFIX+'select">'+
-							'<select id="'+SCRIPT.ID_PREFIX+'ratio"></select>'+
-						'</td>'+
-						'<td class="'+SCRIPT.ID_PREFIX+'input">'+
-							'<input id="'+SCRIPT.ID_PREFIX+'ratio_met" type="text" value="">'+
-						'</td>'+
-						'<td class="'+SCRIPT.ID_PREFIX+'input">'+
-							'<input id="'+SCRIPT.ID_PREFIX+'ratio_cry" type="text" value="">'+
-						'</td>'+
-						'<td class="'+SCRIPT.ID_PREFIX+'input">'+
-							'<input id="'+SCRIPT.ID_PREFIX+'ratio_deu" type="text" value="">'+
-						'</td>'+
-					'</tr>'+
-					'<tr class="alt">'+
-						'<td class="'+SCRIPT.ID_PREFIX+'label">'+I18N.IN_EXCH+'</td>'+
-						'<td class="'+SCRIPT.ID_PREFIX+'select">'+
-							'<select id="'+SCRIPT.ID_PREFIX+'output"></select>'+
-						'</td>'+
-						'<td class="'+SCRIPT.ID_PREFIX+'input">'+
-							'<input id="'+SCRIPT.ID_PREFIX+'percent_met" type="text" value="">'+
-						'</td>'+
-						'<td class="'+SCRIPT.ID_PREFIX+'input">'+
-							'<input id="'+SCRIPT.ID_PREFIX+'percent_cry" type="text" value="">'+
-						'</td>'+
-						'<td class="'+SCRIPT.ID_PREFIX+'input">'+
-							'<input id="'+SCRIPT.ID_PREFIX+'percent_deu" type="text" value="">'+
-						'</td>'+
-					'</tr>'+
-					'<tr>'+
-						'<td class="'+SCRIPT.ID_PREFIX+'label" colspan="2">'+I18N.RESULT+'</td>'+
-						'<td class="'+SCRIPT.ID_PREFIX+'output" id="'+SCRIPT.ID_PREFIX+'output_met"></td>'+
-						'<td class="'+SCRIPT.ID_PREFIX+'output" id="'+SCRIPT.ID_PREFIX+'output_cry"></td>'+
-						'<td class="'+SCRIPT.ID_PREFIX+'output" id="'+SCRIPT.ID_PREFIX+'output_deu"></td>'+
-					'</tr>'+
-					'<tr><td colspan="5">&nbsp;</td></tr>'+
-					'<tr class="alt">'+
-						'<td class="'+SCRIPT.ID_PREFIX+'label" colspan="5">'+I18N.PLANET+'</td>'+
-					'</tr>'+
-					'<tr class="alt">'+
-						'<td class="'+SCRIPT.ID_PREFIX+'select1row" colspan="5">'+
-							'<select id="'+SCRIPT.ID_PREFIX+'planet"></select>'+
-						'</td>'+
-					'</tr>'+
-					'<tr><td colspan="5">&nbsp;</td></tr><tr class="alt">'+
-						'<td class="'+SCRIPT.ID_PREFIX+'label" colspan="5">'+I18N.MESSAGE+'</td>'+
-					'</tr>'+
-					'<tr class="alt">'+
-						'<td class="'+SCRIPT.ID_PREFIX+'textarea" colspan="5">'+
-							'<textarea id="'+SCRIPT.ID_PREFIX+'message" cols="1" rows="1" readonly="readonly"></textarea>'+
-						'</td>'+
-					'</tr>'+
-				'</tbody>'+
-				'</table>'+
-			'</div>'+
-			'<div id="'+SCRIPT.ID_PREFIX+'footer"></div>'+
-		'</div>',
-		/*! [/TPL] */
-	
-	MENUBUTTON_TPL :
-		/*! [TPL=BUTTON] */
-		'<li>'+
-			'<a id="'+SCRIPT.ID_PREFIX+'menubutton" class="menubutton" href="javascript:void(0)" accesskey="" target="_self">'+
-				'<span class="textlabel">'+I18N.MENU+'</span>'+
-			'</a>'+
-		'</li>',
-		/*! [/TPL] */
-	
 	menuButton : null,
 	menuButtonAction : function ()
 	{
@@ -743,10 +1592,10 @@ var iface =
 	makeMenuButton : function ()
 	{
 		var _this = this;
-		this.menuButton = $(this.MENUBUTTON_TPL).appendTo(
+		this.menuButton = $(TPL.MENUBUTTON).appendTo(
 			$('#menuTableTools')
 		).find(
-			'#'+SCRIPT.ID_PREFIX+'menubutton'
+			'#'+IDP+'menubutton'
 		).click(
 			function(){_this.menuButtonAction();}
 		);
@@ -774,198 +1623,94 @@ var iface =
 		if (this.isHidden) return this.show();
 		return this.hide();
 	},
-	planet : null,
 	makePlanetSelect : function ()
 	{
-		var _this = this,
-		select = this.window.find('#'+SCRIPT.ID_PREFIX+'planet');
-		this.planetJqo = select;
-		$('<option value="">-</option>').appendTo(select);
-		//<meta name="ogame-planet-coordinates" content="1:421:10"/>
-		var currentPCoord = $('meta[name="ogame-planet-coordinates"]').attr('content').replace(/[^0-9\:]/g,'');
-		//<meta name="ogame-planet-type" content="planet"/>
-		var currentPType = $('meta[name="ogame-planet-type"]').attr('content').toLowerCase().trim();
-		$.each($('#planetList').children('div').get(),function(index,value){
-			var o = $(value), c = o.find('.planet-koords');
-			if (c.get().length==0) return;
-			c = c.text().replace(/[^0-9\:]/g,'');
-			option = $('<option value="planet:'+c+'">['+c+'] '+o.find('.planet-name').text().trim()+'</option>').appendTo(select);
-			if (c==currentPCoord && currentPType=='planet')
-				option.addClass(SCRIPT.ID_PREFIX+'highlight').html(option.html()+' &laquo; '+I18N.CUR_PLA);
-			if (o.find('.moonlink').get().length>0)
-			{
-				option = $('<option value="moon:'+c+'">['+c+'] ('+I18N.MOON+')</option>').appendTo(select).addClass(SCRIPT.ID_PREFIX+'moon');
-				if (c==currentPCoord && currentPType=='moon')
-					option.addClass(SCRIPT.ID_PREFIX+'highlight').html(option.html()+' &laquo; '+I18N.CUR_PLA);
-			}
-		});
-		return select.change(function()
-		{
-			var value = $(this).val().split(':');
-			if (value.length<4)
-				_this.planet = null;
-			else
-				_this.planet =
-				{
-					type   : value.shift(),
-					galaxy : value.shift(),
-					system : value.shift(),
-					planet : value.shift()
-				}
-			_this.onChange();
-		});
+		var _this = this;
+		this.planet = new PlanetSelect(
+			this.window.find('#'+IDP+'planet'),
+			function(){_this.onChange();}
+		);
+		return this;
 	},
-	action : 'sell',
 	makeActionSelect : function ()
 	{
-		var _this = this,
-		select = this.window.find('#'+SCRIPT.ID_PREFIX+'action');
-		this.actionJqo = select;
-		$('<option value="sell">'+I18N.SELL+'</option>').appendTo(select);
-		$('<option value="buy">'+I18N.BUY+'</option>').appendTo(select);
-		return select.change(function()
+		var _this = this;
+		this.actionJqo = this.window.find('#'+IDP+'action').change(function()
 		{
 			_this.action = $(this).val();
 			_this.onChange();
-		});
+		}
+		).val(this.action=config.data.defAction);
+		return this;
 	},
 	makeResourceInput : function (type /*met|cry|deu*/,value)
 	{
 		var _this = this;
-		var id = 'input'+type.capitalize();
-		var input = this.window.find('#'+SCRIPT.ID_PREFIX+'input_'+type);
-		this[id+'Jqo']=input;
-		var onChange = function()
-		{
-			var value = input.val(),
-			end = value.length - input.caret().end;
-			value = NumberFormat.formatI(value,true);
-			end = Math.max(Math.min(value.length-end,value.length),0);
-			input.val(value).caret(end,end);
-			_this[id] =
-			{
-				num : (value=='') ? 0 : NumberFormat.parseI(value),
-				txt : value
+		_this['input'+type.capitalize()] = new NumberInput(
+			this.window.find('#'+IDP+'input_'+type), // jQuery object
+			value, // value
+			'i',   // type : i = integer
+			false, // clearOnFocus
+			true,  // allow0
+			function(){ // onChange
+				_this.checkOutputSelect().onChange();
 			}
-			_this.checkOutputSelect();
-			_this.onChange();
-		};
-		input.val(NumberFormat.formatI(value)).focus(
-		function(){
-			if (input.val()=='0')
-				input.val('');
-		}
-		).keyup(onChange).change(onChange).blur(
-		function()
-		{
-			if (input.val()=='') input.val('0');
-		});
-		this[id] =
-		{
-			num : value,
-			txt : input.val()
-		}
-		return input;
-	},
-	makeRatioOption : function (ratio,title)
-	{
-		return $(
-			'<option value="'+
-			ratio[0]+':'+
-			ratio[1]+':'+
-			ratio[2]+
-			'">'+
-			NumberFormat.formatF(ratio[0])+':'+
-			NumberFormat.formatF(ratio[1])+':'+
-			NumberFormat.formatF(ratio[2])+
-			' ('+title+')</option>'
 		);
-	},
-	setRatioComponent : function (type,value)
-	{
-		var num = parseFloat(value+''),
-		id = 'ratio'+type.capitalize();
-		this[id] =
-		{
-			num : num,
-			txt : NumberFormat.formatF(num)
-		}
-		this[id+'Jqo'].val(this[id].txt);
+		return this;
 	},
 	makeRatioSelect : function ()
 	{
-		var _this = this,
-		select = this.window.find('#'+SCRIPT.ID_PREFIX+'ratio').append(
-			$('<option value="">-</option>')
-		).append(
-			this.makeRatioOption(INFO.RAT_REG, I18N.REG)
-		).append(
-			this.makeRatioOption(INFO.RAT_MIN, I18N.MIN)
-		).append(
-			this.makeRatioOption(INFO.RAT_MAX, I18N.MAX)
-		);
-		return select.change(function()
+		var _this = this;
+		this.ratioSelectJqo = this.window.find('#'+IDP+'ratio').change(function()
 		{
 			var value = $(this).val().split(':');
-			if (value.length>2)
+			if (value.length>3)
 			{
-				_this.setRatioComponent('met',value[0]);
-				_this.setRatioComponent('cry',value[1]);
-				_this.setRatioComponent('deu',value[2]);
 				$(this).val('');
-				_this.checkRatio();
-				_this.onChange();
+				_this.ratioMet.set(parseFloat(value[1]));
+				_this.ratioCry.set(parseFloat(value[2]));
+				_this.ratioDeu.set(parseFloat(value[3]));
+				_this.checkRatio().onChange();
 			}
 		});
+		return this.updateRatioSelect();
+	},
+	updateRatioSelect : function ()
+	{
+		var i, select = this.ratioSelectJqo.html('').append(
+			$('<option value="">-</option>')
+		);
+		for (i in config.data.ratioList)
+		{
+			ratio = config.getRatio(i);
+			select.append($(
+				'<option value="'+ratio.val+'">'+
+				NumberFormat.formatF(ratio.met)+':'+
+				NumberFormat.formatF(ratio.cry)+':'+
+				NumberFormat.formatF(ratio.deu)+
+				' ('+ratio.name+')</option>'
+			));
+		}
+		return this;
 	},
 	makeRatioInput: function (type /*met|cry|deu*/,value)
 	{
 		var _this = this;
-		var id = 'ratio'+type.capitalize();
-		var input = this.window.find('#'+SCRIPT.ID_PREFIX+'ratio_'+type);
-		this[id+'Jqo']=input;
-		var onChange = function()
-		{
-			var o = $(this),
-			value = o.val(),
-			end = value.length - o.caret().end;
-			value = NumberFormat.formatF(o.val(),true);
-			end = Math.max(Math.min(value.length-end,value.length),0);
-			o.val(value).caret(end,end);
-			num = NumberFormat.parseF(value);
-			if (num>0)
-			{
-				_this[id] =
-				{
-					num : num,
-					txt : NumberFormat.formatF(num)
-				}
-				_this.checkRatio();
-				_this.onChange();
+		_this['ratio'+type.capitalize()] = new NumberInput(
+			this.window.find('#'+IDP+'ratio_'+type), // jQuery object
+			value, // value
+			'f',   // type : f = float
+			true,  // clearOnFocus
+			false, // allow0
+			function(){ // onChange
+				_this.checkRatio().onChange();
 			}
-		};
-		input.val(NumberFormat.formatF(value));
-		input.keyup(onChange).change(onChange).blur(function()
-		{
-			var o = $(this),
-			value = NumberFormat.formatF(o.val());
-			if (NumberFormat.parseF(value)==0)
-			{
-				o.val(_this[id].txt);
-			}
-		}).focus(function(){
-			$(this).val('');
-		});
-		this[id] =
-		{
-			num : value,
-			txt : input.val()
-		}
-		return input;
+		);
+		return this;
 	},
 	checkRatio : function()
 	{
-		if (ratioChecker.isLegal(
+		if (calcRatioChecker.isLegal(
 			this.ratioMet.num,
 			this.ratioCry.num,
 			this.ratioDeu.num
@@ -973,79 +1718,33 @@ var iface =
 			this.ratioIllegal.hide();
 		else
 			this.ratioIllegal.show();
-	},
-	disable : function (jqo,value)
-	{
-		jqo.attr('disabled','disabled').prop('disabled', true);
-		if (arguments.length>1) jqo.val(value);
 		return this;
 	},
-	enable : function (jqo,value)
+	makePercentInput : function (type /*met|cry|deu*/)
 	{
-		jqo.prop("disabled", false).removeAttr('disabled');
-		if (arguments.length>1) jqo.val(value);
+		var _this = this, id = 'percent'+type.capitalize();
+		_this[id] = new NumberInput(
+			this.window.find('#'+IDP+'percent_'+type), // jQuery object
+			0,     // value
+			'p',   // type : p = percent
+			false, // clearOnFocus
+			true,  // allow0
+			function(o){ // onChange
+				if (o.num>100) o.set(100,true);
+				var otherId = 'percentMet', otherNum;
+				if (/Met|Cry/.test(id)&&(!_this.percentDeu.isDisabled())) otherId = 'percentDeu';
+				else if (/Met|Deu/.test(id)&&(!_this.percentCry.isDisabled())) otherId = 'percentCry';
+				// if I use:
+				//     otherNum = (100.0-o.num);
+				// I get wrong results sometimes, like:
+				//     100 - 33.889 = 66.1109999999
+				// To solve this I manually round the unnecessary decimals
+				otherNum = parseFloat((100.0-o.num).toFixed((o.num+'').split('.').pop().length));
+				_this[otherId].set(otherNum);
+				_this.onChange();
+			}
+		);
 		return this;
-	},
-	isDisabled : function (jqo)
-	{
-		return (jqo.attr('disabled')=='disabled');
-	},
-	makePercentInput : function (type /*met|cry|deu*/,value)
-	{
-		var _this = this;
-		var id = 'percent'+type.capitalize();
-		var input = this.window.find('#'+SCRIPT.ID_PREFIX+'percent_'+type);
-		this[id+'Jqo']=input;
-		var onChange = function()
-		{
-			var value = input.val(),
-			end = value.length - input.caret().end,
-			otherId = 'percentMet',
-			num;
-			if (NumberFormat.parseF(value)>100)
-				value = '100';
-			value = NumberFormat.formatF(value,true);
-			end = Math.max(Math.min(value.length-end,value.length),0);
-			input.val(value).caret(end,end);
-			num = (value=='') ? 0 : NumberFormat.parseF(value);
-			_this[id] = {
-				num : num,
-				txt : NumberFormat.formatF(num)+'%'
-			}
-			if (/Met|Cry/.test(id)&&(!_this.isDisabled(_this.percentDeuJqo)))
-				otherId = 'percentDeu'
-			else if (/Met|Deu/.test(id)&&(!_this.isDisabled(_this.percentCryJqo)))
-				otherId = 'percentCry'
-			num = 100-num;
-			value = NumberFormat.formatF(num)+'%'
-			_this[otherId+'Jqo'].val(value);
-			_this[otherId] = {
-				num : num,
-				txt : value+'%'
-			}
-			_this.onChange();
-		};
-		this.disable(input,NumberFormat.formatF(value)+'%');
-		input.focus(
-		function(){
-			if (_this.isDisabled(input)) return;
-			/*input.val(input.val().replace('%',''));
-			if (NumberFormat.parseF(input.val())==0)
-				input.val('');*/
-			input.val('');
-			onChange();
-		}
-		).keyup(onChange).change(onChange).blur(
-		function()
-		{
-			input.val(NumberFormat.formatF(input.val())+'%');
-		});
-		this[id]=
-		{
-			num : value,
-			txt : input.val()
-		}
-		return input;
 	},
 	checkOutputSelect : function ()
 	{
@@ -1068,36 +1767,26 @@ var iface =
 			this.changeOutputSelect('c');
 		else if ((im && ic && !id) || od && ((im && om) || (ic && oc)))
 			this.changeOutputSelect('d');
+		return this;
 	},
 	changeOutputSelect : function (value)
 	{
 		this.outputJqo.val(value);
-		m = this.percentMetJqo,
-		c = this.percentCryJqo,
-		d = this.percentDeuJqo;
-		this.disable(m,'0%').disable(c,'0%').disable(d,'0%');
-		if (value=='m') m.val('100%');
-		else if (value=='c') c.val('100%');
-		else if (value=='d') d.val('100%');
-		else if (value=='mc') this.enable(m,'50%').enable(c,'50%');
-		else if (value=='md') this.enable(m,'50%').enable(d,'50%');
-		else this.enable(c,'50%').enable(d,'50%');
-		this.percentMet = {txt : m.val(), num : parseInt(m.val().replace('%',''))}
-		this.percentCry = {txt : c.val(), num : parseInt(c.val().replace('%',''))}
-		this.percentDeu = {txt : d.val(), num : parseInt(d.val().replace('%',''))}
+		m = this.percentMet.disable().set(0),
+		c = this.percentCry.disable().set(0),
+		d = this.percentDeu.disable().set(0);
+		if (value=='m') m.set(100);
+		else if (value=='c') c.set(100);
+		else if (value=='d') d.set(100);
+		else if (value=='mc') {m.enable().set(50);c.enable().set(50);}
+		else if (value=='md') {m.enable().set(50);d.enable().set(50);}
+		else {c.enable().set(50);d.enable().set(50);}
+		return this;
 	},
 	makeOutputSelect : function ()
 	{
-		var _this = this,
-		select = this.window.find('#'+SCRIPT.ID_PREFIX+'output');
-		this.outputJqo = select;
-		$('<option value="m">'+I18N.RES_MET+'</option>').appendTo(select);
-		$('<option value="c">'+I18N.RES_CRY+'</option>').appendTo(select);
-		$('<option value="d">'+I18N.RES_DEU+'</option>').appendTo(select);
-		$('<option value="mc">'+I18N.RES_MET+' + '+I18N.RES_CRY+'</option>').appendTo(select);
-		$('<option value="md">'+I18N.RES_MET+' + '+I18N.RES_DEU+'</option>').appendTo(select);
-		$('<option value="cd">'+I18N.RES_CRY+' + '+I18N.RES_DEU+'</option>').appendTo(select);
-		select.change(function()
+		var _this = this;
+		this.outputJqo = this.window.find('#'+IDP+'output').change(function()
 		{
 			_this.changeOutputSelect($(this).val());
 			_this.onChange();
@@ -1106,29 +1795,68 @@ var iface =
 	},
 	makeWindow : function ()
 	{
-		var _this = this, w;
-		this.ogameHide = $('#inhalt').after(w=(this.window=$(this.WINDOW_TPL).hide()));
-		this.addCss(this.CSS).show();
-		this.closeButton = w.find('#'+SCRIPT.ID_PREFIX+'close').click(function(){_this.hide();});
-		this.makeActionSelect();
-		this.makeResourceInput('met',0);
-		this.makeResourceInput('cry',0);
-		this.makeResourceInput('deu',0);
-		this.ratioIllegal = w.find('#'+SCRIPT.ID_PREFIX+'ratio_illegal').hide();
-		this.makeRatioSelect();
-		this.makeRatioInput('met',3);
-		this.makeRatioInput('cry',2);
-		this.makeRatioInput('deu',1);
-		this.makeOutputSelect();
-		this.makePercentInput('met',100);
-		this.makePercentInput('cry',0);
-		this.makePercentInput('deu',0);
-		this.outputMet = w.find('#'+SCRIPT.ID_PREFIX+'output_met').text(0);
-		this.outputCry = w.find('#'+SCRIPT.ID_PREFIX+'output_cry').text(0);
-		this.outputDeu = w.find('#'+SCRIPT.ID_PREFIX+'output_deu').text(0);
-		this.makePlanetSelect();
-		this.outputMessage = w.find('#'+SCRIPT.ID_PREFIX+'message').click(function(){$(this).select();});
+		config.load();
+		calcRatioChecker = new RatioChecker();
+		confRatioChecker = new RatioChecker();
+		var _this = this, w, defaultRatio = config.getRatioById(config.data.defRatio);
+		this.ogameHide = $('#inhalt').after(w=(this.window=$(TPL.WINDOW).hide()));
+		this.addCss(TPL.CSS).show();
+		this.ratioIllegal = w.find('#'+IDP+'ratio_illegal').hide();
+		this.outputMessage = w.find('#'+IDP+'message').click(function(){$(this).select();});
+		this.outputMet = w.find('#'+IDP+'output_met').text(0);
+		this.outputCry = w.find('#'+IDP+'output_cry').text(0);
+		this.outputDeu = w.find('#'+IDP+'output_deu').text(0);
+		w.find('#'+IDP+'close').click(function(){_this.hide();});
+		this.makeActionSelect(
+			).makeResourceInput('met',0
+			).makeResourceInput('cry',0
+			).makeResourceInput('deu',0
+			).makeRatioSelect(
+			).makeRatioInput('met',defaultRatio.met
+			).makeRatioInput('cry',defaultRatio.cry
+			).makeRatioInput('deu',defaultRatio.deu
+			).makeOutputSelect(
+			).makePercentInput('met'
+			).makePercentInput('cry'
+			).makePercentInput('deu'
+			).changeOutputSelect(config.data.defOutput
+			).makePlanetSelect(
+			).checkRatio();
 		this.menuButtonAction = function(){_this.toggle();}
+		
+		// config
+		
+		w.find('#'+IDP+'config_but').click(function(){w.toggleClass('config').toggleClass('calc');});
+		ratioList.init(w.find('#'+IDP+'ratio_list'));
+		
+		var _this = this;
+		w.find('#'+IDP+'config_accept').click(function()
+		{
+			ratioList.updateData();
+			config.save();
+			calcRatioChecker.setLimits();
+			_this.updateRatioSelect().checkRatio();
+			ratioList.build();
+			w.toggleClass('config').toggleClass('calc');
+		});
+		
+		w.find('#'+IDP+'config_cancel').click(function()
+		{
+			ratioList.build();
+			confRatioChecker.setLimits();
+			w.toggleClass('config').toggleClass('calc');
+		});
+		
+		w.find('#'+IDP+'config_default').click(function()
+		{
+			config.remove();
+			calcRatioChecker.setLimits();
+			confRatioChecker.setLimits();
+			_this.updateRatioSelect().checkRatio();
+			ratioList.build();
+			w.toggleClass('config').toggleClass('calc');
+		});
+		
 		return this;
 	},
 	onChange : function()
@@ -1166,6 +1894,7 @@ var iface =
 			},
 			this.planet
 		));
+		return this;
 	},
 	init : function ()
 	{
