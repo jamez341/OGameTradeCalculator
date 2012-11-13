@@ -4,7 +4,7 @@
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version        2.2
+// @version        2.2.1
 // @include        *://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
@@ -239,9 +239,9 @@ var I18N =
 	NO      : 'No',
 	DEFAULT : 'Default',
 	NEW     : 'New',
-//	IE_CONF : 'Import / Export configuration',
-//	IMPORT  : 'Import',
-//	EXPORT  : 'Export',
+	IE_CONF : 'Import / Export configuration',
+	IMPORT  : 'Import',
+	EXPORT  : 'Export',
 	ACCEPT  : 'Accept',
 	CANCEL  : 'Cancel',
 	RES_DEF : 'Restore default settings'
@@ -275,9 +275,9 @@ var I18N =
 	NO      : 'No',
 	DEFAULT : 'Por defecto',
 	NEW     : 'Nuevo',
-//	IE_CONF : 'Importar / Exportar configuración',
-//	IMPORT  : 'Importar',
-//	EXPORT  : 'Exportar',
+	IE_CONF : 'Importar / Exportar configuración',
+	IMPORT  : 'Importar',
+	EXPORT  : 'Exportar',
 	ACCEPT  : 'Aceptar',
 	CANCEL  : 'Cancelar',
 	RES_DEF : 'Restaurar ajustes por defecto'
@@ -559,6 +559,10 @@ var TPL =
 		"."+IDP+"ie_conf{"+
 			"text-align:center"+
 		"}"+
+		"."+IDP+"hidden{"+
+			"position:fixed;"+
+			"left:-10000px;"+
+		"}"+
 		"",
 
 	/*! [tpl=window] */
@@ -685,14 +689,12 @@ var TPL =
 					'</div>'+
 					/*'<div class="'+IDP+'config_title">Valores por defecto</div>'+
 					'<div class="'+IDP+'config_title">Plantilla de mensaje</div>'+*/
-					/*'<div class="'+IDP+'config_title">'+I18N.IE_CONF+'</div>'+
-					'<div class="'+IDP+'config_box '+IDP+'ie_conf">'+
+					'<div class="'+IDP+'config_title">'+I18N.IE_CONF+'</div>'+
+					'<div class="'+IDP+'config_box '+IDP+'ie_conf '+IDP+'hidden">'+
 						'<textarea id="'+IDP+'ie_conf"></textarea>'+
 						'<input id="'+IDP+'ie_import" type="button" value="'+I18N.IMPORT+'" class="btn_blue">'+
 						'<input id="'+IDP+'ie_export" type="button" value="'+I18N.EXPORT+'" class="btn_blue">'+
-						'<input id="'+IDP+'ie_default" type="button" value="'+I18N.DEFAULT+'" class="btn_blue">'+
 					'</div>'+
-					*/
 					'<div class="textCenter">'+
 						'<input id="'+IDP+'config_accept" type="button" value="'+I18N.ACCEPT+'" class="btn_blue">'+
 						'<input id="'+IDP+'config_cancel" type="button" value="'+I18N.CANCEL+'" class="btn_blue">'+
@@ -805,6 +807,7 @@ var utime = function()
 }
 
 var doNothing = function(){}
+var preventDefault = function(e){e.preventDefault();}
 
 var config =
 {
@@ -840,9 +843,92 @@ var config =
 			"\n\n[b][url={SCRIPT.HOME_URL}]{SCRIPT.NAME}[/url][/b]"
 		/*! [/config] */
 	},
-	getRatio : function (index)
+	_error : function (msg)
 	{
-		var item = this.data.ratioList[index],
+		throw 'DataError: '+msg;
+	},
+	_errorUndefined : function (name)
+	{
+		this._error(name+' is undefined');
+	},
+	_errorExpected : function (name,type,expected,found)
+	{
+		var _exp;
+		if (/^[\<\>]\d+$/.test(expected))
+		{
+			if (expected.charAt(0)=='>') _exp = 'greater';
+			else _exp = 'less';
+			_exp += ' than '+expected.slice(1);
+			//_exp = expected.charAt(0)+' '+expected.slice(1);
+		}
+		else
+			_exp = '"'+expected.split(':').join(" or ")+'"'
+		
+		this._error(name+': '+type+' '+_exp+' expected but "'+found+'" found');
+	},
+	_errorType : function (name,expected,found)
+	{
+		if (found=='undefined') this._errorUndefined(name);
+		else this._errorExpected(name,'type',expected,found);
+	},
+	_errorValue : function (name,expected,found)
+	{
+		this._errorExpected(name,'value',expected,found);
+	},
+	_errorLength : function (name,expected,found)
+	{
+		this._errorExpected(name,'length',expected,found);
+	},
+	parseData : function (data)
+	{
+		var i, aux, found, d = (typeof(data)=='string') ? JSON.parse(data) : data;
+		if ((found=typeof(d.defAction))!='string') this._errorType('defAction','string',found);
+		if (typeof(d.ratioList)=='undefined') this._errorUndefined('ratioList');
+		if (!(/^sell|buy$/.test(d.defAction))) this._errorValue('defAction','sell:buy',d.defAction);
+		found = typeof(d.defRatio);
+		if (!(/^number|string$/.test(found))) this._errorType('defRatio','string:number',found);
+		var maxNotFound = true, minNotFound = true, defNotFound = true;
+		for (i=0;i<d.ratioList.length;i++)
+		{
+			aux = d.ratioList[i];
+			if ((found=aux.ratio.length)!=3) this._errorLength('ratioList['+i+']',3,found);
+			if ((aux.ratio[0]+=0)<=0) this._errorValue('ratioList['+i+'].ratio[0]','>0',aux.ratio[0]);
+			if ((aux.ratio[1]+=0)<=0) this._errorValue('ratioList['+i+'].ratio[1]','>0',aux.ratio[1]);
+			if ((aux.ratio[2]+=0)<=0) this._errorValue('ratioList['+i+'].ratio[2]','>0',aux.ratio[2]);
+			if (aux.id==d.defRatio) defNotFound = false;
+			if (/^MAX|MIN|REG$/.test(aux.id+''))
+			{
+				if (aux.id=='MAX') maxNotFound = false;
+				else if (aux.id=='MIN') minNotFound = false;
+			}
+			else
+			{
+				if ((found=typeof(aux.id))!='number') this._errorType('ratioList['+i+'].id','number',found);
+				if ((found=typeof(aux.name))!='string') this._errorType('ratioList['+i+'].name','string',found);
+			}
+		}
+		if (maxNotFound) this._error('ratioList: maximum ratio (id="MAX") not found');
+		if (minNotFound) this._error('ratioList: minimum ratio (id="MIN") not found');
+		if (defNotFound) this._error('ratioList: default ratio (id="'+d.defRatio+'" == defRatio) not found');
+		aux = d.ratioList.slice(0).sort();
+		for (i=1;i<aux.length;i++) if(aux[i-1].id==aux[i].id) this._error('ratioList: duplicate id "'+aux[i].id+'" found');
+		if (!(/^m|c|d|mc|md|cd$/.test(d.defOutput))) this._errorValue('defOutput','m:c:d:mc:md:cd',d.defOutput);
+		if ((found=typeof(d.millionAbb))!='string') this._errorType('millionAbb','string',found);
+		if ((found=d.millionAbb.length)<1) this._errorLength('millionAbb','>0',found);
+		if ((found=typeof(d.millionKey))!='string') this._errorType('millionKey','string',found);
+		if ((found=d.millionKey.length)!=1) this._errorLength('millionKey',1,found);
+		if ((found=typeof(d.thousandAbb))!='string') this._errorType('thousandAbb','string',found);
+		if ((found=d.thousandAbb.length)<1) this._errorLength('thousandAbb','>0',found);
+		if ((found=typeof(d.thousandKey))!='string') this._errorType('thousandKey','string',found);
+		if ((found=d.thousandKey.length)!=1) this._errorLength('thousandKey',1,found);
+		if ((found=typeof(d.abb))!='boolean') this._errorType('abb','boolean',found);
+		if ((found=typeof(d.overUnabb))!='boolean') this._errorType('overUnabb','boolean',found);
+		if ((found=typeof(d.messageTpl))!='string') this._errorType('messageTpl','string',found);
+		return d;
+	},
+	getRatio : function (index,data)
+	{
+		var item = (arguments.length>1) ? data.ratioList[index] : this.data.ratioList[index],
 		id = item.id+'',
 		name,
 		ratio = item.ratio.slice(0);
@@ -860,17 +946,17 @@ var config =
 			deu   : ratio[2]
 		}
 	},
-	getRatioById : function (id)
+	getRatioById : function (id,data)
 	{
-		var i,list=this.data.ratioList;
+		var i, d = (arguments.length>1) ? data : this.data, list = d.ratioList;
 		for (i in list)
 			if (list[i].id==id)
-				return this.getRatio(i);
+				return this.getRatio(i,d);
 		return null;
 	},
 	save : function(data)
 	{
-		if (arguments.length>0) this.set(data);
+		if (arguments.length>0) this.data = data;
 		win.localStorage.setItem(IDP+'config', JSON.stringify(this.data));
 		return this;
 	},
@@ -967,6 +1053,7 @@ var RatioChecker = function()
 	else if (arguments.length<2) this.setLimits(arguments[0]);
 	else this.setLimits(arguments[0],arguments[1]);
 }
+
 RatioChecker.prototype =
 {
 	limits : [], // order: m/c-min, m/c-max, m/d-min, m/d-max, c/d-min, c/d-max
@@ -987,8 +1074,7 @@ RatioChecker.prototype =
 	{
 		if (arguments.length<2)
 		{
-			var mx,mn,i,list = config.data.ratioList;
-			if (arguments.length>0) list = limit1;
+			var mx,mn,i,list = (arguments.length>0) ? limit1.ratioList : config.data.ratioList;
 			for (i in list)
 			{
 				if      (list[i].id=='MAX') mx = list[i].ratio;
@@ -1009,6 +1095,7 @@ RatioChecker.prototype =
 		return this;
 	}
 }
+
 var calcRatioChecker, confRatioChecker;
 
 var calc = function (met,cry,deu,rMet,rCry,rDeu,pMet,pCry,pDeu)
@@ -1258,7 +1345,7 @@ NumberInput.prototype = $.extend(true,{},Input.prototype,
 	}
 });
 
-PlanetSelect = function(jqo,onChange)
+var PlanetSelect = function(jqo,onChange)
 {
 	var _this = this,
 	select = (this.jqo=jqo);
@@ -1315,7 +1402,7 @@ PlanetSelect.prototype =
 var RatioListItem = function(list,pos,info)
 {
 	var i,aux,_this = this,ratio;
-	if (arguments.length>2)
+	if (arguments.length<4)
 	{
 		this.isNew = false;
 		this.name = ('name' in info)
@@ -1333,7 +1420,7 @@ var RatioListItem = function(list,pos,info)
 	{
 		this.isNew = true;
 		this.name = '*'+I18N.NEW;
-		ratio = config.getRatioById(config.data.defRatio).ratio;
+		ratio = config.getRatioById(info.defRatio,info).ratio;
 	}
 	this.list = list;
 	
@@ -1520,29 +1607,30 @@ var ratioList =
 	{
 		this.list.sort(function(a,b){return a.pos-b.pos;});
 	},
-	build : function ()
+	build : function (configData)
 	{
-		var i, item;
+		var i, item, cData = (arguments.length>0) ? configData : config.data;
 		this.clear();
-		this.defRatio = config.data.defRatio;
-		for (i=0; i<config.data.ratioList.length; i++)
+		this.defRatio = cData.defRatio;
+		for (i=0; i<cData.ratioList.length; i++)
 		{
-			item = new RatioListItem(this,i,config.data.ratioList[i]);
+			item = new RatioListItem(this,i,cData.ratioList[i]);
 			this.list[i]=item;
 			if (item.isLimit) this.limits[this.limits.length]=item;
 		}
 		var len = this.list.length;
-		this.newItem = new RatioListItem(this,len);
+		this.newItem = new RatioListItem(this,len,cData,true);
 		this.list[0].disableUp();
 		this.list[len-1].disableDown();
 		this.onChange();
 	},
-	updateData : function ()
+	updateData : function (configData)
 	{
-		config.data.ratioList = [];
+		var cData = (arguments.length>0) ? configData : config.data;
+		cData.ratioList = [];
 		for (var i in this.list)
-			config.data.ratioList[i] = this.list[i].getInfo();
-		config.data.defRatio = this.defRatio;
+			cData.ratioList[i] = this.list[i].getInfo();
+		cData.defRatio = this.defRatio;
 	},
 	onChangeItem : function (item)
 	{
@@ -1563,6 +1651,114 @@ var ratioList =
 	{
 		this.jqo = jqo;
 		this.build();
+	}
+}
+
+var ConfigDropdown = function(list,pos,title,box,iface)
+{
+	var _this = this;
+	this.list = list;
+	this.iface = iface;
+	this.pos = pos;
+	this.title = title.click(function(){_this._click();});
+	this.box = box;
+	if (box.hasClass(IDP+'hidden'))
+		this.setOpen(false);
+	else
+		this.setOpen(true);
+}
+
+ConfigDropdown.prototype =
+{
+	updateOpenCss : function()
+	{
+		this.openCss =
+		{
+			height: this.box.height()+'px',
+			'padding-top': this.box.css('padding-top'),
+			'padding-bottom': this.box.css('padding-bottom'),
+			'margin-top': this.box.css('margin-top'),
+			'margin-bottom': this.box.css('margin-bottom')/*,
+			'opacity': 1*/
+		}
+		return this;
+	},
+	closeCss :
+	{
+		height: 0,
+		'padding-top': 0,
+		'padding-bottom': 0,
+		'margin-top': 0,
+		'margin-bottom': 0/*,
+		'opacity': 0*/
+	},
+	afterOpenCss :
+	{
+		height: 'auto'
+	},
+	duration : 250,
+	setOpen : function (isOpen)
+	{
+		if(this.isOpen = isOpen)
+			this.list.itemOpen = this;
+		return this;
+	},
+	open : function()
+	{
+		this.updateOpenCss().box.removeClass(IDP+'hidden');
+		return this.setOpen(true);
+	},
+	close : function()
+	{
+		this.updateOpenCss().box.addClass(IDP+'hidden');
+		return this.setOpen(false);
+	},
+	animateOpen : function()
+	{
+		var afterOpenCss = this.afterOpenCss;
+		this.updateOpenCss().box.css(this.closeCss).removeClass(IDP+'hidden').animate(this.openCss,this.duration,function()
+		{
+			$(this).css(afterOpenCss);
+		});
+		return this.setOpen(true);
+	},
+	animateClose : function()
+	{
+		var _this = this;
+		this.updateOpenCss().box.css(this.openCss).animate(this.closeCss,this.duration,function()
+		{
+			$(this).addClass(IDP+'hidden').css(_this.openCss).css(_this.afterOpenCss);
+		});
+		return this.setOpen(false);
+	},
+	_click : function()
+	{
+		if(!this.isOpen)
+		{
+			this.iface.clearExport();
+			this.list.itemOpen.animateClose();
+			this.animateOpen();
+		}
+	}
+}
+
+var configDropdownList =
+{
+	init : function (jqo,iface)
+	{
+		this.jqo = jqo;
+		var i, aux = [];
+		jqo.find('.'+IDP+'config_title').each(function(i,e)
+		{
+			aux[i] = {title:$(e)};
+		});
+		jqo.find('.'+IDP+'config_box').each(function(i,e)
+		{
+			aux[i].box = $(e);
+		});
+		this.list = [];
+		for (i=0; i<aux.length; i++)
+			this.list[i] = new ConfigDropdown (this,i,aux[i].title,aux[i].box,iface);
 	}
 }
 
@@ -1793,6 +1989,95 @@ var iface =
 		});
 		return this;
 	},
+	toggleConfigCalc : function ()
+	{
+		var _this = this;
+		_this.window.toggleClass('config').toggleClass('calc');
+		if (_this.configNeverOpen)
+		{
+			_this.configNeverOpen = false;
+			_this.makeImportExport();
+			configDropdownList.init(_this.window.find('#'+IDP+'config'),_this);
+		}
+		return this;
+	},
+	updateConfigIface : function(configData)
+	{
+		var cData = (arguments.length>0) ? configData : config.data;
+		confRatioChecker.setLimits(cData);
+		ratioList.build(cData);
+		this.ieInput.val('');
+		return this;
+	},
+	updateCalcIface : function()
+	{
+		calcRatioChecker.setLimits();
+		this.updateRatioSelect().checkRatio();
+		return this;
+	},
+	updateConfigData : function(configData)
+	{
+		var cData = (arguments.length>0) ? (configData) : config.data;
+		ratioList.updateData(configData);
+		return this;
+	},
+	makeConfigButtons : function ()
+	{
+		var _this=this, w=_this.window;
+		w.find('#'+IDP+'config_but').click(function()
+		{
+			_this.toggleConfigCalc();
+		});
+		w.find('#'+IDP+'config_accept').click(function()
+		{
+			_this.updateConfigData();
+			config.save();
+			_this.updateCalcIface();
+			_this.toggleConfigCalc();
+		});
+		w.find('#'+IDP+'config_cancel').click(function()
+		{
+			_this.updateConfigIface();
+			_this.toggleConfigCalc();
+		});
+		w.find('#'+IDP+'config_default').click(function()
+		{
+			config.remove();
+			_this.updateCalcIface();
+			_this.updateConfigIface();
+			_this.toggleConfigCalc();
+		});
+		return this;
+	},
+	makeImportExport : function ()
+	{
+		var _this = this;
+		this.ieInput = this.window.find('#'+IDP+'ie_conf').focus(function(){$(this).select();});
+		this.window.find('#'+IDP+'ie_import').click(function()
+		{
+			try
+			{
+				var data = config.parseData(_this.ieInput.val());
+				_this.updateConfigIface(data);
+			}
+			catch(e)
+			{
+				alert(e);
+			}
+		});
+		this.window.find('#'+IDP+'ie_export').click(function()
+		{
+			var data = $.extend({},config.data);
+			_this.updateConfigData(data);
+			_this.ieInput.val('').val(JSON.stringify(data)).select();
+		});
+		return this;
+	},
+	clearExport : function ()
+	{
+		this.ieInput.val('');
+		return this;
+	},
 	makeWindow : function ()
 	{
 		config.load();
@@ -1826,36 +2111,9 @@ var iface =
 		
 		// config
 		
-		w.find('#'+IDP+'config_but').click(function(){w.toggleClass('config').toggleClass('calc');});
-		ratioList.init(w.find('#'+IDP+'ratio_list'));
-		
-		var _this = this;
-		w.find('#'+IDP+'config_accept').click(function()
-		{
-			ratioList.updateData();
-			config.save();
-			calcRatioChecker.setLimits();
-			_this.updateRatioSelect().checkRatio();
-			ratioList.build();
-			w.toggleClass('config').toggleClass('calc');
-		});
-		
-		w.find('#'+IDP+'config_cancel').click(function()
-		{
-			ratioList.build();
-			confRatioChecker.setLimits();
-			w.toggleClass('config').toggleClass('calc');
-		});
-		
-		w.find('#'+IDP+'config_default').click(function()
-		{
-			config.remove();
-			calcRatioChecker.setLimits();
-			confRatioChecker.setLimits();
-			_this.updateRatioSelect().checkRatio();
-			ratioList.build();
-			w.toggleClass('config').toggleClass('calc');
-		});
+		ratioList.init(w.find('#'+IDP+'ratio_list'),this);
+		this.configNeverOpen = true;
+		this.makeConfigButtons();
 		
 		return this;
 	},
