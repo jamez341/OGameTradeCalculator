@@ -17,7 +17,7 @@ SCRIPT =
 	ID_PREFIX : (IDP='o_trade_calc_'),
 	NAME      : 'OGame Trade Calculator',
 	HOME_URL  : 'http://userscripts.org/scripts/show/151002',
-	TESTED_OGAME_VERSION : '5.2.0-beta1',
+	TESTED_OGAME_VERSION : '5.2.0-beta4',
 	VERSION : [2,4]
 },
 
@@ -1075,7 +1075,7 @@ var config =
 	{
 		return {
 			/*! [config=default] */
-			version : SCRIPT.VERSION,
+			version : SCRIPT.VERSION.slice(0),
 			defAction : 'sell',
 			ratioList :
 			[
