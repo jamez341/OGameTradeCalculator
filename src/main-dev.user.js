@@ -4,7 +4,7 @@
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version        2.4.1
+// @version        2.4.2
 // @include        *://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
@@ -18,7 +18,7 @@ SCRIPT =
 	NAME      : 'OGame Trade Calculator',
 	HOME_URL  : 'http://userscripts.org/scripts/show/151002',
 	TESTED_OGAME_VERSION : '5.2.0-beta4',
-	VERSION : [2,4,1]
+	VERSION : [2,4,2]
 },
 
 /* true if (v1<v2) OR (v1==v2 && eq) */
@@ -1770,7 +1770,7 @@ NumberOutput.prototype =
 	},
 	_mouseenter : function ()
 	{
-		if (config.data.overUnabb)
+		if (config.data.overUnabb && this.num > 0)
 			this.jqo.text(NumberFormat.formatI(this.num,true));
 	},
 	_mouseleave : function ()
