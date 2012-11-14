@@ -4,7 +4,7 @@
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version        2.4
+// @version        2.4.1
 // @include        *://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
@@ -1771,12 +1771,12 @@ NumberOutput.prototype =
 	_mouseenter : function ()
 	{
 		if (config.data.overUnabb)
-			this.jqo.text(NumberFormat.formatI(this.jqo.text(),true));
+			this.jqo.text(NumberFormat.formatI(this.num,true));
 	},
 	_mouseleave : function ()
 	{
 		if (config.data.overUnabb)
-			this.jqo.text(NumberFormat.formatI(this.jqo.text()));
+			this.jqo.text(NumberFormat.formatI(this.num));
 	}
 }
 
