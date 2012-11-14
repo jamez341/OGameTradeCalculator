@@ -18,7 +18,7 @@ SCRIPT =
 	NAME      : 'OGame Trade Calculator',
 	HOME_URL  : 'http://userscripts.org/scripts/show/151002',
 	TESTED_OGAME_VERSION : '5.2.0-beta4',
-	VERSION : [2,4]
+	VERSION : [2,4,1]
 },
 
 /* true if (v1<v2) OR (v1==v2 && eq) */
