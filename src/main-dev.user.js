@@ -4,7 +4,7 @@
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version        2.3
+// @version        2.4
 // @include        *://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
@@ -17,7 +17,24 @@ SCRIPT =
 	ID_PREFIX : (IDP='o_trade_calc_'),
 	NAME      : 'OGame Trade Calculator',
 	HOME_URL  : 'http://userscripts.org/scripts/show/151002',
-	TESTED_OGAME_VERSION : '5.2.0-beta1'
+	TESTED_OGAME_VERSION : '5.2.0-beta1',
+	VERSION : [2,4]
+},
+
+/* true if (v1<v2) OR (v1==v2 && eq) */
+v1_less_than_v2 = function(v1,v2,eq)
+{
+	var i,
+	l1 = v1.length,
+	l2 = v2.length,
+	lm = Math.min(l1,l2);
+	for (i=0; i<lm; i++)
+		if (v1[i]>v2[i]) return false;
+		else if (v1[i]<v2[i]) return true;
+	if (l1>l2) return false;
+	if (l1<l2) return true;
+	if (arguments.length>2 && eq) return true;
+	return false;
 }
 
 var win = window, doc, $;
@@ -193,7 +210,9 @@ var COLOR =
 	/*! [colors] */
 	MET : '#FF7700',
 	CRY : '#00FFFF',
-	DEU : '#FF33FF'
+	DEU : '#FF33FF',
+	SC  : '#FFFFFF',
+	LC  : '#FFFFFF'
 	/*! [/colors] */
 }
 
@@ -224,6 +243,12 @@ var I18N =
 	ILLEGAL : 'illegal',
 	IN_EXCH : 'In exchange for',
 	RESULT  : 'Result',
+	SEND    : 'I send',
+	RECEIVE : 'I receive',
+	RES     : 'Resources',
+	LC_SHIP : 'LC',
+	SC_SHIP : 'SC',
+	OR      : 'or',
 	MESSAGE : 'Message',
 	WHERE   : 'Place of delivery',
 	PLANET  : 'Planet',
@@ -271,6 +296,12 @@ var I18N =
 	ILLEGAL : 'ilegal',
 	IN_EXCH : 'A cambio de',
 	RESULT  : 'Resultado',
+	SEND    : 'Envío',
+	RECEIVE : 'Recibo',
+	RES     : 'Recursos',
+	LC_SHIP : 'NGC',
+	SC_SHIP : 'NPC',
+	OR      : 'o',
 	MESSAGE : 'Mensaje',
 	WHERE   : 'Lugar de entrega',
 	PLANET  : 'Planeta',
@@ -374,6 +405,13 @@ var TPL =
 			"border-collapse:collapse;"+
 			"clear:both;"+
 		"}"+
+		"#"+IDP+"window.calc table{"+
+			"border:1px solid #000;"+
+			"margin:0 0 20px 0;"+
+		"}"+
+		"#"+IDP+"window.calc table.last{"+
+			"margin:0;"+
+		"}"+
 		"#"+IDP+"window.config table{"+
 			"width:598px;"+ // 620 [prev style] - (5+5) [box margin] - (5+5) [box paddding] - 2 [box border]
 		"}"+
@@ -423,10 +461,10 @@ var TPL =
 		"#"+IDP+"main option{"+
 			"padding:1px 5px 1px 5px;"+
 		"}"+
-		"."+IDP+"input{"+
+		"."+IDP+"input,"+
+		"."+IDP+"output{"+
 			"width:112px;"+
-			"padding:0 1px 0 1px;"+
-			"text-align:right;"+
+			"padding:0 2px 0 0;"+
 		"}"+
 		"."+IDP+"name{"+
 			"width:142px;"+
@@ -450,7 +488,6 @@ var TPL =
 			"color:red;"+
 		"}"+
 		"."+IDP+"output{"+
-			"width:108px;"+
 			"text-align:center;"+
 			"font-weight:bold;"+
 		"}"+
@@ -476,10 +513,16 @@ var TPL =
 			"text-align:left;"+
 			"margin:0;"+
 		"}"+
+		"."+IDP+"select1row{"+
+			"padding-left:2px;"+
+		"}"+
 		"."+IDP+"select1row select{"+
-			"width:auto;"+
+			"width:250px !important;"+
 			"text-align:left;"+
 			"margin:0;"+
+		"}"+
+		"#"+IDP+"selCurPla_button{"+
+			"margin-left:30px"+
 		"}"+
 		"#"+IDP+"footer{"+
 			"height:17px;"+
@@ -629,6 +672,9 @@ var TPL =
 		'<option value="mc">'+I18N.RES_MET+' + '+I18N.RES_CRY+'</option>'+
 		'<option value="md">'+I18N.RES_MET+' + '+I18N.RES_DEU+'</option>'+
 		'<option value="cd">'+I18N.RES_CRY+' + '+I18N.RES_DEU+'</option>',
+	
+	/*! [tpl=void_href] */
+	VOID_HREF : 'href="javascript:void(0)"',
 
 	/*! [tpl=window] */
 	WINDOW :
@@ -639,15 +685,19 @@ var TPL =
 				'<a id="'+IDP+'config_but" href="javascript:void(0);"></a>'+
 			'</div>'+
 			'<div id="'+IDP+'main">'+
+				//#
+				//# CALC
+				//#
 				'<div id="'+IDP+'calc">'+
-					'<table cellspacing="0" cellpadding="0">'+
-					'<tbody>'+
+					'<table cellspacing="0" cellpadding="0"><tbody>'+
+						// calc titles
 						'<tr>'+
 							'<th colspan="2"></th>'+
 							'<th>'+I18N.RES_MET+'</th>'+
 							'<th>'+I18N.RES_CRY+'</th>'+
 							'<th>'+I18N.RES_DEU+'</th>'+
 						'</tr>'+
+						// action :: action & input resources
 						'<tr class="alt">'+
 							'<td class="'+IDP+'label">'+I18N.ACTION+'</td>'+
 							'<td class="'+IDP+'select">'+
@@ -665,6 +715,7 @@ var TPL =
 								'<input id="'+IDP+'input_deu" type="text" value="">'+
 							'</td>'+
 						'</tr>'+
+						// ratio :: ratio select & ratio fields
 						'<tr>'+
 							'<td class="'+IDP+'label">'+
 								I18N.RATIO+
@@ -685,6 +736,7 @@ var TPL =
 								'<input id="'+IDP+'ratio_deu" type="text" value="">'+
 							'</td>'+
 						'</tr>'+
+						// in exchange for :: output select & percent fields
 						'<tr class="alt">'+
 							'<td class="'+IDP+'label">'+I18N.IN_EXCH+'</td>'+
 							'<td class="'+IDP+'select">'+
@@ -702,37 +754,84 @@ var TPL =
 								'<input id="'+IDP+'percent_deu" type="text" value="">'+
 							'</td>'+
 						'</tr>'+
+						// output resources
 						'<tr>'+
 							'<td class="'+IDP+'label" colspan="2">'+I18N.RESULT+'</td>'+
 							'<td class="'+IDP+'output" id="'+IDP+'output_met"></td>'+
 							'<td class="'+IDP+'output" id="'+IDP+'output_cry"></td>'+
 							'<td class="'+IDP+'output" id="'+IDP+'output_deu"></td>'+
 						'</tr>'+
-						'<tr><td colspan="5">&nbsp;</td></tr>'+
-						'<tr class="alt">'+
-							'<td class="'+IDP+'label" colspan="5">'+I18N.PLANET+'</td>'+
+					'</tbody></table>'+
+					//
+					// CARGOS
+					//
+					'<table cellspacing="0" cellpadding="0"><tbody>'+
+						// cargos titles
+						'<tr>'+
+							'<th></th>'+
+							'<th>'+I18N.RES+'</th>'+
+							'<th>'+I18N.LC_SHIP+'</th>'+
+							'<th>'+I18N.SC_SHIP+'</th>'+
 						'</tr>'+
+						// send cargos
+						'<tr class="alt">'+
+							'<td class="'+IDP+'label">'+I18N.SEND+'</td>'+
+							'<td class="'+IDP+'output overmark" id="'+IDP+'sendRes">0</td>'+
+							'<td class="'+IDP+'output" id="'+IDP+'sendLC">0</td>'+
+							'<td class="'+IDP+'output" id="'+IDP+'sendSC">0</td>'+
+						'</tr>'+
+						// receive cargos
+						'<tr>'+
+							'<td class="'+IDP+'label">'+I18N.RECEIVE+'</td>'+
+							'<td class="'+IDP+'output undermark" id="'+IDP+'receiveRes">0</td>'+
+							'<td class="'+IDP+'output" id="'+IDP+'receiveLC">0</td>'+
+							'<td class="'+IDP+'output" id="'+IDP+'receiveSC">0</td>'+
+						'</tr>'+
+					'</tbody></table>'+
+					//
+					// PLACE OF DELIVERY
+					//
+					'<table cellspacing="0" cellpadding="0"><tbody>'+
+						// title
+						'<tr class="alt">'+
+							'<td class="'+IDP+'label" colspan="5">'+I18N.WHERE+'</td>'+
+						'</tr>'+
+						// select
 						'<tr class="alt">'+
 							'<td class="'+IDP+'select1row" colspan="5">'+
 								'<select id="'+IDP+'planet"></select>'+
+								'<a {this.VOID_HREF} id="'+IDP+'selCurPla_button">'+I18N.SEL_CUR+'</a>'+
 							'</td>'+
 						'</tr>'+
-						'<tr><td colspan="5">&nbsp;</td></tr><tr class="alt">'+
+					'</tbody></table>'+
+					//
+					// MESSAGE
+					//
+					'<table cellspacing="0" cellpadding="0" class="last"><tbody>'+
+						// title
+						'<tr class="alt">'+
 							'<td class="'+IDP+'label" colspan="5">'+I18N.MESSAGE+'</td>'+
 						'</tr>'+
+						// textarea
 						'<tr class="alt">'+
 							'<td class="'+IDP+'textarea" colspan="5">'+
 								'<textarea id="'+IDP+'message" cols="1" rows="1" readonly="readonly"></textarea>'+
 							'</td>'+
 						'</tr>'+
-					'</tbody>'+
-					'</table>'+
+					'</tbody></table>'+
 				'</div>'+
+				//#
+				//# CONFIG
+				//#
 				'<div id="'+IDP+'config">'+
+					//
+					// RATIO LIST
+					//
 					'<div class="'+IDP+'config_title">'+I18N.RAT_LST+'</div>'+
 					'<div class="'+IDP+'config_box">'+
 						'<table cellspacing="0" cellpadding="0">'+
 						'<tbody id="'+IDP+'ratioList">'+
+							// titles
 							'<tr>'+
 								'<th>#</th>'+
 								'<th>'+I18N.NAME+'</th>'+
@@ -743,11 +842,16 @@ var TPL =
 								'<th>'+I18N.LEGAL+'</th>'+
 								'<th>'+I18N.DEFAULT+'</th>'+
 							'</tr>'+
+							// config.data.ratioList (added dynamically)
 						'</tbody>'+
 						'</table>'+
 					'</div>'+
+					//
+					// DEFAULT VALUES
+					//
 					'<div class="'+IDP+'config_title">'+I18N.DEF_VAL+'</div>'+
 					'<div class="'+IDP+'config_box '+IDP+'hidden">'+
+						// config.data.defAction
 						'<div class="'+IDP+'fieldwrapper">'+
 							'<label>'+I18N.ACTION+':</label>'+
 							'<div class="'+IDP+'thefield">'+
@@ -756,13 +860,7 @@ var TPL =
 								'</select>'+
 							'</div>'+
 						'</div>'+
-						/*'<div class="'+IDP+'fieldwrapper">'+
-							'<label>'+I18N.RATIO+':</label>'+
-							'<div class="'+IDP+'thefield">'+
-								'<select id="'+IDP+'defRatio">'+
-								'</select>'+
-							'</div>'+
-						'</div>'+*/
+						// config.data.defOutput
 						'<div class="'+IDP+'fieldwrapper">'+
 							'<label>'+I18N.IN_EXCH+':</label>'+
 							'<div class="'+IDP+'thefield">'+
@@ -771,6 +869,7 @@ var TPL =
 								'</select>'+
 							'</div>'+
 						'</div>'+
+						// config.data.selCurPla
 						'<div class="'+IDP+'fieldwrapper">'+
 							'<label>'+I18N.SEL_CUR+':</label>'+
 							'<div class="'+IDP+'thefield">'+
@@ -778,38 +877,47 @@ var TPL =
 							'</div>'+
 						'</div>'+
 					'</div>'+
+					//
+					// ABBREVIATIONS & AUTOCOMPLETE KEYS
+					//
 					'<div class="'+IDP+'config_title">'+I18N.ABB_KEY+'</div>'+
 					'<div class="'+IDP+'config_box '+IDP+'hidden">'+
+						// config.data.abb
 						'<div class="'+IDP+'fieldwrapper">'+
 							'<label>'+I18N.USE_ABB+':</label>'+
 							'<div class="'+IDP+'thefield">'+
 								'<input id="'+IDP+'abb" type="checkbox" />'+
 							'</div>'+
 						'</div>'+
+						// config.data.overUnabb
 						'<div class="'+IDP+'fieldwrapper">'+
 							'<label>'+I18N.UNABB+':</label>'+
 							'<div class="'+IDP+'thefield">'+
 								'<input id="'+IDP+'overUnabb" type="checkbox" />'+
 							'</div>'+
 						'</div>'+
+						// config.data.millionAbb
 						'<div class="'+IDP+'fieldwrapper">'+
 							'<label>'+I18N.ABB_MIL+':</label>'+
 							'<div class="'+IDP+'thefield">'+
 								'<input id="'+IDP+'millionAbb" type="text" maxlength="10" />'+
 							'</div>'+
 						'</div>'+
+						// config.data.thousandAbb
 						'<div class="'+IDP+'fieldwrapper">'+
 							'<label>'+I18N.ABB_THO+':</label>'+
 							'<div class="'+IDP+'thefield">'+
 								'<input id="'+IDP+'thousandAbb" type="text" maxlength="10" />'+
 							'</div>'+
 						'</div>'+
+						// config.data.millionKey
 						'<div class="'+IDP+'fieldwrapper">'+
 							'<label>'+I18N.KEY_MIL+':</label>'+
 							'<div class="'+IDP+'thefield">'+
 								'<input id="'+IDP+'millionKey" type="text" maxlength="1" />'+
 							'</div>'+
 						'</div>'+
+						// config.data.thousandKey
 						'<div class="'+IDP+'fieldwrapper">'+
 							'<label>'+I18N.KEY_THO+':</label>'+
 							'<div class="'+IDP+'thefield">'+
@@ -817,6 +925,9 @@ var TPL =
 							'</div>'+
 						'</div>'+
 					'</div>'+
+					//
+					// MESSAGE TEMPLATE
+					//
 					'<div class="'+IDP+'config_title">'+I18N.MES_TPL+'</div>'+
 					'<div class="'+IDP+'config_box '+IDP+'hidden">'+
 						'<textarea id="'+IDP+'messageTpl"></textarea>'+
@@ -824,12 +935,18 @@ var TPL =
 							'<input id="'+IDP+'messageTpl_restore" type="button" value="'+I18N.RES_DTP+'" class="btn_blue">'+
 						'</div>'+
 					'</div>'+
+					//
+					// IMPORT & EXPORT
+					//
 					'<div class="'+IDP+'config_title">'+I18N.IE_CONF+'</div>'+
 					'<div class="'+IDP+'config_box '+IDP+'ie_conf '+IDP+'hidden">'+
 						'<textarea id="'+IDP+'ie_conf"></textarea>'+
 						'<input id="'+IDP+'ie_import" type="button" value="'+I18N.IMPORT+'" class="btn_blue">'+
 						'<input id="'+IDP+'ie_export" type="button" value="'+I18N.EXPORT+'" class="btn_blue">'+
 					'</div>'+
+					//
+					// BUTTONS
+					//
 					'<div class="textCenter">'+
 						'<input id="'+IDP+'config_accept" type="button" value="'+I18N.ACCEPT+'" class="btn_blue">'+
 						'<input id="'+IDP+'config_cancel" type="button" value="'+I18N.CANCEL+'" class="btn_blue">'+
@@ -842,6 +959,7 @@ var TPL =
 	
 	/*! [tpl=button] */
 	MENUBUTTON :
+	// menubutton must not use references to other TPLs, like "{this.VOID_HREF}"
 		'<li>'+
 			'<a id="'+IDP+'menubutton" class="menubutton" href="javascript:void(0)" accesskey="" target="_self">'+
 				'<span class="textlabel">'+I18N.MENU+'</span>'+
@@ -863,9 +981,9 @@ var TPL =
 				'<input class="'+IDP+'edit_ratio_deu" type="text" />'+
 			'</td>'+
 			'<td class="'+IDP+'action">'+
-				'<a href="javascript:void(0)" class="'+IDP+'icon_up"></a>'+
-				'<a href="javascript:void(0)" class="'+IDP+'icon_down"></a>'+
-				'<a href="javascript:void(0)" class="'+IDP+'icon_trash disabled"></a>'+
+				'<a {this.VOID_HREF} class="'+IDP+'icon_up"></a>'+
+				'<a {this.VOID_HREF} class="'+IDP+'icon_down"></a>'+
+				'<a {this.VOID_HREF} class="'+IDP+'icon_trash disabled"></a>'+
 			'</td>'+
 			'<td class="'+IDP+'label">-</td>'+
 			'<td class="'+IDP+'check">'+
@@ -890,9 +1008,9 @@ var TPL =
 				'<input class="'+IDP+'edit_ratio_deu" type="text" />'+
 			'</td>'+
 			'<td class="'+IDP+'action">'+
-				'<a href="javascript:void(0)" class="'+IDP+'icon_up"></a>'+
-				'<a href="javascript:void(0)" class="'+IDP+'icon_down"></a>'+
-				'<a href="javascript:void(0)" class="'+IDP+'icon_trash"></a>'+
+				'<a {this.VOID_HREF} class="'+IDP+'icon_up"></a>'+
+				'<a {this.VOID_HREF} class="'+IDP+'icon_down"></a>'+
+				'<a {this.VOID_HREF} class="'+IDP+'icon_trash"></a>'+
 			'</td>'+
 			'<td class="'+IDP+'legal"></td>'+
 			'<td class="'+IDP+'check">'+
@@ -917,7 +1035,7 @@ var TPL =
 				'<input class="'+IDP+'edit_ratio_deu" type="text" />'+
 			'</td>'+
 			'<td class="'+IDP+'action">'+
-				'<a href="javascript:void(0)" class="'+IDP+'icon_add"></a>'+
+				'<a {this.VOID_HREF} class="'+IDP+'icon_add"></a>'+
 			'</td>'+
 			'<td class="'+IDP+'legal"></td>'+
 			'<td class="'+IDP+'label">-</td>'+
@@ -953,38 +1071,47 @@ var preventDefault = function(e){e.preventDefault();}
 
 var config =
 {
-	DEFAULT_DATA :
+	getDefaultData : function ()
 	{
-		/*! [config=default] */
-		defAction : 'sell',
-		ratioList :
-		[
-			{id:'MAX', ratio:[DEFAULT_RATIOS[0],DEFAULT_RATIOS[1],DEFAULT_RATIOS[2]]},
-			{id:'MIN', ratio:[DEFAULT_RATIOS[3],DEFAULT_RATIOS[4],DEFAULT_RATIOS[5]]},
-			{id:'REG', ratio:[DEFAULT_RATIOS[6],DEFAULT_RATIOS[7],DEFAULT_RATIOS[8]]}
-		],
-		defRatio    : 'REG',
-		defOutput   : 'm',
-		millionAbb  : 'M',
-		millionKey  : 'm',
-		thousandAbb : 'K',
-		thousandKey : 'k',
-		abb         : false,
-		overUnabb   : false,
-		selCurPla   : false,
-		messageTpl  :
-			"[b]{?b}{I18N.BUY}{/b}{?s}{I18N.SELL}{/s}:[/b] "+
-			"{?m}[b][color={COLOR.MET}]{m}[/color][/b] ({I18N.RES_MET}){?cd} + {/cd}{/m}"+
-			"{?c}[b][color={COLOR.CRY}]{c}[/color][/b] ({I18N.RES_CRY}){?d} + {/d}{/c}"+
-			"{?d}[b][color={COLOR.DEU}]{d}[/color][/b] ({I18N.RES_DEU}){/d}"+
-			"\n[b]{I18N.IN_EXCH}:[/b] "+
-			"{?M}[b][color={COLOR.MET}]{M}[/color][/b] ({I18N.RES_MET}){?CD} + {/CD}{/M}"+
-			"{?C}[b][color={COLOR.CRY}]{C}[/color][/b] ({I18N.RES_CRY}){?D} + {/D}{/C}"+
-			"{?D}[b][color={COLOR.DEU}]{D}[/color][/b] ({I18N.RES_DEU}){/D}"+
-			"\n\n[b]* {I18N.RATIO}:[/b] {rm}:{rc}:{rd}"+
-			"{?w}\n[b]* {I18N.WHERE}:[/b] {wg}:{ws}:{wp} ({wt}){/w}"+
-			"\n\n[b][url={SCRIPT.HOME_URL}]{SCRIPT.NAME}[/url][/b]"
-		/*! [/config] */
+		return {
+			/*! [config=default] */
+			version : SCRIPT.VERSION,
+			defAction : 'sell',
+			ratioList :
+			[
+				{id:'MAX', ratio:[DEFAULT_RATIOS[0],DEFAULT_RATIOS[1],DEFAULT_RATIOS[2]]},
+				{id:'MIN', ratio:[DEFAULT_RATIOS[3],DEFAULT_RATIOS[4],DEFAULT_RATIOS[5]]},
+				{id:'REG', ratio:[DEFAULT_RATIOS[6],DEFAULT_RATIOS[7],DEFAULT_RATIOS[8]]}
+			],
+			defRatio    : 'REG',
+			defOutput   : 'm',
+			millionAbb  : 'M',
+			millionKey  : 'm',
+			thousandAbb : 'K',
+			thousandKey : 'k',
+			abb         : false,
+			overUnabb   : false,
+			selCurPla   : false,
+			messageTpl  :
+				"[b]{?b}{I18N.BUY}{/b}{?s}{I18N.SELL}{/s}:[/b] "+
+				"{?m}[b][color={COLOR.MET}]{m}[/color][/b] ({I18N.RES_MET}){?cd} + {/cd}{/m}"+
+				"{?c}[b][color={COLOR.CRY}]{c}[/color][/b] ({I18N.RES_CRY}){?d} + {/d}{/c}"+
+				"{?d}[b][color={COLOR.DEU}]{d}[/color][/b] ({I18N.RES_DEU}){/d}"+
+				"\n[b]{I18N.IN_EXCH}:[/b] "+
+				"{?M}[b][color={COLOR.MET}]{M}[/color][/b] ({I18N.RES_MET}){?CD} + {/CD}{/M}"+
+				"{?C}[b][color={COLOR.CRY}]{C}[/color][/b] ({I18N.RES_CRY}){?D} + {/D}{/C}"+
+				"{?D}[b][color={COLOR.DEU}]{D}[/color][/b] ({I18N.RES_DEU}){/D}"+
+				"\n\n[b]* {I18N.SEND}:[/b] {sr} ({I18N.RES}) = "+
+				"[b][color={COLOR.LC}]{sl}[/color][/b] ({I18N.LC_SHIP}) {I18N.OR} "+
+				"[b][color={COLOR.SC}]{ss}[/color][/b] ({I18N.SC_SHIP})"+
+				"\n[b]* {I18N.RECEIVE}:[/b] {rr} ({I18N.RES}) = "+
+				"[b][color={COLOR.LC}]{rl}[/color][/b] ({I18N.LC_SHIP}) {I18N.OR} "+
+				"[b][color={COLOR.SC}]{rs}[/color][/b] ({I18N.SC_SHIP})"+
+				"\n\n[b]* {I18N.RATIO}:[/b] {rm}:{rc}:{rd}"+
+				"{?w}\n[b]* {I18N.WHERE}:[/b] {wg}:{ws}:{wp} ({wt}){/w}"+
+				"\n\n[b][url={SCRIPT.HOME_URL}]{SCRIPT.NAME}[/url][/b]"
+			/*! [/config] */
+		}
 	},
 	abbRE : /^\S+$/,
 	keyRE : /^\S$/,
@@ -1108,25 +1235,38 @@ var config =
 				return this.getRatio(i,d);
 		return null;
 	},
-	save : function(data)
+	updateVersion : function (data)
+	{
+		var v = (typeof(data.version)=='undefined') ? 0 : data.version,
+		i,
+		def = this.getDefaultData();;
+		if (v1_less_than_v2(v,[2,4]))
+			data.messageTpl = def.messageTpl;
+		data.version = def.version;
+		for (i in def)
+			if (typeof(data[i])=='undefined')
+				data[i] = def[i];
+		return data;
+	},
+	save : function (data)
 	{
 		if (arguments.length>0) this.data = data;
 		win.localStorage.setItem(IDP+'config', JSON.stringify(this.data));
 		return this;
 	},
-	load : function()
+	load : function ()
 	{
 		var data = win.localStorage.getItem(IDP+'config');
 		if (data==null)
-			this.data = this.DEFAULT_DATA;
+			this.data = this.getDefaultData();
 		else
-			this.data = $.extend({},this.DEFAULT_DATA,JSON.parse(data));
+			this.save(this.updateVersion(JSON.parse(data)));
 		return this;
 	},
-	remove : function()
+	remove : function ()
 	{
 		win.localStorage.removeItem(IDP+'config');
-		this.data = this.DEFAULT_DATA;
+		this.data = this.getDefaultData();
 	}
 }
 
@@ -1321,7 +1461,7 @@ var messageMaker =
 		}
 		return out;
 	},
-	make : function (action,input,output,ratio,planet)
+	make : function (action,input,output,send,receive,ratio,planet)
 	{
 		var i, re = /[1-9]/,
 		out = this.parseIfs(
@@ -1345,6 +1485,12 @@ var messageMaker =
 			'{M}'  : output.met,
 			'{C}'  : output.cry,
 			'{D}'  : output.deu,
+			'{sr}' : send.res,
+			'{sl}' : send.lc,
+			'{ss}' : send.sc,
+			'{rr}' : receive.res,
+			'{rl}' : receive.lc,
+			'{rs}' : receive.sc,
 			'{rm}' : ratio.met,
 			'{rc}' : ratio.cry,
 			'{rd}' : ratio.deu,
@@ -1599,6 +1745,41 @@ NumberInput.prototype = $.extend({},Input.prototype,
 	}
 });
 
+var NumberOutput = function(jqo, /*integer*/ value)
+{
+	var _this = this;
+	_this.jqo = jqo;
+	_this.val(value);
+	_this.jqo.mouseenter(
+		function(){_this._mouseenter();}
+	).mouseleave(
+		function(){_this._mouseleave();}
+	);
+}
+NumberOutput.prototype =
+{
+	val : function (value)
+	{
+		if (arguments.length>0)
+		{
+			this.jqo.text(NumberFormat.formatI(value));
+			this.num = value;
+			return this;
+		}
+		return this.jqo.text();
+	},
+	_mouseenter : function ()
+	{
+		if (config.data.overUnabb)
+			this.jqo.text(NumberFormat.formatI(this.jqo.text(),true));
+	},
+	_mouseleave : function ()
+	{
+		if (config.data.overUnabb)
+			this.jqo.text(NumberFormat.formatI(this.jqo.text()));
+	}
+}
+
 var PlanetSelect = function(jqo,onChange)
 {
 	var _this = this,
@@ -1619,21 +1800,14 @@ var PlanetSelect = function(jqo,onChange)
 		c = c.text().replace(/[^0-9\:]/g,'');
 		option = $('<option value="planet:'+c+'">['+c+'] '+o.find('.planet-name').text().trim()+'</option>').appendTo(select);
 		if (c==currentPCoord && currentPType=='planet')
-		{
-			option.addClass(IDP+'highlight').html(option.html()+' &laquo; '+I18N.CUR_PLA);
-			if (config.data.selCurPla) option.attr('selected','selected');
-		}
+			_this._setCurrent(option);
 		if (o.find('.moonlink').get().length>0)
 		{
 			option = $('<option value="moon:'+c+'">['+c+'] ('+I18N.MOON+')</option>').appendTo(select).addClass(IDP+'moon');
 			if (c==currentPCoord && currentPType=='moon')
-			{
-				option.addClass(IDP+'highlight').html(option.html()+' &laquo; '+I18N.CUR_PLA);
-				if (config.data.selCurPla) option.attr('selected','selected');
-			}
+				_this._setCurrent(option);
 		}
 	});
-	this.set();
 }
 
 PlanetSelect.prototype =
@@ -1657,6 +1831,17 @@ PlanetSelect.prototype =
 			this.planet = value.shift();
 		}
 		return this;
+	},
+	_setCurrent : function (option)
+	{
+		option.addClass(IDP+'highlight').html(option.html()+' &laquo; '+I18N.CUR_PLA);
+		if (config.data.selCurPla) option.attr('selected','selected');
+		this.current = option;
+		this.set();
+	},
+	clickCurrent : function ()
+	{
+		this.jqo.val(this.current.val()).change();
 	}
 }
 
@@ -2396,7 +2581,7 @@ var iface =
 		var _this = this;
 		_this.messageTpl = _this.findIDP('messageTpl');
 		_this.findIDP('messageTpl_restore').click(function(){
-			_this.messageTpl.val(config.DEFAULT_DATA.messageTpl);
+			_this.messageTpl.val(config.getDefaultData().messageTpl);
 		});
 		return _this;
 	},
@@ -2416,9 +2601,15 @@ var iface =
 		_this.addCss(TPL.CSS).show();
 		_this.ratioIllegal = _this.findIDP('ratio_illegal').hide();
 		_this.outputMessage = _this.findIDP('message').click(function(){$(this).select();});
-		_this.outputMet = _this.findIDP('output_met').text(0);
-		_this.outputCry = _this.findIDP('output_cry').text(0);
-		_this.outputDeu = _this.findIDP('output_deu').text(0);
+		_this.outputMet = new NumberOutput(_this.findIDP('output_met'),0);
+		_this.outputCry = new NumberOutput(_this.findIDP('output_cry'),0);
+		_this.outputDeu = new NumberOutput(_this.findIDP('output_deu'),0);
+		_this.sendRes = new NumberOutput(_this.findIDP('sendRes'),0);
+		_this.sendLC  = new NumberOutput(_this.findIDP('sendLC') ,0);
+		_this.sendSC  = new NumberOutput(_this.findIDP('sendSC') ,0);
+		_this.receiveRes = new NumberOutput(_this.findIDP('receiveRes'),0);
+		_this.receiveLC  = new NumberOutput(_this.findIDP('receiveLC') ,0);
+		_this.receiveSC  = new NumberOutput(_this.findIDP('receiveSC') ,0);
 		_this.findIDP('close').click(function(){_this.hide();});
 		_this.makeActionSelect(
 			).makeResourceInput('met',0
@@ -2435,6 +2626,7 @@ var iface =
 			).changeOutputSelect(config.data.defOutput
 			).makePlanetSelect(
 			).checkRatio();
+		_this.findIDP('selCurPla_button').click(function(){_this.planet.clickCurrent();});
 		_this.menuButtonAction = function(){_this.toggle();}
 		
 		// config
@@ -2466,9 +2658,23 @@ var iface =
 			_this.percentCry.num,
 			_this.percentDeu.num
 		);
-		_this.outputMet.text(NumberFormat.formatI(out.met));
-		_this.outputCry.text(NumberFormat.formatI(out.cry));
-		_this.outputDeu.text(NumberFormat.formatI(out.deu));
+		_this.outputMet.val(out.met);
+		_this.outputCry.val(out.cry);
+		_this.outputDeu.val(out.deu);
+		if (_this.action=='buy')
+		{
+			_this.sendRes.val(out.met + out.cry + out.deu);
+			_this.receiveRes.val(_this.inputMet.num + _this.inputCry.num + _this.inputDeu.num);
+		}
+		else
+		{
+			_this.receiveRes.val(out.met + out.cry + out.deu);
+			_this.sendRes.val(_this.inputMet.num + _this.inputCry.num + _this.inputDeu.num);
+		}
+		_this.sendLC.val(Math.ceil(_this.sendRes.num/25000));
+		_this.sendSC.val(Math.ceil(_this.sendRes.num/5000));
+		_this.receiveLC.val(Math.ceil(_this.receiveRes.num/25000));
+		_this.receiveSC.val(Math.ceil(_this.receiveRes.num/5000));
 		_this.outputMessage.text(messageMaker.make(
 			_this.action,
 			{
@@ -2477,9 +2683,19 @@ var iface =
 				deu : _this.inputDeu.txt,
 			},
 			{
-				met : _this.outputMet.text(),
-				cry : _this.outputCry.text(),
-				deu : _this.outputDeu.text(),
+				met : _this.outputMet.val(),
+				cry : _this.outputCry.val(),
+				deu : _this.outputDeu.val(),
+			},
+			{
+				res : _this.sendRes.val(),
+				lc  : _this.sendLC.val(),
+				sc  : _this.sendSC.val(),
+			},
+			{
+				res : _this.receiveRes.val(),
+				lc  : _this.receiveLC.val(),
+				sc  : _this.receiveSC.val(),
 			},
 			{
 				met : _this.ratioMet.txt,
