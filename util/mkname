@@ -8,7 +8,7 @@ fi
 SELFDIR=$(dirname "$0")
 GETVAR="$SELFDIR/getmetavar"
 
-printf $("$GETVAR" "$1" name | sed 's/\s/\_/g')
-printf "_"
+#printf $("$GETVAR" "$1" name | sed 's/\s/\_/g')
+#printf "_"
 printf $("$GETVAR" "$1" version)
 echo ".user.js"

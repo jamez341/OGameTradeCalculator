@@ -1,5 +1,6 @@
 
 DIR_DIST = ./dist
+DIR_VERSIONS = $(DIR_DIST)/versions
 DIR_SRC  = ./src
 DIR_UTIL = ./util
 
@@ -14,7 +15,7 @@ SRC_URL = file://`pwd`/$(SRC)
 
 SRCS = $(MAKEFILE) $(GETMETA) $(GETMETAVAR) $(MKNAME) $(COMPRESS) $(SRC)
 
-OUT         = $(DIR_DIST)/`$(MKNAME) $(SRC)`
+OUT         = $(DIR_VERSIONS)/`$(MKNAME) $(SRC)`
 LATEST_USER = $(DIR_DIST)/latest.user.js
 LATEST_META = $(DIR_DIST)/latest.meta.js
 LATEST      = $(LATEST_USER) $(LATEST_META)
@@ -27,10 +28,10 @@ TEST_NAV = $(CH_WIN) firefox; firefox
 NO_OUT   = > /dev/null 2> /dev/null
 
 $(LATEST): $(SRC)
+	mkdir -p $(DIR_VERSIONS)
 	$(GETMETA) $(SRC) > $(LATEST_META)
-	$(COMPRESS) $(SRC) > $(OUT)
-	cp $(OUT) $(LATEST_USER)
-	git add $(OUT)
+	$(COMPRESS) $(SRC) > $(LATEST_USER)
+	cp $(LATEST_USER) $(OUT)
 
 commit:
 	sh -c "git commit -a; exit 0"
