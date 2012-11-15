@@ -1,2 +1,4 @@
 *~
 /dist/versions
+/dist/*.user.js
+/dist/*.meta.js
