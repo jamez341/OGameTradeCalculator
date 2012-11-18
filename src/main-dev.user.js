@@ -232,108 +232,140 @@ var I18N =
 /*! [i18n=en] */
 ).set(/.*/,
 {
-	THO_SEP : ',',
-	DEC_SEP : '.',
-	MENU    : 'Trace C.',
-	TITLE   : 'Trade calculator',
-	ACTION  : 'Action',
-	BUY     : 'I buy',
-	SELL    : 'I sell',
-	RATIO   : 'Ratio',
-	ILLEGAL : 'illegal',
-	IN_EXCH : 'In exchange for',
-	RESULT  : 'Result',
-	SEND    : 'I send',
-	RECEIVE : 'I receive',
-	RES     : 'Resources',
-	LC_SHIP : 'LC',
-	SC_SHIP : 'SC',
-	OR      : 'or',
-	MESSAGE : 'Message',
-	WHERE   : 'Place of delivery',
-	PLANET  : 'Planet',
-	MOON    : 'Moon',
-	CUR_PLA : 'Current planet',
-	SEL_CUR : 'Select current planet or moon',
-	MAX     : 'Maximum',
-	REG     : 'Regular',
-	MIN     : 'Minimum',
-	RAT_LST : 'Ratio list',
-	NAME    : 'Name',
-	LEGAL   : 'Legal',
-	YES     : 'Yes',
-	NO      : 'No',
-	DEFAULT : 'Default',
-	NEW     : 'New',
-	DEF_VAL : 'Default values',
-	ABB_KEY : 'Abbreviations and auto-complete keys',
-	USE_ABB : 'Use abbreviations when possible',
-	UNABB   : 'Unabbreviate fields when the mouse is over them',
-	ABB_MIL : 'Abbreviation for millions',
-	ABB_THO : 'Abbreviation for thousands',
-	KEY_MIL : 'Key to write millions (6 zeros)',
-	KEY_THO : 'Key to write thousands (3 zeros)',
-	MES_TPL : 'Message template',
-	RES_DTP : 'Restore default template',
-	IE_CONF : 'Import / Export configuration',
-	IMPORT  : 'Import',
-	EXPORT  : 'Export',
-	ACCEPT  : 'Accept',
-	CANCEL  : 'Cancel',
-	RES_DEF : 'Restore default settings'
+	// Number separators
+	THO_SEP : ",",
+	DEC_SEP : ".",
+	// Menu button
+	MENU    : "Trace C.",
+	// Window title
+	TITLE   : "Trade calculator",
+	CONFIG  : "Settings",
+	// Actions
+	ACTION  : "Action",
+	BUY     : "I buy",
+	SELL    : "I sell",
+	// Ratio
+	RATIO   : "Ratio",
+	ILLEGAL : "illegal",
+	MAX     : "Maximum",
+	REG     : "Regular",
+	MIN     : "Minimum",
+	// Output
+	IN_EXCH : "In exchange for",
+	RESULT  : "Result",
+	SEND    : "I send",
+	RECEIVE : "I receive",
+	RES     : "Resources",
+	// Ships
+	LC_SHIP : "LC", // Abb. of "Large Cargo Ship"
+	SC_SHIP : "SC", // Abb. of "Small Cargo Ship"
+	OR      : "or", // e.g. 100 (LC) or 500 (SC)
+	// Message
+	MESSAGE : "Message",
+	// Place of delivery
+	WHERE   : "Place of delivery",
+	PLANET  : "Planet",
+	MOON    : "Moon",
+	CUR_PLA : "Current planet",
+	SEL_CUR : "Select current planet or moon",
+	// Config » Ratio list
+	RAT_LST : "Ratio list",
+	NAME    : "Name",
+	LEGAL   : "Legal",
+	YES     : "Yes",
+	NO      : "No",
+	DEFAULT : "Default",
+	NEW     : "New",
+	// Config » Default values
+	DEF_VAL : "Default values",
+	// Config » Abbs & keys
+	ABB_KEY : "Abbreviations and auto-complete keys",
+	USE_ABB : "Use abbreviations when possible",
+	UNABB   : "Unabbreviate fields when the mouse is over them",
+	ABB_MIL : "Abbreviation for millions",
+	ABB_THO : "Abbreviation for thousands",
+	KEY_MIL : "Key to write millions (6 zeros)",
+	KEY_THO : "Key to write thousands (3 zeros)",
+	// Config » Message tpl
+	MES_TPL : "Message template",
+	RES_DTP : "Restore default template",
+	// Config » Import / Export
+	IE_CONF : "Import / Export configuration",
+	IMPORT  : "Import",
+	EXPORT  : "Export",
+	// Config » Buttons
+	ACCEPT  : "Accept",
+	CANCEL  : "Cancel",
+	RES_DEF : "Restore default settings"
 }
 /*! [i18n=es] */
 ).set(/es|ar|mx/,
 {
-	THO_SEP : '.',
-	DEC_SEP : ',',
-	MENU    : 'C. Comercio',
-	TITLE   : 'Calculadora de comercio',
-	ACTION  : 'Acción',
-	BUY     : 'Compro',
-	SELL    : 'Vendo',
-	RATIO   : 'Ratio',
-	ILLEGAL : 'ilegal',
-	IN_EXCH : 'A cambio de',
-	RESULT  : 'Resultado',
-	SEND    : 'Envío',
-	RECEIVE : 'Recibo',
-	RES     : 'Recursos',
-	LC_SHIP : 'NGC',
-	SC_SHIP : 'NPC',
-	OR      : 'o',
-	MESSAGE : 'Mensaje',
-	WHERE   : 'Lugar de entrega',
-	PLANET  : 'Planeta',
-	MOON    : 'Luna',
-	CUR_PLA : 'Planeta actual',
-	SEL_CUR : 'Seleccionar planeta o luna actual',
-	MAX     : 'Máximo',
-	REG     : 'Normal',
-	MIN     : 'Mínimo',
-	RAT_LST : 'Lista de ratios',
-	NAME    : 'Nombre',
-	LEGAL   : 'Legal',
-	YES     : 'Si',
-	NO      : 'No',
-	DEFAULT : 'Por defecto',
-	NEW     : 'Nuevo',
-	DEF_VAL : 'Valores por defecto',
-	ABB_KEY : 'Abreviaciones y teclas de autocompletado',
-	USE_ABB : 'Usar abreviaciones cuando sea posible',
-	UNABB   : 'Desabreviar campos al poner el ratón encima',
-	ABB_MIL : 'Abreviación para millones',
-	ABB_THO : 'Abreviación para miles',
-	KEY_MIL : 'Tecla para escribir millones (6 ceros)',
-	KEY_THO : 'Tecla para escribir miles (3 ceros)',
-	MES_TPL : 'Plantilla de mensaje',
-	RES_DTP : 'Restaurar plantilla por defecto',
-	IE_CONF : 'Importar / Exportar configuración',
-	IMPORT  : 'Importar',
-	EXPORT  : 'Exportar',
-	ACCEPT  : 'Aceptar',
-	CANCEL  : 'Cancelar',
-	RES_DEF : 'Restaurar ajustes por defecto'
+	// Number separators
+	THO_SEP : ".",
+	DEC_SEP : ",",
+	// Menu button
+	MENU    : "C. Comercio",
+	// Window title
+	TITLE   : "Calculadora de comercio",
+	CONFIG  : "Configuración",
+	// Actions
+	ACTION  : "Acción",
+	BUY     : "Compro",
+	SELL    : "Vendo",
+	// Ratio
+	RATIO   : "Ratio",
+	ILLEGAL : "ilegal",
+	MAX     : "Máximo",
+	REG     : "Normal",
+	MIN     : "Mínimo",
+	// Output
+	IN_EXCH : "A cambio de",
+	RESULT  : "Resultado",
+	SEND    : "Envío",
+	RECEIVE : "Recibo",
+	RES     : "Recursos",
+	// Ships
+	LC_SHIP : "NGC", // Abb. of "Large Cargo Ship"
+	SC_SHIP : "NPC", // Abb. of "Small Cargo Ship"
+	OR      : "o", // e.g. 100 (LC) or 500 (SC)
+	// Message
+	MESSAGE : "Mensaje",
+	// Place of delivery
+	WHERE   : "Lugar de entrega",
+	PLANET  : "Planeta",
+	MOON    : "Luna",
+	CUR_PLA : "Planeta actual",
+	SEL_CUR : "Seleccionar planeta o luna actual",
+	// Config » Ratio list
+	RAT_LST : "Lista de ratios",
+	NAME    : "Nombre",
+	LEGAL   : "Legal",
+	YES     : "Si",
+	NO      : "No",
+	DEFAULT : "Por defecto",
+	NEW     : "Nuevo",
+	// Config » Default values
+	DEF_VAL : "Valores por defecto",
+	// Config » Abbs & keys
+	ABB_KEY : "Abreviaciones y teclas de autocompletado",
+	USE_ABB : "Usar abreviaciones cuando sea posible",
+	UNABB   : "Desabreviar campos al poner el ratón encima",
+	ABB_MIL : "Abreviación para millones",
+	ABB_THO : "Abreviación para miles",
+	KEY_MIL : "Tecla para escribir millones (6 ceros)",
+	KEY_THO : "Tecla para escribir miles (3 ceros)",
+	// Config » Message tpl
+	MES_TPL : "Plantilla de mensaje",
+	RES_DTP : "Restaurar plantilla por defecto",
+	// Config » Import / Export
+	IE_CONF : "Importar / Exportar configuración",
+	IMPORT  : "Importar",
+	EXPORT  : "Exportar",
+	// Config » Buttons
+	ACCEPT  : "Aceptar",
+	CANCEL  : "Cancelar",
+	RES_DEF : "Restaurar ajustes por defecto"
 }
 /*! [/i18n] */
 ).text;
@@ -368,29 +400,29 @@ var TPL =
 			"top:0;left:100px;right:100px;"+
 		"}"+
 		"#"+IDP+"config_but{"+
-			'display:block;'+
-			'height:16px;'+
-			'width:16px;'+
-			'background:url(http://gf3.geo.gfsrv.net/cdne7/1f57d944fff38ee51d49c027f574ef.gif);'+
-			'float:right;'+
-			'margin:8px 0 0 0;'+
-			'opacity:0.5;'+
+			"display:block;"+
+			"height:16px;"+
+			"width:16px;"+
+			"background:url(http://gf3.geo.gfsrv.net/cdne7/1f57d944fff38ee51d49c027f574ef.gif);"+
+			"float:right;"+
+			"margin:8px 0 0 0;"+
+			"opacity:0.5;"+
 		"}"+
 		"#"+IDP+"config_but:hover{"+
-			'opacity:1;'+
+			"opacity:1;"+
 		"}"+
 		"#"+IDP+"window.config input[type=\"button\"]{"+
-			'margin:0 5px 0 5px;'+
-		"}"+
-		"#"+IDP+"window.config #"+IDP+"config_but{"+
-			'display:none;'+
+			"margin:0 5px 0 5px;"+
 		"}"+
 		"#"+IDP+"config,"+
-		"#"+IDP+"window.config #"+IDP+"calc{"+
-			'display:none;'+
+		"#"+IDP+"window.config #"+IDP+"calc,"+
+		"#"+IDP+"window.config #"+IDP+"config_but,"+
+		//"#"+IDP+"window.config ."+IDP+"calc_only,"+
+		"#"+IDP+"window.calc ."+IDP+"config_only{"+
+			"display:none;"+
 		"}"+
 		"#"+IDP+"window.config #"+IDP+"config{"+
-			'display:block;'+
+			"display:block;"+
 		"}"+
 		"#"+IDP+"main{"+
 			"padding:15px 25px 0 25px;"+
@@ -580,7 +612,7 @@ var TPL =
 			"border:1px solid #000;"+
 			"border-radius:2px;"+
 			//"margin: 0 0 0 1px;"+
-			'opacity:0.7;'+
+			"opacity:0.7;"+
 		"}"+
 		"a."+IDP+"icon_up,"+
 		"a."+IDP+"icon_down,"+
@@ -594,7 +626,7 @@ var TPL =
 			"background-position:0px -32px"+
 		"}"+
 		"."+IDP+"action a:hover{"+
-			'opacity:1;'+
+			"opacity:1;"+
 			"border-color:#08090b;"+
 		"}"+
 		"."+IDP+"action a.disabled,"+
@@ -680,7 +712,7 @@ var TPL =
 	WINDOW :
 		'<div id="'+IDP+'window" class="calc">'+
 			'<div id="'+IDP+'header">'+
-				'<h4>'+I18N.TITLE+'</h4>'+
+				'<h4>'+I18N.TITLE+'<span class="'+IDP+'config_only"> &raquo; '+I18N.CONFIG+'</span></h4>'+
 				'<a id="'+IDP+'close" href="javascript:void(0);" class="close_details close_ressources"></a>'+
 				'<a id="'+IDP+'config_but" href="javascript:void(0);"></a>'+
 			'</div>'+
