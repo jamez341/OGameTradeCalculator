@@ -4,7 +4,7 @@
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version        2.4.2
+// @version        2.4.3
 // @include        *://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
@@ -42,6 +42,23 @@ try{if (unsafeWindow) win = unsafeWindow;}
 catch(e){}
 doc = win.document;
 $ = win.jQuery;
+
+var storage =
+{
+	obj : win.localStorage,
+	set : function (id,data)
+	{
+		return this.obj.setItem(IDP+id,JSON.stringify(data));
+	},
+	get : function (id)
+	{
+		return JSON.parse(this.obj.getItem(IDP+id));
+	},
+	remove : function (id)
+	{
+		return this.obj.removeItem(IDP+id);
+	}
+}
 
 $.getScript('/cdn/js/greasemonkey/version-check.js', function() {
 	win.oGameVersionCheck(SCRIPT.NAME, SCRIPT.TESTED_OGAME_VERSION, SCRIPT.HOME_URL);
@@ -366,6 +383,75 @@ var I18N =
 	ACCEPT  : "Aceptar",
 	CANCEL  : "Cancelar",
 	RES_DEF : "Restaurar ajustes por defecto"
+}
+/*! [i18n=nl] by sanctuary http://userscripts.org/users/431052 */
+).set(/nl/,
+{
+	// Number separators
+	THO_SEP : ",",
+	DEC_SEP : ".",
+	// Menu button
+	MENU    : "Trace C.",
+	// Window title
+	TITLE   : "Trade calculator",
+	CONFIG  : "Instellingen",
+	// Actions
+	ACTION  : "Actie",
+	BUY     : "Ik koop",
+	SELL    : "Ik verkoop",
+	// Ratio
+	RATIO   : "Verhouding",
+	ILLEGAL : "illegaal",
+	MAX     : "Maximaal",
+	REG     : "Gemiddeld",
+	MIN     : "Minimaal",
+	// Output
+	IN_EXCH : "In ruil voor",
+	RESULT  : "Resultaat",
+	SEND    : "Ik verstuur",
+	RECEIVE : "Ik ontvang",
+	RES     : "Grondstoffen",
+	// Ships
+	LC_SHIP : "GV", // Abb. of "Groot vrachtschip"
+	SC_SHIP : "KV", // Abb. of "Klein vrachtschip"
+	OR      : "of", // e.g. 100 (GV) or 500 (KV)
+	// Message
+	MESSAGE : "Bericht",
+	// Place of delivery
+	WHERE   : "Plaats van levering",
+	PLANET  : "Planeet",
+	MOON    : "Maan",
+	CUR_PLA : "Huidige planeet",
+	SEL_CUR : "Kies huidige planeet of maan",
+	// Config » Ratio list
+	RAT_LST : "Verhouding lijst",
+	NAME    : "Naam",
+	LEGAL   : "Legaal",
+	YES     : "Ja",
+	NO      : "Nee",
+	DEFAULT : "Standaard",
+	NEW     : "Nieuw",
+	// Config » Default values
+	DEF_VAL : "Standaard waarde",
+	// Config » Abbs & keys
+	ABB_KEY : "Toets afkortingen en automatisch aanvullen",
+	USE_ABB : "Gebruik afkortingen wanneer mogelijk",
+	UNABB   : "Verkort velden wanneer de mouse over het veld staat",
+	ABB_MIL : "Afkorting voor miljoen",
+	ABB_THO : "Afkorting voor duizend",
+	KEY_MIL : "Toets voor miljoen te schrijven (6 nullen)",
+	KEY_THO : "Toets voor duizend te schrijven (3 nullen)",
+	// Config » Message tpl
+	MES_TPL : "Bericht sjabloon",
+	RES_DTP : "Herstel standaard sjabloon",
+	// Config » Import / Export
+	IE_CONF : "Invoer / Uitvoer configuratie",
+	IMPORT  : "Invoer",
+	EXPORT  : "Uitvoer",
+	// Config » Buttons
+	ACCEPT  : "Accepteer",
+	CANCEL  : "Annuleer",
+	RES_DEF : "Herstel naar standaard instellingen"
 }
 /*! [/i18n] */
 ).text;
@@ -1283,21 +1369,24 @@ var config =
 	save : function (data)
 	{
 		if (arguments.length>0) this.data = data;
-		win.localStorage.setItem(IDP+'config', JSON.stringify(this.data));
+		//win.localStorage.setItem(IDP+'config', JSON.stringify(this.data));
+		storage.set('config',this.data);
 		return this;
 	},
 	load : function ()
 	{
-		var data = win.localStorage.getItem(IDP+'config');
+		//var data = win.localStorage.getItem(IDP+'config');
+		var data = storage.get('config');
 		if (data==null)
 			this.data = this.getDefaultData();
 		else
-			this.save(this.updateVersion(JSON.parse(data)));
+			this.save(this.updateVersion(data));
 		return this;
 	},
 	remove : function ()
 	{
-		win.localStorage.removeItem(IDP+'config');
+		//win.localStorage.removeItem(IDP+'config');
+		storage.remove('config');
 		this.data = this.getDefaultData();
 	}
 }
