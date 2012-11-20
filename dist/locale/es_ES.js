@@ -63,5 +63,7 @@
 	// Config » Buttons
 	ACCEPT  : "Aceptar",
 	CANCEL  : "Cancelar",
-	RES_DEF : "Restaurar ajustes por defecto"
+	RES_DEF : "Restaurar ajustes por defecto",
+	// Config » Contact
+	CONTACT : "Información de contacto"
 }

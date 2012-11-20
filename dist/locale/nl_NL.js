@@ -63,5 +63,7 @@
 	// Config » Buttons
 	ACCEPT  : "Accepteer",
 	CANCEL  : "Annuleer",
-	RES_DEF : "Herstel naar standaard instellingen"
+	RES_DEF : "Herstel naar standaard instellingen",
+	// Config » Contact
+	CONTACT : "Contactinformatie"
 }

@@ -4,7 +4,7 @@
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version        2.4.3
+// @version        2.4.4
 // @include        *://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
@@ -18,7 +18,7 @@ SCRIPT =
 	NAME      : 'OGame Trade Calculator',
 	HOME_URL  : 'http://userscripts.org/scripts/show/151002',
 	TESTED_OGAME_VERSION : '5.2.0-beta4',
-	VERSION : [2,4,2]
+	VERSION : [2,4,4]
 },
 
 /* true if (v1<v2) OR (v1==v2 && eq) */
@@ -313,7 +313,9 @@ var I18N =
 	// Config » Buttons
 	ACCEPT  : "Accept",
 	CANCEL  : "Cancel",
-	RES_DEF : "Restore default settings"
+	RES_DEF : "Restore default settings",
+	// Config » Contact
+	CONTACT : "Contact information"
 }
 /*! [i18n=es] */
 ).set(/es|ar|mx/,
@@ -382,7 +384,9 @@ var I18N =
 	// Config » Buttons
 	ACCEPT  : "Aceptar",
 	CANCEL  : "Cancelar",
-	RES_DEF : "Restaurar ajustes por defecto"
+	RES_DEF : "Restaurar ajustes por defecto",
+	// Config » Contact
+	CONTACT : "Información de contacto"
 }
 /*! [i18n=nl] by sanctuary http://userscripts.org/users/431052 */
 ).set(/nl/,
@@ -451,7 +455,9 @@ var I18N =
 	// Config » Buttons
 	ACCEPT  : "Accepteer",
 	CANCEL  : "Annuleer",
-	RES_DEF : "Herstel naar standaard instellingen"
+	RES_DEF : "Herstel naar standaard instellingen",
+	// Config » Contact
+	CONTACT : "Contactinformatie"
 }
 /*! [/i18n] */
 ).text;
@@ -1061,6 +1067,34 @@ var TPL =
 						'<textarea id="'+IDP+'ie_conf"></textarea>'+
 						'<input id="'+IDP+'ie_import" type="button" value="'+I18N.IMPORT+'" class="btn_blue">'+
 						'<input id="'+IDP+'ie_export" type="button" value="'+I18N.EXPORT+'" class="btn_blue">'+
+					'</div>'+
+					//
+					// CONTACT
+					//
+					'<div class="'+IDP+'config_title">'+I18N.CONTACT+'</div>'+
+					'<div class="'+IDP+'config_box '+IDP+'hidden">'+
+						'<table cellspacing="0" cellpadding="0"><tbody>'+
+							/*'<tr>'+
+								'<th>#</th>'+
+								'<th>Description</th>'+
+								'<th>Link</th>'+
+							'</tr>'+*/
+							'<tr class="alt">'+
+								'<td class="'+IDP+'label '+IDP+'pos">1</td>'+
+								'<td>Userscripts</td>'+
+								'<td><a href="http://userscripts.org/scripts/discuss/151002" target="_blank">Discuss OGame Trade Calculator - userscripts.org</a></td>'+
+							'</tr>'+
+							'<tr>'+
+								'<td class="'+IDP+'label '+IDP+'pos">2</td>'+
+								'<td>Ogame Origin</td>'+
+								'<td><a href="http://board.origin.ogame.de/board6-origin/board38-tools-scripts-skins/board39-tolerated-tools-addons-scripts/4367-ogame-trade-calculator/" target="_blank">[Tolerated] OGame Trade Calculator - board.origin.ogame.de</a></td>'+
+							'</tr>'+
+							'<tr class="alt">'+
+								'<td class="'+IDP+'label '+IDP+'pos">3</td>'+
+								'<td>Ogame España</td>'+
+								'<td><a href="http://board.ogame.com.es/board859-ogamelacomunidad/board860-comunidad/board422-utilidadesyskinsparaogame/1224751-scriptcalculadoradecomerciolegal/" target="_blank">[Script] Calculadora de Comercio [Legal] - board.ogame.com.es</a></td>'+
+							'</tr>'+
+						'</tbody></table>'+
 					'</div>'+
 					//
 					// BUTTONS
