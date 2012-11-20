@@ -48,7 +48,7 @@
 	// Config » Abbs & keys
 	ABB_KEY : "Toets afkortingen en automatisch aanvullen",
 	USE_ABB : "Gebruik afkortingen wanneer mogelijk",
-	UNABB   : "Verkort velden wanneer de mouse over het veld staat",
+	UNABB   : "Verkort velden wanneer de muis over het veld staat",
 	ABB_MIL : "Afkorting voor miljoen",
 	ABB_THO : "Afkorting voor duizend",
 	KEY_MIL : "Toets voor miljoen te schrijven (6 nullen)",

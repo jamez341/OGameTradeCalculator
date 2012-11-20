@@ -4,7 +4,7 @@
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version        2.4.5
+// @version        2.4.6
 // @include        *://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
@@ -18,7 +18,7 @@ SCRIPT =
 	NAME      : 'OGame Trade Calculator',
 	HOME_URL  : 'http://userscripts.org/scripts/show/151002',
 	TESTED_OGAME_VERSION : '5.2.0-beta4',
-	VERSION : [2,4,5]
+	VERSION : [2,4,6]
 },
 
 /* true if (v1<v2) OR (v1==v2 && eq) */
@@ -440,7 +440,7 @@ var I18N =
 	// Config » Abbs & keys
 	ABB_KEY : "Toets afkortingen en automatisch aanvullen",
 	USE_ABB : "Gebruik afkortingen wanneer mogelijk",
-	UNABB   : "Verkort velden wanneer de mouse over het veld staat",
+	UNABB   : "Verkort velden wanneer de muis over het veld staat",
 	ABB_MIL : "Afkorting voor miljoen",
 	ABB_THO : "Afkorting voor duizend",
 	KEY_MIL : "Toets voor miljoen te schrijven (6 nullen)",
