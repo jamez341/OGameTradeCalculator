@@ -3,7 +3,7 @@
 	THO_SEP : ",",
 	DEC_SEP : ".",
 	// Menu button
-	MENU    : "Trace C.",
+	MENU    : "Trade C.",
 	// Window title
 	TITLE   : "Trade calculator",
 	CONFIG  : "Settings",
