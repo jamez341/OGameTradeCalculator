@@ -8,6 +8,7 @@ MAKEFILE   = ./Makefile
 GETMETA    = $(DIR_UTIL)/getmeta
 GETMETAVAR = $(DIR_UTIL)/getmetavar
 MKNAME     = $(DIR_UTIL)/mkname
+MKUPDATE   = $(DIR_UTIL)/mkupdate
 COMPRESS   = $(DIR_UTIL)/compress
 
 SRC     = $(DIR_SRC)/main-dev.user.js
@@ -20,6 +21,7 @@ LATEST_USER = $(DIR_DIST)/latest.user.js
 LATEST_META = $(DIR_DIST)/latest.meta.js
 LATEST      = $(LATEST_USER) $(LATEST_META)
 LATEST_URL  = file://`pwd`/$(LATEST_USER)
+UPDATER     = $(DIR_DIST)/updater.js
 
 CH_WIN   = sh -c "ps | grep -qi \$$1 && wmctrl -a \$$1; exit 0" +o
 GEDIT    = $(CH_WIN) gedit; gedit
@@ -32,6 +34,9 @@ $(LATEST): $(SRC)
 	$(GETMETA) $(SRC) > $(LATEST_META)
 	$(COMPRESS) $(SRC) > $(LATEST_USER)
 	cp $(LATEST_USER) $(OUT)
+
+updater:
+	$(MKUPDATE) $(SRC) > $(UPDATER)
 
 commit:
 	sh -c "git commit -a; exit 0"

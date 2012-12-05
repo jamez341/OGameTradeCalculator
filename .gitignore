@@ -2,3 +2,5 @@
 /dist/versions
 /dist/*.user.js
 /dist/*.meta.js
+dist/updater.js
+src/main-dev.user--copy.js

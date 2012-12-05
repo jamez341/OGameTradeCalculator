@@ -1,11 +1,11 @@
 // ==UserScript==
-// @name           OGame Trade Calculator
+// @name	   OGame Trade Calculator
 // @description    Adds a trade calculator to the OGame interface
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version        2.4.8
-// @include        *://*.ogame.*/game/index.php?*page=*
+// @version	2.5
+// @include	*://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
 (function(){
@@ -14,11 +14,22 @@
 var IDP,
 SCRIPT =
 {
-	ID_PREFIX : (IDP='o_trade_calc_'),
-	NAME      : 'OGame Trade Calculator',
-	HOME_URL  : 'http://userscripts.org/scripts/show/151002',
-	TESTED_OGAME_VERSION : '5.2.0-beta4',
-	VERSION : [2,4,8]
+	VERSION      : [2,5],
+	ID_PREFIX    : (IDP=/*[IDP]*/'o_trade_calc_'/*[/IDP]*/),
+	NAME	     : 'OGame Trade Calculator',
+	HOME_URL     : 'http://userscripts.org/scripts/show/151002',
+	UPDATE_URL   : 'https://userscripts.org/scripts/source/151002.meta.js',
+	UPDATE_JSONP : 'https://dl.dropbox.com/u/89283239/OGame%20Trade%20Calculator/dist/updater.js',
+	DOWNLOAD_URL : 'https://userscripts.org/scripts/source/151002.user.js',
+	TESTED_OGAME_VERSION : '5.2.0-beta7'
+},
+
+parseVersion = function (version)
+{
+	var i,v = version.split(/\D+/g);
+	for (i in v)
+		v[i]=parseInt(v[i]);
+	return v;
 },
 
 /* true if (v1<v2) OR (v1==v2 && eq) */
@@ -52,7 +63,8 @@ var storage =
 	},
 	get : function (id)
 	{
-		return JSON.parse(this.obj.getItem(IDP+id));
+		var value = this.obj.getItem(IDP+id);
+		return (value==null) ? null : JSON.parse(value);
 	},
 	remove : function (id)
 	{
@@ -99,26 +111,26 @@ $.getScript('/cdn/js/greasemonkey/version-check.js', function() {
 			return this
 		} else {
 			// Modification as suggested by Андрей Юткин
-           if(browser){
+	   if(browser){
 				var selection=document.selection;
-                if (this[0].tagName.toLowerCase() != "textarea") {
-                    var val = this.val(),
-                    range = selection[createRange]()[duplicate]();
-                    range.moveEnd("character", val[len]);
-                    var s = (range.text == "" ? val[len]:val.lastIndexOf(range.text));
-                    range = selection[createRange]()[duplicate]();
-                    range.moveStart("character", -val[len]);
-                    var e = range.text[len];
-                } else {
-                    var range = selection[createRange](),
-                    stored_range = range[duplicate]();
-                    stored_range.moveToElementText(this[0]);
-                    stored_range.setEndPoint('EndToEnd', range);
-                    var s = stored_range.text[len] - range.text[len],
-                    e = s + range.text[len]
-                }
+		if (this[0].tagName.toLowerCase() != "textarea") {
+		    var val = this.val(),
+		    range = selection[createRange]()[duplicate]();
+		    range.moveEnd("character", val[len]);
+		    var s = (range.text == "" ? val[len]:val.lastIndexOf(range.text));
+		    range = selection[createRange]()[duplicate]();
+		    range.moveStart("character", -val[len]);
+		    var e = range.text[len];
+		} else {
+		    var range = selection[createRange](),
+		    stored_range = range[duplicate]();
+		    stored_range.moveToElementText(this[0]);
+		    stored_range.setEndPoint('EndToEnd', range);
+		    var s = stored_range.text[len] - range.text[len],
+		    e = s + range.text[len]
+		}
 			// End of Modification
-            } else {
+	    } else {
 				var s=t.selectionStart,
 					e=t.selectionEnd;
 			}
@@ -180,7 +192,7 @@ String.prototype.trim = function()
 	return this.replace(/^\s+/,'').replace(/\s+$/,'');
 }
 
-var INFO =
+var OGAME =
 ({
 	getMeta : function (name,def)
 	{
@@ -194,14 +206,14 @@ var INFO =
 	},
 	getResource : function (id)
 	{
-		var resource =
+		var _this = this, resource =
 		{
 			NAME : '',
 			AMOUNT : 0,
 			getName : function(varName) // used in I18N.text definition
 			{
 				var resName = this.NAME+'';
-				INFO[varName] = this.AMOUNT+0;
+				_this[varName] = this.AMOUNT+0;
 				return resName;
 			}
 		};
@@ -214,6 +226,7 @@ var INFO =
 	{
 		return {
 			LANGUAGE : this.getMeta('ogame-language',''),
+			VERSION  : parseVersion(this.getMeta('ogame-version','0')),
 			RES_MET  : this.getResource('metal_box'),
 			RES_CRY  : this.getResource('crystal_box'),
 			RES_DEU  : this.getResource('deuterium_box')
@@ -236,13 +249,13 @@ var COLOR =
 var I18N =
 ({
 	text : {
-		RES_MET : INFO.RES_MET.getName('RES_MET'),
-		RES_CRY : INFO.RES_CRY.getName('RES_CRY'),
-		RES_DEU : INFO.RES_DEU.getName('RES_DEU')
+		RES_MET : OGAME.RES_MET.getName('RES_MET'),
+		RES_CRY : OGAME.RES_CRY.getName('RES_CRY'),
+		RES_DEU : OGAME.RES_DEU.getName('RES_DEU')
 	},
 	set : function(pattern,obj)
 	{
-		if (pattern.test(INFO.LANGUAGE)) $.extend(true,this.text,obj);
+		if (pattern.test(OGAME.LANGUAGE)) $.extend(true,this.text,obj);
 		return this;
 	}
 }
@@ -257,6 +270,10 @@ var I18N =
 	// Window title
 	TITLE   : "Trade calculator",
 	CONFIG  : "Settings",
+	// Update
+	UPD_AVA : "Update available",
+	INSTALL : "Install",
+	GO_HOME : "Visit the site of the script",
 	// Actions
 	ACTION  : "Action",
 	BUY     : "I buy",
@@ -328,6 +345,10 @@ var I18N =
 	// Window title
 	TITLE   : "Calculadora de comercio",
 	CONFIG  : "Configuración",
+	// Update
+	UPD_AVA : "Actualización disponible",
+	INSTALL : "Instalar",
+	GO_HOME : "Visitar página del script",
 	// Actions
 	ACTION  : "Acción",
 	BUY     : "Compro",
@@ -399,6 +420,10 @@ var I18N =
 	// Window title
 	TITLE   : "Trade calculator",
 	CONFIG  : "Instellingen",
+	// Update
+	UPD_AVA : "Update beschikbaar",
+	INSTALL : "Installeren",
+	GO_HOME : "Bezoek de web van het script",
 	// Actions
 	ACTION  : "Actie",
 	BUY     : "Ik koop",
@@ -466,6 +491,9 @@ var TPL =
 {
 	/*! [css] */
 	CSS :
+		"#"+IDP+"window select{"+
+			"visibility:visible !important;"+ // ogame 5.2.0-beta7 fix
+		"}"+
 		"#"+IDP+"window{"+
 			"float:left;"+
 			"position:relative;"+
@@ -516,12 +544,24 @@ var TPL =
 		"#"+IDP+"window.config #"+IDP+"config{"+
 			"display:block;"+
 		"}"+
-		"#"+IDP+"main{"+
+		"#"+IDP+"main,"+
+		"#"+IDP+"update{"+
 			"padding:15px 25px 0 25px;"+
 			"background: url(\"http://gf1.geo.gfsrv.net/cdn9e/4f73643e86a952be4aed7fdd61805a.gif\") repeat-y scroll 5px 0px transparent;"+
 		"}"+
 		"#"+IDP+"main *{"+
 			"font-size:11px;"+
+		"}"+
+		"#"+IDP+"update div{"+
+			"font-size:11px;"+
+			"border:1px solid #000;"+
+			"color:#99CC00;"+
+			"line-height:30px;"+
+			"text-align:center;"+
+			"font-weight:bold;"+
+		"}"+
+		"#"+IDP+"update a{"+
+			"margin-left:15px;"+
 		"}"+
 		"#"+IDP+"window table{"+
 			"width:620px;"+ // 670 [window] - (25+25) [main padding] - 2 [border]
@@ -1192,6 +1232,19 @@ var TPL =
 			'<td class="'+IDP+'legal"></td>'+
 			'<td class="'+IDP+'label">-</td>'+
 		'</tr>',
+	
+	/*! [tpl=update] */
+	UPDATE :
+		'<div id="'+IDP+'update"><div>'+
+			'Actualización disponible'+
+			((typeof(GM_xmlhttpRequest)=="undefined")?'':
+			('<a target="_blank" href="'+SCRIPT.DOWNLOAD_URL+'">'+
+				'Instalar'+
+			'</a>'))+
+			'<a target="_blank" href="'+SCRIPT.HOME_URL+'">'+
+				'Ir a la página del script'+
+			'</a>'+
+		'</div></div>',
 	/*! [/tpl] */
 	
 	init : function()
@@ -1241,7 +1294,7 @@ var config =
 			millionKey  : 'm',
 			thousandAbb : 'K',
 			thousandKey : 'k',
-			abb         : false,
+			abb	        : false,
 			overUnabb   : false,
 			selCurPla   : false,
 			messageTpl  :
@@ -1391,9 +1444,15 @@ var config =
 	{
 		var v = (typeof(data.version)=='undefined') ? 0 : data.version,
 		i,
-		def = this.getDefaultData();;
-		if (v1_less_than_v2(v,[2,4]))
-			data.messageTpl = def.messageTpl;
+		def = this.getDefaultData();
+		if (v1_less_than_v2(v,[2,4])) data.messageTpl  = def.messageTpl;
+		if (v1_less_than_v2(v,[2,5]))
+		{
+			var list = data.ratioList, found = false;
+			for (i in list) if (list[i].id=='MAX') break;
+			if (i < list.length || list[i].ratio.join(':')=='5:3:1')
+				list[i].ratio = this.getRatioById('MAX',def).ratio;
+		}
 		data.version = def.version;
 		for (i in def)
 			if (typeof(data[i])=='undefined')
@@ -1403,23 +1462,21 @@ var config =
 	save : function (data)
 	{
 		if (arguments.length>0) this.data = data;
-		//win.localStorage.setItem(IDP+'config', JSON.stringify(this.data));
+		this.data = this.updateVersion(this.data);
 		storage.set('config',this.data);
 		return this;
 	},
 	load : function ()
 	{
-		//var data = win.localStorage.getItem(IDP+'config');
 		var data = storage.get('config');
 		if (data==null)
 			this.data = this.getDefaultData();
 		else
-			this.save(this.updateVersion(data));
+			this.save(data);
 		return this;
 	},
 	remove : function ()
 	{
-		//win.localStorage.removeItem(IDP+'config');
 		storage.remove('config');
 		this.data = this.getDefaultData();
 	}
@@ -2748,6 +2805,17 @@ var iface =
 		this.ieInput.val('');
 		return this;
 	},
+	needUpdate : false,
+	showUpdate : function ()
+	{
+		this.needUpdate = true;
+		this.menuButton.addClass('middlemark');
+		try
+		{
+			this.findIDP('main').before($(TPL.UPDATE));
+		}
+		catch(e){}
+	},
 	makeWindow : function ()
 	{
 		TPL.init();
@@ -2756,6 +2824,7 @@ var iface =
 		confRatioChecker = new RatioChecker();
 		var _this = this, defaultRatio = config.getRatioById(config.data.defRatio);
 		_this.ogameHide = $('#inhalt').after(this.window=$(TPL.WINDOW).hide());
+		if (_this.needUpdate) _this.showUpdate();
 		_this.addCss(TPL.CSS).show();
 		_this.ratioIllegal = _this.findIDP('ratio_illegal').hide();
 		_this.outputMessage = _this.findIDP('message').click(function(){$(this).select();});
@@ -2870,6 +2939,118 @@ var iface =
 	}
 }
 ).init();
+
+var getLatestVersion = (typeof(GM_xmlhttpRequest)=="undefined")
+// without Greasemonkey: JSONP => my Dropbox
+? function ()
+{
+	$('body').append($(
+		'<script src="'+SCRIPT.UPDATE_JSONP+'" type="text/javascript" />'
+	));
+}
+// with Greasemonkey: GM_xmlhttpRequest => userscript.org => .meta.js
+: function ()
+{
+	GM_xmlhttpRequest(
+	{
+		method: "GET",
+		url : SCRIPT.UPDATE_URL,
+		onload : function (response)
+		{
+			var lines = response.responseText.split("\n"),
+			i,
+			re = /^\s*\/\/\s*\@version\s+(\d+(?:\.\d+)*)\s*$/;
+			for (i in lines)
+				if (re.test(lines[i]))
+					return win[IDP+'onVersionFound'](
+						lines[i].replace(re,'$1')
+					);
+		}
+	});
+}
+
+var TIMESTAMP = Math.floor(utime()/1000);
+var cfuCache =
+{
+	defaultData : function ()
+	{
+		return {
+			interval  : 7,
+			noCheck   : false,
+			version   : SCRIPT.VERSION,
+			timestamp : 0,
+			versionOG : OGAME.VERSION
+		}
+	},
+	load : function ()
+	{
+		this.data = storage.get('cfu');
+		this.data = $.extend(
+			this.defaultData(),
+			(this.data==null) ? {} : this.data
+		);
+	},
+	update : function (version)
+	{
+		$.extend(this.data,
+		{
+			timestamp : TIMESTAMP,
+			versionOG : OGAME.VERSION,
+			version   : (arguments.length>0) ? version : this.data.version
+		});
+		storage.set('cfu',this.data);
+	},
+	save : function (data)
+	{
+		this.data = $.extend(this.defaultData(),this.data,(arguments.length>0)?data:{});
+		storage.set('cfu',this.data);
+	}
+}
+
+var checkForUpdates = function (onUpdateNeeded)
+{
+	var _onUpdateNeeded=onUpdateNeeded;
+	cfuCache.load ();
+	if (cfuCache.data.noCheck)
+		return cfuCache.update(SCRIPT.VERSION);
+
+	// the running version is older than the cached one
+	// no need to recheck
+	// win.console.log(SCRIPT.VERSION, cfuCache.data.version);
+	if (v1_less_than_v2(SCRIPT.VERSION, cfuCache.data.version))
+	{
+		cfuCache.update();
+		return _onUpdateNeeded();
+	}
+	
+	// win.console.log(cfuCache.data.versionOG, OGAME.VERSION);
+	// win.console.log(TIMESTAMP,cfuCache.data.timestamp+86400*cfuCache.data.interval);
+	if (
+		// new ogame version
+		(v1_less_than_v2(cfuCache.data.versionOG, OGAME.VERSION)) ||
+		// at least cache.interval days since the last check
+		(TIMESTAMP > cfuCache.data.timestamp+86400*cfuCache.data.interval)
+	)
+	{
+		// export onVersionFound function to the unsafeWindow
+		win[IDP+'onVersionFound'] = function (versionStr)
+		{
+			cfuCache.update(parseVersion(versionStr));
+			if (v1_less_than_v2(SCRIPT.VERSION,cfuCache.data.version))
+				_onUpdateNeeded();
+		}
+		// find out the latest version
+		// and run onVersionFound with it
+		getLatestVersion();
+	}
+}
+ 
+// setTimeout to avoid freezing the script
+// seems that it waits for the GM_xmlhttpRequest response
+// is not a real problem, just ugly
+setTimeout(function(){
+	checkForUpdates(function(){iface.showUpdate();});
+},1);
 
 /////
 })();
