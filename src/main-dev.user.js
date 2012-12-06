@@ -4,7 +4,7 @@
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version	2.5.1
+// @version	2.5.2
 // @include	*://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
@@ -14,7 +14,7 @@
 var IDP,
 SCRIPT =
 {
-	VERSION      : [2,5,1],
+	VERSION      : [2,5,2],
 	ID_PREFIX    : (IDP=/*[IDP]*/'o_trade_calc_'/*[/IDP]*/),
 	NAME	     : 'OGame Trade Calculator',
 	HOME_URL     : 'http://userscripts.org/scripts/show/151002',
@@ -2821,7 +2821,12 @@ var iface =
 	ogameDropDown : function (select)
 	{
 		var i, j, oldDD = $('.dropdown.dropdownList').get(), newDD, isNew, id, _change, _info;
-		select.ogameDropDown();
+		try {
+			select.ogameDropDown();
+		}
+		catch (e) {
+			return false;
+		}
 		_info = {
 			select : select
 		}
@@ -2855,11 +2860,13 @@ var iface =
 				break;
 			}
 		}
+		return true;
 	},
 	ogameDropDowns : function ()
 	{
 		var i, selects = this.window.find('select').get();
-		for (i=0;i<selects.length;i++)
+		if (!this.ogameDropDown($(selects[0]))) return;
+		for (i=1;i<selects.length;i++)
 			this.ogameDropDown($(selects[i]));
 			
 	},
@@ -2917,12 +2924,9 @@ var iface =
 			).updateConfigIface();
 		
 		// ogame dropdowns
-		/*try
-		{
-			*/_this.ogameDropDowns();
-		/*}
-		catch(e){}
-		*/
+		
+		_this.ogameDropDowns();
+		
 		return _this;
 	},
 	onChange : function()
