@@ -2854,7 +2854,7 @@ var iface =
 			if (isNew)
 			{
 				_info.dropdown = $('.dropdown [rel="'+id+'"]');
-				_info.dropdownList = newDD[i];
+				//_info.dropdownList = newDD[i];
 				_change();
 				select.change(_change);
 				break;
