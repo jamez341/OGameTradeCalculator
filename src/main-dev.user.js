@@ -4,7 +4,7 @@
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version	2.5.3
+// @version	2.5.4
 // @include	*://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
@@ -14,7 +14,7 @@
 var IDP,
 SCRIPT =
 {
-	VERSION      : [2,5,3],
+	VERSION      : [2,5,4],
 	ID_PREFIX    : (IDP=/*[IDP]*/'o_trade_calc_'/*[/IDP]*/),
 	NAME	     : 'OGame Trade Calculator',
 	HOME_URL     : 'http://userscripts.org/scripts/show/151002',
@@ -2551,6 +2551,7 @@ var iface =
 				' ('+ratio.name+')</option>'
 			));
 		}
+		this.ogameDropDown(select);
 		return this;
 	},
 	makeRatioInput: function (type /*met|cry|deu*/,value)
@@ -2820,8 +2821,18 @@ var iface =
 	},
 	ogameDropDown : function (select)
 	{
-		var i, j, oldDD = $('.dropdown.dropdownList').get(), newDD, isNew, id, _change, _info;
+		var i, j, oldDD, newDD, isNew, id, _change, _info, prevStyle=null;
 		try {
+			if (select.hasClass('dropdownInitialized'))
+			{
+				select.removeClass('dropdownInitialized');
+				oldDD = select.next('.dropdown');
+				id = oldDD.attr('rel');
+				prevStyle = oldDD.attr('style');
+				oldDD.remove();
+				$('#'+id).remove();
+			}
+			oldDD = $('.dropdown.dropdownList').get();
 			select.ogameDropDown();
 		}
 		catch (e) {
@@ -2854,6 +2865,7 @@ var iface =
 			if (isNew)
 			{
 				_info.dropdown = $('.dropdown [rel="'+id+'"]');
+				if(prevStyle!=null) _info.dropdown.parent().attr('style',prevStyle);
 				//_info.dropdownList = newDD[i];
 				_change();
 				select.change(_change);
