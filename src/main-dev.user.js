@@ -4,7 +4,7 @@
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version	2.5.2
+// @version	2.5.3
 // @include	*://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
@@ -14,7 +14,7 @@
 var IDP,
 SCRIPT =
 {
-	VERSION      : [2,5,2],
+	VERSION      : [2,5,3],
 	ID_PREFIX    : (IDP=/*[IDP]*/'o_trade_calc_'/*[/IDP]*/),
 	NAME	     : 'OGame Trade Calculator',
 	HOME_URL     : 'http://userscripts.org/scripts/show/151002',
@@ -1261,7 +1261,7 @@ var DEFAULT_RATIOS = (function()
 	/*! [default_ratios] */
 	return /^\w+\.ogame\.org$/.test(uni)
 		? [3,2,1,2,1,1,3,2,1]
-		: [5,3,1,2,1.5,1,3,2,1];
+		: [3,2,1,2,1.5,1,3,2,1];
 	/*! [/default_ratios] */
 }
 )();
@@ -1446,7 +1446,7 @@ var config =
 		i,
 		def = this.getDefaultData();
 		if (v1_less_than_v2(v,[2,4])) data.messageTpl  = def.messageTpl;
-		if (v1_less_than_v2(v,[2,5]))
+		if (v1_less_than_v2(v,[2,5,3]))
 		{
 			var list = data.ratioList, found = false;
 			for (i in list) if (list[i].id=='MAX') break;
