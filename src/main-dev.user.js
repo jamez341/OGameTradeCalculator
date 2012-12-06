@@ -4,7 +4,7 @@
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version	2.5
+// @version	2.5.1
 // @include	*://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
@@ -14,7 +14,7 @@
 var IDP,
 SCRIPT =
 {
-	VERSION      : [2,5],
+	VERSION      : [2,5,1],
 	ID_PREFIX    : (IDP=/*[IDP]*/'o_trade_calc_'/*[/IDP]*/),
 	NAME	     : 'OGame Trade Calculator',
 	HOME_URL     : 'http://userscripts.org/scripts/show/151002',
@@ -2609,7 +2609,9 @@ var iface =
 	},
 	checkOutputSelect : function ()
 	{
-		var _this = this, sel = _this.outputJqo.val(),
+		var _this = this,
+		jqo = _this.outputJqo, 
+		sel = jqo.val(),
 		im = (_this.inputMet.num>0),
 		ic = (_this.inputCry.num>0),
 		id = (_this.inputDeu.num>0),
@@ -2617,17 +2619,17 @@ var iface =
 		oc = /c/.test(sel),
 		od = /d/.test(sel);
 		if (!im && !ic && id && !om && !oc && od)
-			_this.changeOutputSelect('mc');
+			jqo.val('mc').change();
 		else if (!im && ic && !id && !om && oc && !od)
-			_this.changeOutputSelect('md');
+			jqo.val('md').change();
 		else if (im && !ic && !id && om && !oc && !od)
-			_this.changeOutputSelect('cd');
+			jqo.val('cd').change();
 		else if ((!im && ic && id) || om && ((ic && oc) || (id && od)))
-			_this.changeOutputSelect('m');
+			jqo.val('m').change();
 		else if ((im && !ic && id) || oc && ((im && om) || (id && od)))
-			_this.changeOutputSelect('c');
+			jqo.val('c').change();
 		else if ((im && ic && !id) || od && ((im && om) || (ic && oc)))
-			_this.changeOutputSelect('d');
+			jqo.val('d').change();
 		return _this;
 	},
 	changeOutputSelect : function (value)
@@ -2816,6 +2818,51 @@ var iface =
 		}
 		catch(e){}
 	},
+	ogameDropDown : function (select)
+	{
+		var i, j, oldDD = $('.dropdown.dropdownList').get(), newDD, isNew, id, _change, _info;
+		select.ogameDropDown();
+		_info = {
+			select : select
+		}
+		_change = function()
+		{
+			var val, text;
+			val  = _info.select.val();
+			text = _info.select.find('[value="'+val+'"]').text();
+			_info.dropdown.attr('data-value',val).text(text);
+			//win.console.log(val,text);
+		}
+		newDD = $('.dropdown.dropdownList').get();
+		for (i=0;i<oldDD.length;i++) oldDD[i] = $(oldDD[i]);
+		for (i=0;i<newDD.length;i++)
+		{
+			newDD[i] = $(newDD[i]);
+			id = newDD[i].attr('id');
+			isNew = true;
+			for (j=0;j<oldDD.length;j++)
+				if (oldDD[j].attr('id')==id)
+				{
+					isNew = false;
+					break;
+				}
+			if (isNew)
+			{
+				_info.dropdown = $('.dropdown [rel="'+id+'"]');
+				_info.dropdownList = newDD[i];
+				_change();
+				select.change(_change);
+				break;
+			}
+		}
+	},
+	ogameDropDowns : function ()
+	{
+		var i, selects = this.window.find('select').get();
+		for (i=0;i<selects.length;i++)
+			this.ogameDropDown($(selects[i]));
+			
+	},
 	makeWindow : function ()
 	{
 		TPL.init();
@@ -2869,6 +2916,13 @@ var iface =
 			).makeConfigButtons(
 			).updateConfigIface();
 		
+		// ogame dropdowns
+		/*try
+		{
+			*/_this.ogameDropDowns();
+		/*}
+		catch(e){}
+		*/
 		return _this;
 	},
 	onChange : function()
