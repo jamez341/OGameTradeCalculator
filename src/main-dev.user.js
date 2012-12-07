@@ -4,7 +4,7 @@
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version	2.5.4
+// @version	2.5.5
 // @include	*://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
@@ -71,6 +71,65 @@ var storage =
 		return this.obj.removeItem(IDP+id);
 	}
 }
+
+String.prototype.replaceAll = function (search, replacement)
+{
+	return this.split(search).join(replacement);
+}
+
+String.prototype.recursiveReplaceMap = function (org, rep, index)
+{
+	if (index==0)
+		return this.split(org[0]).join(rep[0]);
+
+	var i, arr = this.split(org[index]);
+	for (i in arr)
+	{
+		arr[i] = arr[i].recursiveReplaceMap(org, rep, index-1);
+	}
+	
+	return arr.join(rep[index]);
+}
+
+String.prototype.replaceMap = function (replaceMap)
+{
+	var key, org, rep, count;
+	org = new Array();
+	rep = new Array();
+	
+	count = 0;
+	for (key in replaceMap)
+	{
+		org.push(key);
+		rep.push(replaceMap[key]);
+		count ++;
+	}
+	
+	if (count==0)
+		return this;
+	else
+		return this.recursiveReplaceMap(org,rep,count-1);
+}
+
+String.prototype.capitalize = function()
+{
+	return this.charAt(0).toUpperCase() + this.slice(1);
+}
+
+String.prototype.trim = function()
+{
+	return this.replace(/^\s+/,'').replace(/\s+$/,'');
+}
+
+var onDOMContentLoaded = function()
+{
+
+////////////////////////////////////
+//                                //
+//   START onDOMContentLoaded()   //
+//                                //
+////////////////////////////////////
+$ = win.jQuery; // tampermonkey fix
 
 $.getScript('/cdn/js/greasemonkey/version-check.js', function() {
 	win.oGameVersionCheck(SCRIPT.NAME, SCRIPT.TESTED_OGAME_VERSION, SCRIPT.HOME_URL);
@@ -143,55 +202,6 @@ $.getScript('/cdn/js/greasemonkey/version-check.js', function() {
 })($,"length","createRange","duplicate");
 /*! [/jCaret] */
 
-String.prototype.replaceAll = function (search, replacement)
-{
-	return this.split(search).join(replacement);
-}
-
-String.prototype.recursiveReplaceMap = function (org, rep, index)
-{
-	if (index==0)
-		return this.split(org[0]).join(rep[0]);
-
-	var i, arr = this.split(org[index]);
-	for (i in arr)
-	{
-		arr[i] = arr[i].recursiveReplaceMap(org, rep, index-1);
-	}
-	
-	return arr.join(rep[index]);
-}
-
-String.prototype.replaceMap = function (replaceMap)
-{
-	var key, org, rep, count;
-	org = new Array();
-	rep = new Array();
-	
-	count = 0;
-	for (key in replaceMap)
-	{
-		org.push(key);
-		rep.push(replaceMap[key]);
-		count ++;
-	}
-	
-	if (count==0)
-		return this;
-	else
-		return this.recursiveReplaceMap(org,rep,count-1);
-}
-
-String.prototype.capitalize = function()
-{
-	return this.charAt(0).toUpperCase() + this.slice(1);
-}
-
-String.prototype.trim = function()
-{
-	return this.replace(/^\s+/,'').replace(/\s+$/,'');
-}
-
 var OGAME =
 ({
 	getMeta : function (name,def)
@@ -204,32 +214,11 @@ var OGAME =
 			else return null;
 		}
 	},
-	getResource : function (id)
-	{
-		var _this = this, resource =
-		{
-			NAME : '',
-			AMOUNT : 0,
-			getName : function(varName) // used in I18N.text definition
-			{
-				var resName = this.NAME+'';
-				_this[varName] = this.AMOUNT+0;
-				return resName;
-			}
-		};
-		var title = $('#'+id).attr('title');
-		resource.NAME = title.split(':').shift();
-		resource.AMOUNT = parseInt(title.split('/tr').shift().replace(/\D/g,''));
-		return resource;
-	},
 	init : function()
 	{
 		return {
 			LANGUAGE : this.getMeta('ogame-language',''),
-			VERSION  : parseVersion(this.getMeta('ogame-version','0')),
-			RES_MET  : this.getResource('metal_box'),
-			RES_CRY  : this.getResource('crystal_box'),
-			RES_DEU  : this.getResource('deuterium_box')
+			VERSION  : parseVersion(this.getMeta('ogame-version','0'))
 		}
 	}
 }
@@ -248,17 +237,22 @@ var COLOR =
 
 var I18N =
 ({
-	text : {
-		RES_MET : OGAME.RES_MET.getName('RES_MET'),
-		RES_CRY : OGAME.RES_CRY.getName('RES_CRY'),
-		RES_DEU : OGAME.RES_DEU.getName('RES_DEU')
-	},
+	text : {},
 	set : function(pattern,obj)
 	{
 		if (pattern.test(OGAME.LANGUAGE)) $.extend(true,this.text,obj);
 		return this;
+	},
+	init : function()
+	{
+		var res = (win.initAjaxResourcebox+'').split(/tooltip\s*[\"\']\s*\:\s*[\"\']/);
+		this.text.RES_MET = res[1].split('|').shift();
+		this.text.RES_CRY = res[2].split('|').shift();
+		this.text.RES_DEU = res[3].split('|').shift();
+		return this;
 	}
 }
+).init(
 /*! [i18n=en] */
 ).set(/.*/,
 {
@@ -3121,6 +3115,48 @@ var checkForUpdates = function (onUpdateNeeded)
 setTimeout(function(){
 	checkForUpdates(function(){iface.showUpdate();});
 },1);
+
+//////////////////////////////////
+//                              //
+//   END onDOMContentLoaded()   //
+//                              //
+//////////////////////////////////
+}
+
+/*! [onDOMContentLoaded] by Dean Edwards & Matthias Miller & John Resig */
+var init = function()
+{
+	// quit if this function has already been called
+	if (arguments.callee.done) return;
+
+	// flag this function so we don't do the same thing twice
+	arguments.callee.done = true;
+
+	// kill the timer
+	if (_timer) clearInterval(_timer);
+
+	// do stuff
+	onDOMContentLoaded();
+};
+
+/* for Mozilla/Opera9 */
+if (doc.addEventListener)
+	doc.addEventListener("DOMContentLoaded", init, false);
+
+/* for Safari */
+if (/WebKit/i.test(win.navigator.userAgent)) { // sniff
+	var _timer = setInterval(
+		function()
+		{
+			if (/loaded|complete/.test(doc.readyState))
+				init(); // call the onload handler
+		},
+		10
+	);
+}
+
+/* for other browsers */
+win.onload = init;
 
 /////
 })();
