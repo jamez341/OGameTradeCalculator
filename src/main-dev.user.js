@@ -14,7 +14,7 @@
 var IDP,
 SCRIPT =
 {
-	VERSION      : [2,5,4],
+	VERSION      : [2,5,5],
 	ID_PREFIX    : (IDP=/*[IDP]*/'o_trade_calc_'/*[/IDP]*/),
 	NAME	     : 'OGame Trade Calculator',
 	HOME_URL     : 'http://userscripts.org/scripts/show/151002',
