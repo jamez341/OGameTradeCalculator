@@ -300,9 +300,11 @@ var I18N =
 				res[i] = res[i+1].split(split_re).shift().trim();
 				if (res[i] == '') throw 0;
 			}
+			win.console.log('Yeah! get resource names works.');
 		}
 		catch(e)
 		{
+			win.console.log('Fuck! get resource names fails: '+e);
 			// fuck, at least return it in english
 			res = ['Metal','Crystal','Deuterium'];
 		}
