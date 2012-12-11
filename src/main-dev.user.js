@@ -4,7 +4,7 @@
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version	2.5.5
+// @version	2.5.6
 // @include	*://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
@@ -14,7 +14,7 @@
 var IDP,
 SCRIPT =
 {
-	VERSION      : [2,5,5],
+	VERSION      : [2,5,6],
 	ID_PREFIX    : (IDP=/*[IDP]*/'o_trade_calc_'/*[/IDP]*/),
 	NAME	     : 'OGame Trade Calculator',
 	HOME_URL     : 'http://userscripts.org/scripts/show/151002',
@@ -53,6 +53,51 @@ try{if (unsafeWindow) win = unsafeWindow;}
 catch(e){}
 doc = win.document;
 $ = win.jQuery;
+
+/* @debug_start; * /
+
+var DEBUG =
+{
+	_getConsole : function()
+	{
+		var body = doc.getElementsByTagName('body')[0];
+		var console = doc.createElement('div');
+		console.setAttribute('style','max-height:50px;overflow:scroll;background:#fff;border-bottom:2px solid grey;');
+		body.insertBefore(console,body.firstChild);
+		this._getConsole = function(){return console;}
+		return console;
+	},
+	_msg : function(msg,color,line)
+	{
+		var o,container = doc.createElement('div');
+		this._getConsole().appendChild(container);
+		if (line > 0)
+		{
+			o = doc.createElement('span');
+			o.setAttribute('style','color:grey;');
+			o.appendChild(doc.createTextNode(this.line+':'+" "));
+			container.appendChild(o);
+		}
+		o = doc.createElement('span');
+		o.setAttribute('style','color:'+color+';');
+		o.appendChild(doc.createTextNode(msg));
+		container.appendChild(o);
+	},
+	error : function(msg,line)
+	{
+		this.msg('Error: '+msg,'red',(arguments.length>1)?line:0);
+	},
+	success : function(msg,line)
+	{
+		this.msg('Success: '+msg,'green',(arguments.length>1)?line:0);
+	}
+}
+
+/* @debug_end; */
+
+/* @debug_line; */
+
+/* @debug_code:".setLine("; @debug_line; @debug_code:")"; */
 
 var storage =
 {
@@ -245,10 +290,26 @@ var I18N =
 	},
 	init : function()
 	{
-		var res = (win.initAjaxResourcebox+'').split(/tooltip\s*[\"\']\s*\:\s*[\"\']/);
-		this.text.RES_MET = res[1].split('|').shift();
-		this.text.RES_CRY = res[2].split('|').shift();
-		this.text.RES_DEU = res[3].split('|').shift();
+		var i, res, split_re = /[\|\:]/;
+		try
+		{
+			res = (win.initAjaxResourcebox+'').split(
+					/tooltip\s*[\"\']?\s*\:\s*[\"\']/);
+			for (i=0; i<3; i++)
+			{
+				res[i] = res[i+1].split(split_re).shift().trim();
+				if (res[i] == '') throw 0;
+			}
+		}
+		catch(e)
+		{
+			// fuck, at least return it in english
+			res = ['Metal','Crystal','Deuterium'];
+		}
+		
+		this.text.RES_MET = res[0];
+		this.text.RES_CRY = res[1];
+		this.text.RES_DEU = res[2];
 		return this;
 	}
 }
