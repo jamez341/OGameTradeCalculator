@@ -300,11 +300,11 @@ var I18N =
 				res[i] = res[i+1].split(split_re).shift().trim();
 				if (res[i] == '') throw 0;
 			}
-			win.console.log('Yeah! get resource names works.');
+			try{win.console.log('Yeah! get resource names works.');}catch(e){}
 		}
 		catch(e)
 		{
-			win.console.log('Fuck! get resource names fails: '+e);
+			try{win.console.log('Fuck! get resource names fails: '+e);}catch(e){}
 			// fuck, at least return it in english
 			res = ['Metal','Crystal','Deuterium'];
 		}
@@ -1864,7 +1864,7 @@ var TextInput = function (jqo,value,regExp,clearOnFocus/*[,allowEmpty][,onChange
 	{
 		var value = input.val(),
 		len = value.length;
-		win.console.log (_this.regExp,'"'+value+'"',_this.regExp.test(value));
+		try{win.console.log (_this.regExp,'"'+value+'"',_this.regExp.test(value));}catch(e){}
 		if(_this.allowEmpty||len>0)
 		{
 			if(_this.regExp.test(value))
