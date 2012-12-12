@@ -4,7 +4,7 @@
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version	2.5.6
+// @version	2.5.7
 // @include	*://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
@@ -14,14 +14,14 @@
 var IDP,
 SCRIPT =
 {
-	VERSION      : [2,5,6],
+	VERSION      : [2,5,7],
 	ID_PREFIX    : (IDP=/*[IDP]*/'o_trade_calc_'/*[/IDP]*/),
 	NAME	     : 'OGame Trade Calculator',
 	HOME_URL     : 'http://userscripts.org/scripts/show/151002',
 	UPDATE_URL   : 'https://userscripts.org/scripts/source/151002.meta.js',
 	UPDATE_JSONP : 'https://dl.dropbox.com/u/89283239/OGame%20Trade%20Calculator/dist/updater.js',
 	DOWNLOAD_URL : 'https://userscripts.org/scripts/source/151002.user.js',
-	TESTED_OGAME_VERSION : '5.2.0-beta7'
+	TESTED_OGAME_VERSION : '5.2.1'
 },
 
 parseVersion = function (version)
