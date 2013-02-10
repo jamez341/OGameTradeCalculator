@@ -4,25 +4,32 @@
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version	2.5.7
+// @version	2.6
 // @include	*://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
 (function(){
 ////////////
 
-var IDP,
+var win = window, doc, $;
+try{if (unsafeWindow) win = unsafeWindow;}
+catch(e){}
+doc = win.document;
+$ = win.jQuery;
+
+var IDP, SCRIPT, parseVersion, v1_less_than_v2;
+
 SCRIPT =
 {
-	VERSION      : [2,5,7],
+	VERSION      : [2,6],
 	ID_PREFIX    : (IDP=/*[IDP]*/'o_trade_calc_'/*[/IDP]*/),
 	NAME	     : 'OGame Trade Calculator',
 	HOME_URL     : 'http://userscripts.org/scripts/show/151002',
 	UPDATE_URL   : 'https://userscripts.org/scripts/source/151002.meta.js',
 	UPDATE_JSONP : 'https://dl.dropbox.com/u/89283239/OGame%20Trade%20Calculator/dist/updater.js',
 	DOWNLOAD_URL : 'https://userscripts.org/scripts/source/151002.user.js',
-	TESTED_OGAME_VERSION : '5.2.1'
-},
+	TESTED_OGAME_VERSION : '5.3.1'
+}
 
 parseVersion = function (version)
 {
@@ -30,9 +37,11 @@ parseVersion = function (version)
 	for (i in v)
 		v[i]=parseInt(v[i]);
 	return v;
-},
+}
 
-/* true if (v1<v2) OR (v1==v2 && eq) */
+/**
+ *	@return boolean (v1<v2) OR (v1==v2 && eq)
+ */
 v1_less_than_v2 = function(v1,v2,eq)
 {
 	var i,
@@ -47,57 +56,6 @@ v1_less_than_v2 = function(v1,v2,eq)
 	if (arguments.length>2 && eq) return true;
 	return false;
 }
-
-var win = window, doc, $;
-try{if (unsafeWindow) win = unsafeWindow;}
-catch(e){}
-doc = win.document;
-$ = win.jQuery;
-
-/* @debug_start; * /
-
-var DEBUG =
-{
-	_getConsole : function()
-	{
-		var body = doc.getElementsByTagName('body')[0];
-		var console = doc.createElement('div');
-		console.setAttribute('style','max-height:50px;overflow:scroll;background:#fff;border-bottom:2px solid grey;');
-		body.insertBefore(console,body.firstChild);
-		this._getConsole = function(){return console;}
-		return console;
-	},
-	_msg : function(msg,color,line)
-	{
-		var o,container = doc.createElement('div');
-		this._getConsole().appendChild(container);
-		if (line > 0)
-		{
-			o = doc.createElement('span');
-			o.setAttribute('style','color:grey;');
-			o.appendChild(doc.createTextNode(this.line+':'+" "));
-			container.appendChild(o);
-		}
-		o = doc.createElement('span');
-		o.setAttribute('style','color:'+color+';');
-		o.appendChild(doc.createTextNode(msg));
-		container.appendChild(o);
-	},
-	error : function(msg,line)
-	{
-		this.msg('Error: '+msg,'red',(arguments.length>1)?line:0);
-	},
-	success : function(msg,line)
-	{
-		this.msg('Success: '+msg,'green',(arguments.length>1)?line:0);
-	}
-}
-
-/* @debug_end; */
-
-/* @debug_line; */
-
-/* @debug_code:".setLine("; @debug_line; @debug_code:")"; */
 
 var storage =
 {
@@ -541,6 +499,81 @@ var I18N =
 	RES_DEF : "Herstel naar standaard instellingen",
 	// Config » Contact
 	CONTACT : "Contactinformatie"
+}
+/*! [i18n=it] by adyr http://userscripts.org/topics/122435 */
+).set(/it/,
+{
+	// Number separators
+	THO_SEP : ",",
+	DEC_SEP : ".",
+	// Menu button
+	MENU    : "Commercio C.",
+	// Window title
+	TITLE   : "Commercio calcolatrice",
+	CONFIG  : "Opzioni",
+	// Update
+	UPD_AVA : "Update disponibile",
+	INSTALL : "Installa",
+	GO_HOME : "Visita il sito dello script",
+	// Actions
+	ACTION  : "Azione",
+	BUY     : "Compro",
+	SELL    : "Vendo",
+	// Ratio
+	RATIO   : "Rapporto",
+	ILLEGAL : "illegale",
+	MAX     : "Massimo",
+	REG     : "Regolare",
+	MIN     : "Minimo",
+	// Output
+	IN_EXCH : "In cambio di",
+	RESULT  : "Risultato",
+	SEND    : "Mando",
+	RECEIVE : "Ricevo",
+	RES     : "Risorse",
+	// Ships
+	LC_SHIP : "CP", // Abb. of "Large Cargo Ship"
+	SC_SHIP : "CL", // Abb. of "Small Cargo Ship"
+	OR      : "o", // e.g. 100 (LC) or 500 (SC)
+	// Message
+	MESSAGE : "Messaggio",
+	// Place of delivery
+	WHERE   : "Ricevo su",
+	PLANET  : "Pianeta",
+	MOON    : "Luna",
+	CUR_PLA : "Pianeta corrente",
+	SEL_CUR : "Selezionare pianeta corrente",
+	// Config » Ratio list
+	RAT_LST : "Rapporti",
+	NAME    : "Nome",
+	LEGAL   : "Legale",
+	YES     : "Si",
+	NO      : "No",
+	DEFAULT : "Default",
+	NEW     : "Nuovo",
+	// Config » Default values
+	DEF_VAL : "Valori di default",
+	// Config » Abbs & keys
+	ABB_KEY : "Abbreviazioni e pulsanti di auto-completamento",
+	USE_ABB : "Usa abbreviazioni quando possibile",
+	UNABB   : "Annulla abbreviazioni se il campo è sotto al mouse",
+	ABB_MIL : "Abbreviazione per milioni",
+	ABB_THO : "Abbreviazione per migliaia",
+	KEY_MIL : "Tasto per scrivere milioni (6 zero)",
+	KEY_THO : "Tasto per scrivere migliaia (3 zero)",
+	// Config » Message tpl
+	MES_TPL : "Template del messaggio",
+	RES_DTP : "Ripristina il template di default",
+	// Config » Import / Export
+	IE_CONF : "Importa / Esporta configurazione",
+	IMPORT  : "Importa",
+	EXPORT  : "Esporta",
+	// Config » Buttons
+	ACCEPT  : "Accetta",
+	CANCEL  : "Cancella",
+	RES_DEF : "Ripristina impostazioni di default",
+	// Config » Contact
+	CONTACT : "Informazioni di contatto" 
 }
 /*! [/i18n] */
 ).text;
