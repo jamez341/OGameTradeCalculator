@@ -4,7 +4,7 @@
 // @namespace      http://userscripts.org/users/68563/scripts
 // @downloadURL    https://userscripts.org/scripts/source/151002.user.js
 // @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version	2.6
+// @version	2.6.2
 // @include	*://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
@@ -21,7 +21,7 @@ var IDP, SCRIPT, parseVersion, v1_less_than_v2;
 
 SCRIPT =
 {
-	VERSION      : [2,6],
+	VERSION      : [2,6,2],
 	ID_PREFIX    : (IDP=/*[IDP]*/'o_trade_calc_'/*[/IDP]*/),
 	NAME	     : 'OGame Trade Calculator',
 	HOME_URL     : 'http://userscripts.org/scripts/show/151002',
@@ -132,7 +132,6 @@ var onDOMContentLoaded = function()
 //   START onDOMContentLoaded()   //
 //                                //
 ////////////////////////////////////
-$ = win.jQuery; // tampermonkey fix
 
 $.getScript('/cdn/js/greasemonkey/version-check.js', function() {
 	win.oGameVersionCheck(SCRIPT.NAME, SCRIPT.TESTED_OGAME_VERSION, SCRIPT.HOME_URL);
@@ -2967,11 +2966,11 @@ var iface =
 	},
 	ogameDropDowns : function ()
 	{
+		//alert(win.navigator.userAgent);
 		var i, selects = this.window.find('select').get();
 		if (!this.ogameDropDown($(selects[0]))) return;
 		for (i=1;i<selects.length;i++)
 			this.ogameDropDown($(selects[i]));
-			
 	},
 	makeWindow : function ()
 	{
@@ -3096,6 +3095,9 @@ var iface =
 	},
 	init : function ()
 	{
+		// Chrome temporary dirty fix: $.ogameDropDown options are non-clickable, so I don't use them
+		if (/Chrome/i.test(win.navigator.userAgent))
+			this.ogameDropDowns = (this.ogameDropDown = doNothing);
 		return this.makeMenuButton();
 	}
 }
@@ -3220,6 +3222,23 @@ setTimeout(function(){
 //////////////////////////////////
 }
 
+var initJQuery = function()
+{
+	try
+	{
+		$ = win.jQuery;
+		if (typeof($)=='undefined') throw 0;
+		if (typeof($.fn.ogameDropDown)=='undefined') throw 0;
+		
+		// init script
+		onDOMContentLoaded();
+	}
+	catch(e)
+	{
+		setTimeout(initJQuery,50);
+	}
+}
+
 /*! [onDOMContentLoaded] by Dean Edwards & Matthias Miller & John Resig */
 var init = function()
 {
@@ -3233,7 +3252,7 @@ var init = function()
 	if (_timer) clearInterval(_timer);
 
 	// do stuff
-	onDOMContentLoaded();
+	initJQuery();
 };
 
 /* for Mozilla/Opera9 */
