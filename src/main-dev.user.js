@@ -4,7 +4,7 @@
 // @namespace    http://userscripts.org/users/68563/scripts
 // @downloadURL  https://userscripts.org/scripts/source/151002.user.js
 // @updateURL    https://userscripts.org/scripts/source/151002.meta.js
-// @version      2.6.3
+// @version      2.6.4
 // @include      *://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
@@ -21,7 +21,7 @@ var IDP, SCRIPT, parseVersion, v1_less_than_v2;
 
 SCRIPT =
 {
-	VERSION      : [2,6,3],
+	VERSION      : [2,6,4],
 	ID_PREFIX    : (IDP=/*[IDP]*/'o_trade_calc_'/*[/IDP]*/),
 	NAME	     : 'OGame Trade Calculator',
 	HOME_URL     : 'http://userscripts.org/scripts/show/151002',
@@ -132,7 +132,7 @@ String.prototype.parseUnicodeEscapes = function()
 	else
 		return this.replace(
 			code,
-			String.fromCharCode( parseInt(code.substring(2), 16) )
+			String.fromCharCode( parseInt((code+'').substring(2), 16) )
 		).parseUnicodeEscapes();
 }
 
@@ -265,6 +265,7 @@ var I18N =
 			res = (win.initAjaxResourcebox+'');
 			//try{win.console.log(res);}catch(e){}
 			res = res.split(/tooltip\s*[\"\']?\s*\:\s*[\"\']/);
+			//try{win.console.log(res);}catch(e){}
 			for (i=0; i<3; i++)
 			{
 				res[i] = res[i+1].split(split_re).shift().trim().parseUnicodeEscapes();
