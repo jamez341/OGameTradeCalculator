@@ -1,11 +1,11 @@
 // ==UserScript==
-// @name	   OGame Trade Calculator
-// @description    Adds a trade calculator to the OGame interface
-// @namespace      http://userscripts.org/users/68563/scripts
-// @downloadURL    https://userscripts.org/scripts/source/151002.user.js
-// @updateURL      https://userscripts.org/scripts/source/151002.meta.js
-// @version	2.6.2
-// @include	*://*.ogame.*/game/index.php?*page=*
+// @name         OGame Trade Calculator
+// @description  Adds a trade calculator to the OGame interface
+// @namespace    http://userscripts.org/users/68563/scripts
+// @downloadURL  https://userscripts.org/scripts/source/151002.user.js
+// @updateURL    https://userscripts.org/scripts/source/151002.meta.js
+// @version      2.6.3
+// @include      *://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
 (function(){
@@ -21,14 +21,14 @@ var IDP, SCRIPT, parseVersion, v1_less_than_v2;
 
 SCRIPT =
 {
-	VERSION      : [2,6,2],
+	VERSION      : [2,6,3],
 	ID_PREFIX    : (IDP=/*[IDP]*/'o_trade_calc_'/*[/IDP]*/),
 	NAME	     : 'OGame Trade Calculator',
 	HOME_URL     : 'http://userscripts.org/scripts/show/151002',
 	UPDATE_URL   : 'https://userscripts.org/scripts/source/151002.meta.js',
 	UPDATE_JSONP : 'https://dl.dropbox.com/u/89283239/OGame%20Trade%20Calculator/dist/updater.js',
 	DOWNLOAD_URL : 'https://userscripts.org/scripts/source/151002.user.js',
-	TESTED_OGAME_VERSION : '5.3.1'
+	TESTED_OGAME_VERSION : '5.3.5'
 }
 
 parseVersion = function (version)
@@ -122,6 +122,18 @@ String.prototype.capitalize = function()
 String.prototype.trim = function()
 {
 	return this.replace(/^\s+/,'').replace(/\s+$/,'');
+}
+
+String.prototype.parseUnicodeEscapes = function()
+{
+	var code = /\\u\w{4}/.exec(this);
+	if (code == null)
+		return this+'';
+	else
+		return this.replace(
+			code,
+			String.fromCharCode( parseInt(code.substring(2), 16) )
+		).parseUnicodeEscapes();
 }
 
 var onDOMContentLoaded = function()
@@ -255,7 +267,7 @@ var I18N =
 			res = res.split(/tooltip\s*[\"\']?\s*\:\s*[\"\']/);
 			for (i=0; i<3; i++)
 			{
-				res[i] = res[i+1].split(split_re).shift().trim();
+				res[i] = res[i+1].split(split_re).shift().trim().parseUnicodeEscapes();
 				if (res[i] == '') throw 0;
 			}
 			//try{win.console.log('Yeah! get resource names works.');}catch(e){}
@@ -573,6 +585,81 @@ var I18N =
 	RES_DEF : "Ripristina impostazioni di default",
 	// Config » Contact
 	CONTACT : "Informazioni di contatto" 
+}
+/*! [i18n=fr] by vulca http://userscripts.org/users/100684 */
+).set(/fr/,
+{
+	// Number separators
+	THO_SEP : " ",
+	DEC_SEP : ",",
+	// Menu button
+	MENU    : "C. Échange",
+	// Window title
+	TITLE   : "Calculateur d'échange",
+	CONFIG  : "Options",
+	// Update
+	UPD_AVA : "MaJ disponible",
+	INSTALL : "Installer",
+	GO_HOME : "Visiter le site web du script",
+	// Actions
+	ACTION  : "Action",
+	BUY     : "J'achète",
+	SELL    : "Je vends",
+	// Ratio
+	RATIO   : "Ratio",
+	ILLEGAL : "illegal",
+	MAX     : "Maximum",
+	REG     : "Habituel",
+	MIN     : "Minimum",
+	// Output
+	IN_EXCH : "En échange de",
+	RESULT  : "Résultat",
+	SEND    : "J'envoie",
+	RECEIVE : "Je reçois",
+	RES     : "Ressources",
+	// Ships
+	LC_SHIP : "GT", // Abb. of "Large Cargo Ship"
+	SC_SHIP : "PT", // Abb. of "Small Cargo Ship"
+	OR      : "ou", // e.g. 100 (LC) or 500 (SC)
+	// Message
+	MESSAGE : "Message",
+	// Place of delivery
+	WHERE   : "Lieu de livraison",
+	PLANET  : "Planète",
+	MOON    : "Lune",
+	CUR_PLA : "Planète actuelle",
+	SEL_CUR : "Sélectionner la planète ou lune actuelle",
+	// Config » Ratio list
+	RAT_LST : "Liste des ratios",
+	NAME    : "Nom",
+	LEGAL   : "Legal",
+	YES     : "Oui",
+	NO      : "Non",
+	DEFAULT : "Defaut",
+	NEW     : "Nouveau",
+	// Config » Default values
+	DEF_VAL : "Valeurs par défaut",
+	// Config » Abbs & keys
+	ABB_KEY : "Abbréviations et raccourcis",
+	USE_ABB : "Utiliser les abbréviations quand c'est possible",
+	UNABB   : "Ne pas afficher d'abbréviation lorsque la souris est au dessus du champ",
+	ABB_MIL : "Abbreviation pour millions",
+	ABB_THO : "Abbreviation pour thousands",
+	KEY_MIL : "Raccourcis pour écrire millions (6 zéros)",
+	KEY_THO : "Raccourcis pour écrire milliers (3 zéros)",
+	// Config » Message tpl
+	MES_TPL : "Format du message",
+	RES_DTP : "Restorer le format par defaut",
+	// Config » Import / Export
+	IE_CONF : "Configuration des Imports / Exports",
+	IMPORT  : "Import",
+	EXPORT  : "Export",
+	// Config » Buttons
+	ACCEPT  : "Accepter",
+	CANCEL  : "Annuler",
+	RES_DEF : "Restorer les options par defaut",
+	// Config » Contact
+	CONTACT : "Contact"
 }
 /*! [/i18n] */
 ).text;
@@ -3095,7 +3182,8 @@ var iface =
 	},
 	init : function ()
 	{
-		// Chrome temporary dirty fix: $.ogameDropDown options are non-clickable, so I don't use them
+		// Chrome temporary dirty fix: jQuery.fn.ogameDropDown options are
+		// non-clickable, so I don't use them
 		if (/Chrome/i.test(win.navigator.userAgent))
 			this.ogameDropDowns = (this.ogameDropDown = doNothing);
 		return this.makeMenuButton();
