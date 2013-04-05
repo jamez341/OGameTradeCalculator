@@ -4,7 +4,7 @@
 // @namespace    http://userscripts.org/users/68563/scripts
 // @downloadURL  https://userscripts.org/scripts/source/151002.user.js
 // @updateURL    https://userscripts.org/scripts/source/151002.meta.js
-// @version      2.6.4
+// @version      2.6.5
 // @include      *://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
@@ -21,14 +21,14 @@ var IDP, SCRIPT, parseVersion, v1_less_than_v2;
 
 SCRIPT =
 {
-	VERSION      : [2,6,4],
+	VERSION      : [2,6,5],
 	ID_PREFIX    : (IDP=/*[IDP]*/'o_trade_calc_'/*[/IDP]*/),
 	NAME	     : 'OGame Trade Calculator',
 	HOME_URL     : 'http://userscripts.org/scripts/show/151002',
 	UPDATE_URL   : 'https://userscripts.org/scripts/source/151002.meta.js',
 	UPDATE_JSONP : 'https://dl.dropbox.com/u/89283239/OGame%20Trade%20Calculator/dist/updater.js',
 	DOWNLOAD_URL : 'https://userscripts.org/scripts/source/151002.user.js',
-	TESTED_OGAME_VERSION : '5.3.5'
+	TESTED_OGAME_VERSION : '5.4.0-rc2'
 }
 
 parseVersion = function (version)
@@ -152,7 +152,11 @@ $.getScript('/cdn/js/greasemonkey/version-check.js', function() {
 /*! jCaret (C) 2010 C. F. Wong | cloudgen.w0ng.hk | www.opensource.org/licenses/mit-license.php */
 (function($,len,createRange,duplicate){
 	$.fn.caret=function(options,opt2){
-		var start,end,t=this[0],browser=$.browser.msie;
+		var start,end,t=this[0],
+		/* jQuery 1.9.1 FIX */
+		//browser=$.browser.msie;
+		browser=/MSIE/.test(win.navigator.userAgent);
+		/* FIX end */
 		if(typeof options==="object" && typeof options.start==="number" && typeof options.end==="number") {
 			start=options.start;
 			end=options.end;
