@@ -89,7 +89,7 @@ Ajustes > Plantilla del mensaje
 
 ![screenshot-message_template]
 
-Permite definir la plantilla del mensaje usando una mezcla de **texto**, **etiquetas phpBB** (*por ejemplo: `[color=red]este texto es rojo[/color]`*), **constantes** (*por ejemplo: `este script muestra el metal usando el color {COLOR.MET}`*), **variables** (*por ejemplo: `el metal de entrada es {m}`*) y **estructuras de control** (*por ejemplo: `El metal de salida{?M} no{/M} es zero`*).
+Permite definir la plantilla del mensaje usando una mezcla de **texto**, **etiquetas phpBB** (*por ejemplo: `[color=red]este texto es rojo[/color]`*), **constantes** (*por ejemplo: `este script muestra el metal usando el color {COLOR.MET}`*), **variables** (*por ejemplo: `el metal de entrada es {m}`*) y **estructuras de control** (*por ejemplo: `El metal de salida{?M} no{/M} es cero`*).
 
 Ajustes > Importar/Exportar configuración
 -----------------------------------------
