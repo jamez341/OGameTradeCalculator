@@ -32,6 +32,6 @@ You can send me more [translations].
 [Scriptish]:https://addons.mozilla.org/firefox/addon/scriptish/
 [Chrome]:https://www.google.com/chrome/
 [Tampermonkey]:https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo
-[install link]:https://github.com/EliasGrande/OGameTradeCalculator/blob/master/dist/releases/latest.user.js
+[install link]:https://github.com/EliasGrande/OGameTradeCalculator/raw/master/dist/releases/latest.user.js
 [tolerated by OGame Origin]:http://board.origin.ogame.gameforge.com/board175-user-projects/board39-official-tolerated-tools-addons-scripts/4367-ogame-trade-calculator/
 [translations]:https://github.com/EliasGrande/OGameTradeCalculator/tree/master/dist/locale
