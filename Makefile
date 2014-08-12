@@ -1,4 +1,7 @@
 
+# greasetools is required, you can get it from:
+# https://github.com/EliasGrande/GreaseTools
+
 # src
 usersrc = ./src/ogame-trade-calculator.user.js
 
@@ -35,4 +38,5 @@ install: $(userdist)
 
 clean:
 	greasetools clean-trash -r
+
 
