@@ -6,7 +6,7 @@ This script adds a trade calculator to the [OGame] interface. Allows you to save
 Installation
 ------------
 
-  1. Install [Greasemonkey] (for [Firefox]) or an alternative, like [Scriptish] (for [Firefox]) or [Tampermonkey] (for [Chrome]).
+  1. Install [Greasemonkey] \(for [Firefox]\) or an alternative, like [Scriptish] \(for [Firefox]\) or [Tampermonkey] \(for [Chrome]\).
   2. Click this [install link] and accept the installation.
 
 Is this script tolerated?
