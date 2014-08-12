@@ -1,66 +1,38 @@
 
-DIR_DIST = ./dist
-DIR_VERSIONS = $(DIR_DIST)/versions
-DIR_SRC  = ./src
-DIR_UTIL = ./util
+# src
+usersrc = ./src/ogame-trade-calculator.user.js
 
-MAKEFILE   = ./Makefile
-GETMETA    = $(DIR_UTIL)/getmeta
-GETMETAVAR = $(DIR_UTIL)/getmetavar
-MKNAME     = $(DIR_UTIL)/mkname
-MKUPDATE   = $(DIR_UTIL)/mkupdate
-COMPRESS   = $(DIR_UTIL)/compress
+# constants
+VERSION := $(shell greasetools meta-key version $(usersrc))
+BROWSER = firefox
 
-SRC     = $(DIR_SRC)/main-dev.user.js
-SRC_URL = file://`pwd`/$(SRC)
+# dist
+distdir     = ./dist/releases
+userdist    = $(distdir)/latest.user.js
+metadist    = $(distdir)/latest.meta.js
+versiondist = $(distdir)/$(VERSION).user.js
 
-SRCS = $(MAKEFILE) $(GETMETA) $(GETMETAVAR) $(MKNAME) $(COMPRESS) $(SRC)
+.PHONY: dist test install clean
 
-OUT         = $(DIR_VERSIONS)/`$(MKNAME) $(SRC)`
-LATEST_USER = $(DIR_DIST)/latest.user.js
-LATEST_META = $(DIR_DIST)/latest.meta.js
-LATEST      = $(LATEST_USER) $(LATEST_META)
-LATEST_URL  = file://`pwd`/$(LATEST_USER)
-UPDATER     = $(DIR_DIST)/updater.js
+dist: $(userdist) $(metadist) $(versiondist)
 
-CH_WIN   = sh -c "ps | grep -qi \$$1 && wmctrl -a \$$1; exit 0" +o
-GEDIT    = $(CH_WIN) gedit; gedit
-ECLIPSE  = $(CH_WIN) eclipse; eclipse
-TEST_NAV = $(CH_WIN) firefox; firefox
-NO_OUT   = > /dev/null 2> /dev/null
+$(userdist): $(usersrc)
+	greasetools compress -o $(userdist) $(usersrc)
 
-$(LATEST): $(SRC)
-	mkdir -p $(DIR_VERSIONS)
-	$(GETMETA) $(SRC) > $(LATEST_META)
-	$(COMPRESS) $(SRC) > $(LATEST_USER)
-	cp $(LATEST_USER) $(OUT)
+$(metadist): $(usersrc)
+	greasetools meta-block -o $(metadist) $(usersrc)
 
-updater:
-	$(MKUPDATE) $(SRC) > $(UPDATER)
+$(versiondist): $(userdist)
+	echo "$(VERSION)" | grep -qE '^[0-9]+(\.[0-9]+)*$$'
+	cp $(userdist) $(versiondist)
+	git add $(versiondist)
 
-commit:
-	sh -c "git commit -a; exit 0"
-
-push: commit
-	git push
-	
 test:
-	$(TEST_NAV) $(SRC_URL) $(NO_OUT) &
-	
-install: $(LATEST)
-	$(TEST_NAV) $(LATEST_URL) $(NO_OUT) &
+	greasetools install -b $(BROWSER) $(usersrc)
 
-gedit:
-	$(GEDIT) $(SRC) $(NO_OUT) &
+install: $(userdist)
+	greasetools install -b $(BROWSER) $(userdist)
 
-gedit-all:
-	$(GEDIT) $(SRCS) $(NO_OUT) &
-
-eclipse:
-	$(ECLIPSE) $(SRC) $(NO_OUT) &
-
-eclipse-all:
-	$(ECLIPSE) $(SRCS) $(NO_OUT) &
-
-default: $(LATEST)
+clean:
+	greasetools clean-trash -r
 

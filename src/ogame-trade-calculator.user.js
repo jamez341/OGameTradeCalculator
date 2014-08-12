@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         OGame Trade Calculator
 // @description  Adds a trade calculator to the OGame interface
-// @namespace    http://userscripts.org/users/68563/scripts
-// @downloadURL  https://userscripts.org/scripts/source/151002.user.js
-// @updateURL    https://userscripts.org/scripts/source/151002.meta.js
-// @version      2.6.5
+// @namespace    https://github.com/EliasGrande/
+// @downloadURL  https://github.com/EliasGrande/OGameTradeCalculator/blob/master/dist/releases/latest.user.js
+// @updateURL    https://github.com/EliasGrande/OGameTradeCalculator/blob/master/dist/releases/latest.meta.js
+// @version      3.0.0
 // @include      *://*.ogame.*/game/index.php?*page=*
 // ==/UserScript==
-/*! OGame Trade Calculator (C) 2012 Elías Grande Cásedas | GNU-GPL | gnu.org/licenses */
+/*! OGame Trade Calculator (C) 2014 Elías Grande Cásedas | MIT | opensource.org/licenses/MIT */
 (function(){
 ////////////
 
@@ -21,14 +21,11 @@ var IDP, SCRIPT, parseVersion, v1_less_than_v2;
 
 SCRIPT =
 {
-	VERSION      : [2,6,5],
-	ID_PREFIX    : (IDP=/*[IDP]*/'o_trade_calc_'/*[/IDP]*/),
-	NAME	     : 'OGame Trade Calculator',
-	HOME_URL     : 'http://userscripts.org/scripts/show/151002',
-	UPDATE_URL   : 'https://userscripts.org/scripts/source/151002.meta.js',
-	UPDATE_JSONP : 'https://dl.dropbox.com/u/89283239/OGame%20Trade%20Calculator/dist/updater.js',
-	DOWNLOAD_URL : 'https://userscripts.org/scripts/source/151002.user.js',
-	TESTED_OGAME_VERSION : '5.4.0-rc2'
+	VERSION   : [3,0,0],
+	ID_PREFIX : (IDP='o_trade_calc_'),
+	NAME      : 'OGame Trade Calculator',
+	HOME_URL  : 'https://github.com/EliasGrande/OGameTradeCalculator/',
+	TESTED_OGAME_VERSION : '5.7.9'
 }
 
 parseVersion = function (version)
@@ -132,7 +129,7 @@ String.prototype.parseUnicodeEscapes = function()
 	else
 		return this.replace(
 			code,
-			String.fromCharCode( parseInt((code+'').substring(2), 16) )
+			String.fromCharCode( parseInt((code+'').substring(2), 16))
 		).parseUnicodeEscapes();
 }
 
@@ -146,7 +143,8 @@ var onDOMContentLoaded = function()
 ////////////////////////////////////
 
 $.getScript('/cdn/js/greasemonkey/version-check.js', function() {
-	win.oGameVersionCheck(SCRIPT.NAME, SCRIPT.TESTED_OGAME_VERSION, SCRIPT.HOME_URL);
+	win.oGameVersionCheck(
+		SCRIPT.NAME, SCRIPT.TESTED_OGAME_VERSION, SCRIPT.HOME_URL);
 });
 
 /*! jCaret (C) 2010 C. F. Wong | cloudgen.w0ng.hk | www.opensource.org/licenses/mit-license.php */
@@ -242,16 +240,16 @@ var OGAME =
 }
 ).init();
 
+/*! [colors] */
 var COLOR =
 {
-	/*! [colors] */
 	MET : '#FF7700',
 	CRY : '#00FFFF',
 	DEU : '#FF33FF',
 	SC  : '#FFFFFF',
 	LC  : '#FFFFFF'
-	/*! [/colors] */
 }
+/*! [/colors] */
 
 var I18N =
 ({
@@ -290,9 +288,10 @@ var I18N =
 		return this;
 	}
 }
-).init(
+).init();
+
 /*! [i18n=en] */
-).set(/.*/,
+I18N.set(/.*/,
 {
 	// Number separators
 	THO_SEP : ",",
@@ -302,10 +301,6 @@ var I18N =
 	// Window title
 	TITLE   : "Trade calculator",
 	CONFIG  : "Settings",
-	// Update
-	UPD_AVA : "Update available",
-	INSTALL : "Install",
-	GO_HOME : "Visit the site of the script",
 	// Actions
 	ACTION  : "Action",
 	BUY     : "I buy",
@@ -365,9 +360,10 @@ var I18N =
 	RES_DEF : "Restore default settings",
 	// Config » Contact
 	CONTACT : "Contact information"
-}
+});
+
 /*! [i18n=es] */
-).set(/es|ar|mx/,
+I18N.set(/es|ar|mx/,
 {
 	// Number separators
 	THO_SEP : ".",
@@ -377,10 +373,6 @@ var I18N =
 	// Window title
 	TITLE   : "Calculadora de comercio",
 	CONFIG  : "Configuración",
-	// Update
-	UPD_AVA : "Actualización disponible",
-	INSTALL : "Instalar",
-	GO_HOME : "Visitar página del script",
 	// Actions
 	ACTION  : "Acción",
 	BUY     : "Compro",
@@ -440,9 +432,10 @@ var I18N =
 	RES_DEF : "Restaurar ajustes por defecto",
 	// Config » Contact
 	CONTACT : "Información de contacto"
-}
-/*! [i18n=nl] by sanctuary http://userscripts.org/users/431052 */
-).set(/nl/,
+});
+
+/*! [i18n=nl] by sanctuary http://userscripts-mirror.org/users/431052 */
+I18N.set(/nl/,
 {
 	// Number separators
 	THO_SEP : ",",
@@ -452,10 +445,6 @@ var I18N =
 	// Window title
 	TITLE   : "Trade calculator",
 	CONFIG  : "Instellingen",
-	// Update
-	UPD_AVA : "Update beschikbaar",
-	INSTALL : "Installeren",
-	GO_HOME : "Bezoek de web van het script",
 	// Actions
 	ACTION  : "Actie",
 	BUY     : "Ik koop",
@@ -515,9 +504,10 @@ var I18N =
 	RES_DEF : "Herstel naar standaard instellingen",
 	// Config » Contact
 	CONTACT : "Contactinformatie"
-}
-/*! [i18n=it] by adyr http://userscripts.org/topics/122435 */
-).set(/it/,
+});
+
+/*! [i18n=it] by adyr http://userscripts-mirror.org/topics/122435 */
+I18N.set(/it/,
 {
 	// Number separators
 	THO_SEP : ",",
@@ -527,10 +517,6 @@ var I18N =
 	// Window title
 	TITLE   : "Commercio calcolatrice",
 	CONFIG  : "Opzioni",
-	// Update
-	UPD_AVA : "Update disponibile",
-	INSTALL : "Installa",
-	GO_HOME : "Visita il sito dello script",
 	// Actions
 	ACTION  : "Azione",
 	BUY     : "Compro",
@@ -590,9 +576,10 @@ var I18N =
 	RES_DEF : "Ripristina impostazioni di default",
 	// Config » Contact
 	CONTACT : "Informazioni di contatto" 
-}
-/*! [i18n=fr] by vulca http://userscripts.org/users/100684 */
-).set(/fr/,
+});
+
+/*! [i18n=fr] by vulca http://userscripts-mirror.org/users/100684 */
+I18N.set(/fr/,
 {
 	// Number separators
 	THO_SEP : " ",
@@ -602,10 +589,6 @@ var I18N =
 	// Window title
 	TITLE   : "Calculateur d'échange",
 	CONFIG  : "Options",
-	// Update
-	UPD_AVA : "MaJ disponible",
-	INSTALL : "Installer",
-	GO_HOME : "Visiter le site web du script",
 	// Actions
 	ACTION  : "Action",
 	BUY     : "J'achète",
@@ -665,777 +648,752 @@ var I18N =
 	RES_DEF : "Restorer les options par defaut",
 	// Config » Contact
 	CONTACT : "Contact"
-}
+});
 /*! [/i18n] */
-).text;
 
-var TPL =
-{
-	/*! [css] */
-	CSS :
-		"#"+IDP+"window select{"+
-			"visibility:visible !important;"+ // ogame 5.2.0-beta7 fix
-		"}"+
-		"#"+IDP+"window{"+
-			"float:left;"+
-			"position:relative;"+
-			"width:670px;"+
-			"overflow:visible;"+
-			"z-index:2;"+
-		"}"+
-		"#galaxy #"+IDP+"window{"+
-			"top:-44px;"+
-		"}"+
-		"#"+IDP+"header{"+
-			"height:28px;"+
-			"position: relative;"+
-			"background: url(\"http://gf1.geo.gfsrv.net/cdn63/10e31cd5234445e4084558ea3506ea.gif\") no-repeat scroll 0px 0px transparent;"+
-		"}"+
-		"#"+IDP+"header h4{"+
-			"height:28px;"+
-			"line-height:28px;"+
-			"text-align:center;"+
-			"color:#6F9FC8;"+
-			"font-size:12px;"+
-			"font-weight:bold;"+
-			"position:absolute;"+
-			"top:0;left:100px;right:100px;"+
-		"}"+
-		"#"+IDP+"config_but{"+
-			"display:block;"+
-			"height:16px;"+
-			"width:16px;"+
-			"background:url(http://gf3.geo.gfsrv.net/cdne7/1f57d944fff38ee51d49c027f574ef.gif);"+
-			"float:right;"+
-			"margin:8px 0 0 0;"+
-			"opacity:0.5;"+
-		"}"+
-		"#"+IDP+"config_but:hover{"+
-			"opacity:1;"+
-		"}"+
-		"#"+IDP+"window.config input[type=\"button\"]{"+
-			"margin:0 5px 0 5px;"+
-		"}"+
-		"#"+IDP+"config,"+
-		"#"+IDP+"window.config #"+IDP+"calc,"+
-		"#"+IDP+"window.config #"+IDP+"config_but,"+
-		//"#"+IDP+"window.config ."+IDP+"calc_only,"+
-		"#"+IDP+"window.calc ."+IDP+"config_only{"+
-			"display:none;"+
-		"}"+
-		"#"+IDP+"window.config #"+IDP+"config{"+
-			"display:block;"+
-		"}"+
-		"#"+IDP+"main,"+
-		"#"+IDP+"update{"+
-			"padding:15px 25px 0 25px;"+
-			"background: url(\"http://gf1.geo.gfsrv.net/cdn9e/4f73643e86a952be4aed7fdd61805a.gif\") repeat-y scroll 5px 0px transparent;"+
-		"}"+
-		"#"+IDP+"main *{"+
-			"font-size:11px;"+
-		"}"+
-		"#"+IDP+"update div{"+
-			"font-size:11px;"+
-			"border:1px solid #000;"+
-			"color:#99CC00;"+
-			"line-height:30px;"+
-			"text-align:center;"+
-			"font-weight:bold;"+
-		"}"+
-		"#"+IDP+"update a{"+
-			"margin-left:15px;"+
-		"}"+
-		"#"+IDP+"window table{"+
-			"width:620px;"+ // 670 [window] - (25+25) [main padding] - 2 [border]
-			"background-color:#0D1014;"+
-			"border-collapse:collapse;"+
-			"clear:both;"+
-		"}"+
-		"#"+IDP+"window.calc table{"+
-			"border:1px solid #000;"+
-			"margin:0 0 20px 0;"+
-		"}"+
-		"#"+IDP+"window.calc table.last{"+
-			"margin:0;"+
-		"}"+
-		"#"+IDP+"window.config table{"+
-			"width:598px;"+ // 620 [prev style] - (5+5) [box margin] - (5+5) [box paddding] - 2 [box border]
-		"}"+
-		"#"+IDP+"main th{"+
-			"color:#6F9FC8;"+
-			//"color:#FFF;"+
-			"text-align:center;"+
-			"font-weight:bold;"+
-		"}"+
-		"."+IDP+"label,"+
-		"."+IDP+"label *{"+
-			"color:grey;"+
-			"text-align:left;"+
-		"}"+
-		"."+IDP+"label{"+
-			"padding:0 5px 0 5px;"+
-			"font-weight:bold;"+
-		"}"+
-		"#"+IDP+"window.config ."+IDP+"label{"+
-			"text-align:center;"+
-		"}"+
-		"#"+IDP+"main tr,"+
-		"#"+IDP+"main td,"+
-		"#"+IDP+"main th{"+
-			"height:28px;"+
-			"line-height:28px;"+
-		"}"+
-		"#"+IDP+"main input[type=\"text\"]{"+
-			"width:100px;"+
-			"text-align:center;"+
-		"}"+
-		"option."+IDP+"highlight{"+
-			"color:lime !important;"+
-			"font-weight:bold;"+
-		"}"+
-		"option."+IDP+"moon{"+
-			"color:orange;"+
-		"}"+
-		"."+IDP+"select{"+
-			"width:150px;"+
-			"text-align:left;"+
-		"}"+
-		"."+IDP+"select select{"+
-			"width:130px;"+
-			"text-align:center;"+
-		"}"+
-		"#"+IDP+"main option{"+
-			"padding:1px 5px 1px 5px;"+
-		"}"+
-		"."+IDP+"input,"+
-		"."+IDP+"output{"+
-			"width:112px;"+
-			"padding:0 2px 0 0;"+
-		"}"+
-		"."+IDP+"name{"+
-			"width:142px;"+
-			"padding:0 1px 0 1px;"+
-			"text-align:right;"+
-		"}"+
-		"#"+IDP+"main ."+IDP+"name input{"+
-			"width:130px;"+
-			"text-align:center;"+
-		"}"+
-		"."+IDP+"ratio{"+
-			"width:82px;"+
-			"padding:0 1px 0 1px;"+
-			"text-align:right;"+
-		"}"+
-		"#"+IDP+"main ."+IDP+"ratio input{"+
-			"width:70px;"+
-			"text-align:center;"+
-		"}"+
-		"#"+IDP+"ratio_illegal{"+
-			"color:red;"+
-		"}"+
-		"."+IDP+"output{"+
-			"text-align:center;"+
-			"font-weight:bold;"+
-		"}"+
-		"#"+IDP+"output_met{"+
-			"color:"+COLOR.MET+";"+
-		"}"+
-		"#"+IDP+"output_cry{"+
-			"color:"+COLOR.CRY+";"+
-		"}"+
-		"#"+IDP+"output_deu{"+
-			"color:"+COLOR.DEU+";"+
-		"}"+
-		"."+IDP+"textarea{"+
-			"padding:0 3px 0 3px !important;"+
-		"}"+
-		"#"+IDP+"message{"+
-			"width:601px;"+
-			"height:50px !important;"+
-			"margin:0 !important;"+
-		"}"+
-		"#"+IDP+"planet{"+
-			"width:auto;"+
-			"text-align:left;"+
-			"margin:0;"+
-		"}"+
-		"."+IDP+"select1row{"+
-			"padding-left:2px;"+
-		"}"+
-		"."+IDP+"select1row select{"+
-			"width:250px !important;"+
-			"text-align:left;"+
-			"margin:0;"+
-		"}"+
-		"#"+IDP+"selCurPla_button{"+
-			"margin-left:30px"+
-		"}"+
-		"#"+IDP+"footer{"+
-			"height:17px;"+
-			"background: url(\"http://gf1.geo.gfsrv.net/cdn30/aa3e8edec0a2681915b3c9c6795e6f.gif\") no-repeat scroll 2px 0px transparent;"+
-		"}"+
-		"."+IDP+"config_title{"+
-			"font-size:11px;"+
-			"font-weight:bold;"+
-			"color:#6F9FC8;"+
-			"line-height:22px;"+
-			"background:url(\"http://gf1.geo.gfsrv.net/cdn0b/d55059f8c9bab5ebf9e8a3563f26d1.gif\") no-repeat scroll 0 0 #13181D;"+
-			"height:22px;"+
-			"margin:0 0 10px 0;"+
-			"padding:0 0 0 40px;"+ /* (25+15)px :: div+label (OG options) */
-			"border:1px solid #000;"+
-			"overflow:hidden;"+
-			"cursor:pointer;"+
-		"}"+
-		"."+IDP+"config_title:hover{"+
-			"color:#A7AFB7;"+
-			"background-color:#23282D;"+
-			"border-color:#13181D;"+
-		"}"+
-		"."+IDP+"config_box{"+
-			"border:1px solid #000;"+
-			"margin:5px 5px 10px 5px;"+
-			"padding:5px;"+
-		"}"+
-		"#"+IDP+"new_ratio input{"+
-			//"border-color:#0D0;"+
-			"border-color:#9C0;"+
-		"}"+
-		"."+IDP+"check,"+
-		"."+IDP+"name_noedit{"+
-			"text-align:center;"+
-		"}"+
-		"."+IDP+"check input{"+
-			"vertical-align:text-bottom;"+
-		"}"+
-		"."+IDP+"check input[type=\"checkbox\"]{"+
-			"vertical-align:middle;"+
-		"}"+
-		"."+IDP+"action{"+
-			"text-align:center;"+
-			"padding:0 3px 0 3px;"+
-		"}"+
-		"."+IDP+"action a{"+
-			"background:url(\"http://gf1.geo.gfsrv.net/cdn94/297ee218d94064df0a66bd41a04d28.png\") scroll 0 0 no-repeat;"+
-			"width:16px;"+
-			"height:16px;"+
-			"display:inline-block;"+
-			"vertical-align:top;"+
-			"position:relative;"+
-			"top:5px;"+ // (28[line-h] - 18[this-h])/2
-			"border:1px solid #000;"+
-			"border-radius:2px;"+
-			//"margin: 0 0 0 1px;"+
-			"opacity:0.7;"+
-		"}"+
-		"a."+IDP+"icon_up,"+
-		"a."+IDP+"icon_down,"+
-		"a."+IDP+"icon_add{"+
-			"background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAwCAMAAAAvgQplAAAAAXNSR0IArs4c6QAAAvpQTFRFbomeXHaLb4mdgpyveJaxdpSweZKk////W3qXVnKNRWB6AAAANTU1PT09MUJTJzVD/6gAzAAA/9IA/wAAqsrjvtjrna25PlVsTWiCqbjESGF6YHyaOk9ldZOwTWeCPj4+PlRsVHeYRGKBUXCRQVx6VnibTGmFVnmbRWOERWSEXn+chJusPVhzU3SVQ19+TGyKU3aXPVRrTGqHkrHKPVZwUW6KQ2GAU3aZO09lcJCqYHqORV95UW6LTGeBQFlySGB5SmF6Q2B+VnmaUG2JVnSQS2qHSmeCL0RaXHmUU3WVoLzSqcTYQ2GCPFZxPVZxkaa1RWSDPFZyRl96XH2ZTGqGS2qJO1Ru1d7lV3SROk5kQVp0QVpz5erua4OWqLnGpcDUWn2ewMzVlK/EqLbCcY+qj6zESmF3r7zHob3TTGaAlqi2haO9XniNQ115TWiD8vX4k7DGZ4mqyNTdSmaBpcHWcImdjaKynbrRdY6hvMnTSWeHYXyaq7jDV3SQ6+/zo7/Ur8rd8PP1javGhaK82uLmq8bZq7vHh6a+0NrgnLjOhJqqUG+QpL/VsL7JdJOuXnmSytTcj6OxT2qE+Pn7eZm0zCszfZmxhqXBdZGpXHaOS2uKboynr73J4ebrhKO7obLAmLfR+vv9nLfNip+uX3yYXn+bdoyec42gobC9pbS/yNPbYX2aPVRtt8XPmLTLbo2odI2geI2fVHKT2OHo3OLoRGGBRmODkK7HaImkaomka4unjaCw/f7/mbjRXnyXd4+jf5Wmp8HWjq3IiqnEeZOqPlVtVHeXYH2ai6CxYYCbZIKfZn+TTGeDVnWQb5GtVnWRSWWASmWATGuKc5CpusXOU3GQlLPMXHqXUnSUZoSifJq0fJu3ZHyT/v//dpOwqcXZYHqSYnuQ7fDz7PD0XHyYWnaRkKW1TGiFTGmEj6zDYXuPPFdzPVdzrsndhpytVHaYh52uXn6c8PP2jqzFQFt5jKvFcYqeQl99gZ+52uHmRGKAyNTcV3iaqsbZDVW+rgAAAAF0Uk5TAEDm2GYAAAABYktHRACIBR1IAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3AsJFTcNV6u1fQAAAE9JREFUKM/dkjEOACAIA6tL//9jFaORqhtxsBO9CS4AyQXSKwkEpAfkIMgttNh4AUtCALQ/9NGPu4A87/erj/6DD30HBZuPwztsPmIFqY8CjdEFo21taJsAAAAASUVORK5CYII=);"+
-		"}"+
-		"a."+IDP+"icon_down{"+
-			"background-position:0px -16px"+
-		"}"+
-		"a."+IDP+"icon_add{"+
-			"background-position:0px -32px"+
-		"}"+
-		"."+IDP+"action a:hover{"+
-			"opacity:1;"+
-			"border-color:#08090b;"+
-		"}"+
-		"."+IDP+"action a.disabled,"+
-		"."+IDP+"action aldisabled:hover{"+
-			"opacity:0.1;"+
-			"cursor:default;"+
-		"}"+
-		/*"a."+IDP+"icon_checkmark{"+
-			"background-position:0px -608px"+
-		"}"+
-		/*"a."+IDP+"icon_edit{"+
-			"background-position:0px -336px"+
-		"}"+*/
-		"a."+IDP+"icon_trash{"+
-			"background-position:0px -304px"+
-		"}"+
-		"#"+IDP+"window.config .undermark,"+
-		"#"+IDP+"window.config .overmark{"+
-			"font-weight:bold;"+
-			"text-align:center;"+
-		"}"+
-		"#"+IDP+"window.config textarea{"+
-			"display:block;"+
-			"width:586px;"+
-			"margin:0 0 5px 0;"+
-		"}"+
-		"."+IDP+"ie_conf{"+
-			"text-align:center"+
-		"}"+
-		"."+IDP+"hidden{"+
-			"position:fixed;"+
-			"left:-10000px;"+
-		"}"+
-		"."+IDP+"fieldwrapper:before,"+ // from: .ui-helper-clearfix
-		"."+IDP+"fieldwrapper:after{"+
-			"content:\"\";"+
-			"display:table;"+
-		"}"+
-		"."+IDP+"fieldwrapper:after{"+ // from: .ui-helper-clearfix
-			"clear:both;"+
-		"}"+
-		"."+IDP+"fieldwrapper{"+
-			"padding:7px 0 7px 0;"+
-		"}"+
-		"."+IDP+"fieldwrapper label,"+
-		"."+IDP+"thefield{"+
-			"color:#6F9FC8;"+
-			"height:22px;"+
-			"line-height:22px;"+
-			"float:left;"+
-			"margin:2px 0 0 0;"+
-		"}"+
-		"."+IDP+"fieldwrapper label{"+
-			"font-weight:bold;"+
-			"width:320px;"+
-			"margin:0 15px 0 0;"+
-			"padding:0 0 0 10px;"+
-		"}"+
-		"."+IDP+"thefield input[type=\"text\"],"+
-		"."+IDP+"thefield select{"+
-			"width:200px"+
-		"}"+
-		"",
-	
-	/*! [tpl=action_options] */
-	ACTION_OPT :
-		'<option value="sell">'+I18N.SELL+'</option>'+
-		'<option value="buy">'+I18N.BUY+'</option>',
-	
-	/*! [tpl=output_options] */
-	OUTPUT_OPT :
-		'<option value="m">'+I18N.RES_MET+'</option>'+
-		'<option value="c">'+I18N.RES_CRY+'</option>'+
-		'<option value="d">'+I18N.RES_DEU+'</option>'+
-		'<option value="mc">'+I18N.RES_MET+' + '+I18N.RES_CRY+'</option>'+
-		'<option value="md">'+I18N.RES_MET+' + '+I18N.RES_DEU+'</option>'+
-		'<option value="cd">'+I18N.RES_CRY+' + '+I18N.RES_DEU+'</option>',
-	
-	/*! [tpl=void_href] */
-	VOID_HREF : 'href="javascript:void(0)"',
+I18N = I18N.text;
 
-	/*! [tpl=window] */
-	WINDOW :
-		'<div id="'+IDP+'window" class="calc">'+
-			'<div id="'+IDP+'header">'+
-				'<h4>'+I18N.TITLE+'<span class="'+IDP+'config_only"> &raquo; '+I18N.CONFIG+'</span></h4>'+
-				'<a id="'+IDP+'close" href="javascript:void(0);" class="close_details close_ressources"></a>'+
-				'<a id="'+IDP+'config_but" href="javascript:void(0);"></a>'+
-			'</div>'+
-			'<div id="'+IDP+'main">'+
-				//#
-				//# CALC
-				//#
-				'<div id="'+IDP+'calc">'+
-					'<table cellspacing="0" cellpadding="0"><tbody>'+
-						// calc titles
-						'<tr>'+
-							'<th colspan="2"></th>'+
-							'<th>'+I18N.RES_MET+'</th>'+
-							'<th>'+I18N.RES_CRY+'</th>'+
-							'<th>'+I18N.RES_DEU+'</th>'+
-						'</tr>'+
-						// action :: action & input resources
-						'<tr class="alt">'+
-							'<td class="'+IDP+'label">'+I18N.ACTION+'</td>'+
-							'<td class="'+IDP+'select">'+
-								'<select id="'+IDP+'action">'+
-									'{this.ACTION_OPT}'+
-								'</select>'+
-							'</td>'+
-							'<td class="'+IDP+'input">'+
-								'<input id="'+IDP+'input_met" type="text" value="">'+
-							'</td>'+
-							'<td class="'+IDP+'input">'+
-								'<input id="'+IDP+'input_cry" type="text" value="">'+
-							'</td>'+
-							'<td class="'+IDP+'input">'+
-								'<input id="'+IDP+'input_deu" type="text" value="">'+
-							'</td>'+
-						'</tr>'+
-						// ratio :: ratio select & ratio fields
-						'<tr>'+
-							'<td class="'+IDP+'label">'+
-								I18N.RATIO+
-								'<span id="'+IDP+'ratio_illegal">'+
-									' ('+I18N.ILLEGAL+')'+
-								'</span>'+
-							'</td>'+
-							'<td class="'+IDP+'select">'+
-								'<select id="'+IDP+'ratio"></select>'+
-							'</td>'+
-							'<td class="'+IDP+'input">'+
-								'<input id="'+IDP+'ratio_met" type="text" value="">'+
-							'</td>'+
-							'<td class="'+IDP+'input">'+
-								'<input id="'+IDP+'ratio_cry" type="text" value="">'+
-							'</td>'+
-							'<td class="'+IDP+'input">'+
-								'<input id="'+IDP+'ratio_deu" type="text" value="">'+
-							'</td>'+
-						'</tr>'+
-						// in exchange for :: output select & percent fields
-						'<tr class="alt">'+
-							'<td class="'+IDP+'label">'+I18N.IN_EXCH+'</td>'+
-							'<td class="'+IDP+'select">'+
-								'<select id="'+IDP+'output">'+
-									'{this.OUTPUT_OPT}'+
-								'</select>'+
-							'</td>'+
-							'<td class="'+IDP+'input">'+
-								'<input id="'+IDP+'percent_met" type="text" value="">'+
-							'</td>'+
-							'<td class="'+IDP+'input">'+
-								'<input id="'+IDP+'percent_cry" type="text" value="">'+
-							'</td>'+
-							'<td class="'+IDP+'input">'+
-								'<input id="'+IDP+'percent_deu" type="text" value="">'+
-							'</td>'+
-						'</tr>'+
-						// output resources
-						'<tr>'+
-							'<td class="'+IDP+'label" colspan="2">'+I18N.RESULT+'</td>'+
-							'<td class="'+IDP+'output" id="'+IDP+'output_met"></td>'+
-							'<td class="'+IDP+'output" id="'+IDP+'output_cry"></td>'+
-							'<td class="'+IDP+'output" id="'+IDP+'output_deu"></td>'+
-						'</tr>'+
-					'</tbody></table>'+
-					//
-					// CARGOS
-					//
-					'<table cellspacing="0" cellpadding="0"><tbody>'+
-						// cargos titles
-						'<tr>'+
-							'<th></th>'+
-							'<th>'+I18N.RES+'</th>'+
-							'<th>'+I18N.LC_SHIP+'</th>'+
-							'<th>'+I18N.SC_SHIP+'</th>'+
-						'</tr>'+
-						// send cargos
-						'<tr class="alt">'+
-							'<td class="'+IDP+'label">'+I18N.SEND+'</td>'+
-							'<td class="'+IDP+'output overmark" id="'+IDP+'sendRes">0</td>'+
-							'<td class="'+IDP+'output" id="'+IDP+'sendLC">0</td>'+
-							'<td class="'+IDP+'output" id="'+IDP+'sendSC">0</td>'+
-						'</tr>'+
-						// receive cargos
-						'<tr>'+
-							'<td class="'+IDP+'label">'+I18N.RECEIVE+'</td>'+
-							'<td class="'+IDP+'output undermark" id="'+IDP+'receiveRes">0</td>'+
-							'<td class="'+IDP+'output" id="'+IDP+'receiveLC">0</td>'+
-							'<td class="'+IDP+'output" id="'+IDP+'receiveSC">0</td>'+
-						'</tr>'+
-					'</tbody></table>'+
-					//
-					// PLACE OF DELIVERY
-					//
-					'<table cellspacing="0" cellpadding="0"><tbody>'+
-						// title
-						'<tr class="alt">'+
-							'<td class="'+IDP+'label" colspan="5">'+I18N.WHERE+'</td>'+
-						'</tr>'+
-						// select
-						'<tr class="alt">'+
-							'<td class="'+IDP+'select1row" colspan="5">'+
-								'<select id="'+IDP+'planet"></select>'+
-								'<a {this.VOID_HREF} id="'+IDP+'selCurPla_button">'+I18N.SEL_CUR+'</a>'+
-							'</td>'+
-						'</tr>'+
-					'</tbody></table>'+
-					//
-					// MESSAGE
-					//
-					'<table cellspacing="0" cellpadding="0" class="last"><tbody>'+
-						// title
-						'<tr class="alt">'+
-							'<td class="'+IDP+'label" colspan="5">'+I18N.MESSAGE+'</td>'+
-						'</tr>'+
-						// textarea
-						'<tr class="alt">'+
-							'<td class="'+IDP+'textarea" colspan="5">'+
-								'<textarea id="'+IDP+'message" cols="1" rows="1" readonly="readonly"></textarea>'+
-							'</td>'+
-						'</tr>'+
-					'</tbody></table>'+
-				'</div>'+
-				//#
-				//# CONFIG
-				//#
-				'<div id="'+IDP+'config">'+
-					//
-					// RATIO LIST
-					//
-					'<div class="'+IDP+'config_title">'+I18N.RAT_LST+'</div>'+
-					'<div class="'+IDP+'config_box">'+
-						'<table cellspacing="0" cellpadding="0">'+
-						'<tbody id="'+IDP+'ratioList">'+
-							// titles
-							'<tr>'+
-								'<th>#</th>'+
-								'<th>'+I18N.NAME+'</th>'+
-								'<th>'+I18N.RES_MET+'</th>'+
-								'<th>'+I18N.RES_CRY+'</th>'+
-								'<th>'+I18N.RES_DEU+'</th>'+
-								'<th>'+I18N.ACTION+'</th>'+
-								'<th>'+I18N.LEGAL+'</th>'+
-								'<th>'+I18N.DEFAULT+'</th>'+
-							'</tr>'+
-							// config.data.ratioList (added dynamically)
-						'</tbody>'+
-						'</table>'+
-					'</div>'+
-					//
-					// DEFAULT VALUES
-					//
-					'<div class="'+IDP+'config_title">'+I18N.DEF_VAL+'</div>'+
-					'<div class="'+IDP+'config_box '+IDP+'hidden">'+
-						// config.data.defAction
-						'<div class="'+IDP+'fieldwrapper">'+
-							'<label>'+I18N.ACTION+':</label>'+
-							'<div class="'+IDP+'thefield">'+
-								'<select id="'+IDP+'defAction">'+
-									'{this.ACTION_OPT}'+
-								'</select>'+
-							'</div>'+
-						'</div>'+
-						// config.data.defOutput
-						'<div class="'+IDP+'fieldwrapper">'+
-							'<label>'+I18N.IN_EXCH+':</label>'+
-							'<div class="'+IDP+'thefield">'+
-								'<select id="'+IDP+'defOutput">'+
-									'{this.OUTPUT_OPT}'+
-								'</select>'+
-							'</div>'+
-						'</div>'+
-						// config.data.selCurPla
-						'<div class="'+IDP+'fieldwrapper">'+
-							'<label>'+I18N.SEL_CUR+':</label>'+
-							'<div class="'+IDP+'thefield">'+
-								'<input id="'+IDP+'selCurPla" type="checkbox" />'+
-							'</div>'+
-						'</div>'+
-					'</div>'+
-					//
-					// ABBREVIATIONS & AUTOCOMPLETE KEYS
-					//
-					'<div class="'+IDP+'config_title">'+I18N.ABB_KEY+'</div>'+
-					'<div class="'+IDP+'config_box '+IDP+'hidden">'+
-						// config.data.abb
-						'<div class="'+IDP+'fieldwrapper">'+
-							'<label>'+I18N.USE_ABB+':</label>'+
-							'<div class="'+IDP+'thefield">'+
-								'<input id="'+IDP+'abb" type="checkbox" />'+
-							'</div>'+
-						'</div>'+
-						// config.data.overUnabb
-						'<div class="'+IDP+'fieldwrapper">'+
-							'<label>'+I18N.UNABB+':</label>'+
-							'<div class="'+IDP+'thefield">'+
-								'<input id="'+IDP+'overUnabb" type="checkbox" />'+
-							'</div>'+
-						'</div>'+
-						// config.data.millionAbb
-						'<div class="'+IDP+'fieldwrapper">'+
-							'<label>'+I18N.ABB_MIL+':</label>'+
-							'<div class="'+IDP+'thefield">'+
-								'<input id="'+IDP+'millionAbb" type="text" maxlength="10" />'+
-							'</div>'+
-						'</div>'+
-						// config.data.thousandAbb
-						'<div class="'+IDP+'fieldwrapper">'+
-							'<label>'+I18N.ABB_THO+':</label>'+
-							'<div class="'+IDP+'thefield">'+
-								'<input id="'+IDP+'thousandAbb" type="text" maxlength="10" />'+
-							'</div>'+
-						'</div>'+
-						// config.data.millionKey
-						'<div class="'+IDP+'fieldwrapper">'+
-							'<label>'+I18N.KEY_MIL+':</label>'+
-							'<div class="'+IDP+'thefield">'+
-								'<input id="'+IDP+'millionKey" type="text" maxlength="1" />'+
-							'</div>'+
-						'</div>'+
-						// config.data.thousandKey
-						'<div class="'+IDP+'fieldwrapper">'+
-							'<label>'+I18N.KEY_THO+':</label>'+
-							'<div class="'+IDP+'thefield">'+
-								'<input id="'+IDP+'thousandKey" type="text" maxlength="1" />'+
-							'</div>'+
-						'</div>'+
-					'</div>'+
-					//
-					// MESSAGE TEMPLATE
-					//
-					'<div class="'+IDP+'config_title">'+I18N.MES_TPL+'</div>'+
-					'<div class="'+IDP+'config_box '+IDP+'hidden">'+
-						'<textarea id="'+IDP+'messageTpl"></textarea>'+
-						'<div class="textCenter">'+
-							'<input id="'+IDP+'messageTpl_restore" type="button" value="'+I18N.RES_DTP+'" class="btn_blue">'+
-						'</div>'+
-					'</div>'+
-					//
-					// IMPORT & EXPORT
-					//
-					'<div class="'+IDP+'config_title">'+I18N.IE_CONF+'</div>'+
-					'<div class="'+IDP+'config_box '+IDP+'ie_conf '+IDP+'hidden">'+
-						'<textarea id="'+IDP+'ie_conf"></textarea>'+
-						'<input id="'+IDP+'ie_import" type="button" value="'+I18N.IMPORT+'" class="btn_blue">'+
-						'<input id="'+IDP+'ie_export" type="button" value="'+I18N.EXPORT+'" class="btn_blue">'+
-					'</div>'+
-					//
-					// CONTACT
-					//
-					'<div class="'+IDP+'config_title">'+I18N.CONTACT+'</div>'+
-					'<div class="'+IDP+'config_box '+IDP+'hidden">'+
-						'<table cellspacing="0" cellpadding="0"><tbody>'+
-							/*'<tr>'+
-								'<th>#</th>'+
-								'<th>Description</th>'+
-								'<th>Link</th>'+
-							'</tr>'+*/
-							'<tr class="alt">'+
-								'<td class="'+IDP+'label '+IDP+'pos">1</td>'+
-								'<td>Userscripts</td>'+
-								'<td><a href="http://userscripts.org/scripts/discuss/151002" target="_blank">Discuss OGame Trade Calculator - userscripts.org</a></td>'+
-							'</tr>'+
-							'<tr>'+
-								'<td class="'+IDP+'label '+IDP+'pos">2</td>'+
-								'<td>Ogame Origin</td>'+
-								'<td><a href="http://board.origin.ogame.de/board6-origin/board38-tools-scripts-skins/board39-tolerated-tools-addons-scripts/4367-ogame-trade-calculator/" target="_blank">[Tolerated] OGame Trade Calculator - board.origin.ogame.de</a></td>'+
-							'</tr>'+
-							'<tr class="alt">'+
-								'<td class="'+IDP+'label '+IDP+'pos">3</td>'+
-								'<td>Ogame España</td>'+
-								'<td><a href="http://board.ogame.com.es/board859-ogamelacomunidad/board860-comunidad/board422-utilidadesyskinsparaogame/1224751-scriptcalculadoradecomerciolegal/" target="_blank">[Script] Calculadora de Comercio [Legal] - board.ogame.com.es</a></td>'+
-							'</tr>'+
-						'</tbody></table>'+
-					'</div>'+
-					//
-					// BUTTONS
-					//
-					'<div class="textCenter">'+
-						'<input id="'+IDP+'config_accept" type="button" value="'+I18N.ACCEPT+'" class="btn_blue">'+
-						'<input id="'+IDP+'config_cancel" type="button" value="'+I18N.CANCEL+'" class="btn_blue">'+
-						'<input id="'+IDP+'config_default" type="button" value="'+I18N.RES_DEF+'" class="btn_blue">'+
-					'</div>'+
-				'</div>'+
-			'</div>'+
-			'<div id="'+IDP+'footer"></div>'+
-		'</div>',
-	
-	/*! [tpl=button] */
-	MENUBUTTON :
-	// menubutton must not use references to other TPLs, like "{this.VOID_HREF}"
-		'<li>'+
-			'<a id="'+IDP+'menubutton" class="menubutton" href="javascript:void(0)" accesskey="" target="_self">'+
-				'<span class="textlabel">'+I18N.MENU+'</span>'+
-			'</a>'+
-		'</li>',
-	
-	/*! [tpl=ratio_list_limit] */
-	RATIO_LIST_LIMIT :
-		'<tr>'+
-			'<td class="'+IDP+'label '+IDP+'pos"></td>'+
-			'<td class="'+IDP+'name_noedit"></td>'+
-			'<td class="'+IDP+'ratio">'+
-				'<input class="'+IDP+'edit_ratio_met" type="text" />'+
-			'</td>'+
-			'<td class="'+IDP+'ratio">'+
-				'<input class="'+IDP+'edit_ratio_cry" type="text" />'+
-			'</td>'+
-			'<td class="'+IDP+'ratio">'+
-				'<input class="'+IDP+'edit_ratio_deu" type="text" />'+
-			'</td>'+
-			'<td class="'+IDP+'action">'+
-				'<a {this.VOID_HREF} class="'+IDP+'icon_up"></a>'+
-				'<a {this.VOID_HREF} class="'+IDP+'icon_down"></a>'+
-				'<a {this.VOID_HREF} class="'+IDP+'icon_trash disabled"></a>'+
-			'</td>'+
-			'<td class="'+IDP+'label">-</td>'+
-			'<td class="'+IDP+'check">'+
-				'<input name="'+IDP+'def_ratio" type="radio" />'+
-			'</td>'+
-		'</tr>',
-	
-	/*! [tpl=ratio_list_item] */
-	RATIO_LIST_ITEM :
-		'<tr>'+
-			'<td class="'+IDP+'label '+IDP+'pos"></td>'+
-			'<td class="'+IDP+'name">'+
-				'<input class="'+IDP+'edit_ratio_name" type="text" />'+
-			'</td>'+
-			'<td class="'+IDP+'ratio">'+
-				'<input class="'+IDP+'edit_ratio_met" type="text" />'+
-			'</td>'+
-			'<td class="'+IDP+'ratio">'+
-				'<input class="'+IDP+'edit_ratio_cry" type="text" />'+
-			'</td>'+
-			'<td class="'+IDP+'ratio">'+
-				'<input class="'+IDP+'edit_ratio_deu" type="text" />'+
-			'</td>'+
-			'<td class="'+IDP+'action">'+
-				'<a {this.VOID_HREF} class="'+IDP+'icon_up"></a>'+
-				'<a {this.VOID_HREF} class="'+IDP+'icon_down"></a>'+
-				'<a {this.VOID_HREF} class="'+IDP+'icon_trash"></a>'+
-			'</td>'+
-			'<td class="'+IDP+'legal"></td>'+
-			'<td class="'+IDP+'check">'+
-				'<input name="'+IDP+'def_ratio" type="radio" />'+
-			'</td>'+
-		'</tr>',
-	
-	/*! [tpl=ratio_list_new] */
-	RATIO_LIST_NEW :
-		'<tr id="'+IDP+'new_ratio">'+
-			'<td class="undermark '+IDP+'pos"></td>'+
-			'<td class="'+IDP+'name">'+
-				'<input class="'+IDP+'edit_ratio_name" type="text" />'+
-			'</td>'+
-			'<td class="'+IDP+'ratio">'+
-				'<input class="'+IDP+'edit_ratio_met" type="text" />'+
-			'</td>'+
-			'<td class="'+IDP+'ratio">'+
-				'<input class="'+IDP+'edit_ratio_cry" type="text" />'+
-			'</td>'+
-			'<td class="'+IDP+'ratio">'+
-				'<input class="'+IDP+'edit_ratio_deu" type="text" />'+
-			'</td>'+
-			'<td class="'+IDP+'action">'+
-				'<a {this.VOID_HREF} class="'+IDP+'icon_add"></a>'+
-			'</td>'+
-			'<td class="'+IDP+'legal"></td>'+
-			'<td class="'+IDP+'label">-</td>'+
-		'</tr>',
-	
-	/*! [tpl=update] */
-	UPDATE :
-		'<div id="'+IDP+'update"><div>'+
-			'Actualización disponible'+
-			((typeof(GM_xmlhttpRequest)=="undefined")?'':
-			('<a target="_blank" href="'+SCRIPT.DOWNLOAD_URL+'">'+
-				'Instalar'+
-			'</a>'))+
-			'<a target="_blank" href="'+SCRIPT.HOME_URL+'">'+
-				'Ir a la página del script'+
-			'</a>'+
-		'</div></div>',
-	/*! [/tpl] */
-	
+var TPL = {
 	init : function()
 	{
 		for (var i in this) if (typeof(this[i])=='string')
 			for (var j in this) if (typeof(this[j])=='string')
 				this[i] = this[i].replaceAll('{this.'+j+'}',this[j]);
 	}
-}
+};
+
+/*! [css] */
+TPL.CSS =
+	"#"+IDP+"window select{"+
+		"visibility:visible !important;"+ // ogame 5.2.0-beta7 fix
+	"}"+
+	"#"+IDP+"window{"+
+		"float:left;"+
+		"position:relative;"+
+		"width:670px;"+
+		"overflow:visible;"+
+		"z-index:2;"+
+	"}"+
+	"#galaxy #"+IDP+"window{"+
+		"top:-44px;"+
+	"}"+
+	"#"+IDP+"header{"+
+		"height:28px;"+
+		"position: relative;"+
+		"background: url(\"http://gf1.geo.gfsrv.net/cdn63/10e31cd5234445e4084558ea3506ea.gif\") no-repeat scroll 0px 0px transparent;"+
+	"}"+
+	"#"+IDP+"header h4{"+
+		"height:28px;"+
+		"line-height:28px;"+
+		"text-align:center;"+
+		"color:#6F9FC8;"+
+		"font-size:12px;"+
+		"font-weight:bold;"+
+		"position:absolute;"+
+		"top:0;left:100px;right:100px;"+
+	"}"+
+	"#"+IDP+"config_but{"+
+		"display:block;"+
+		"height:16px;"+
+		"width:16px;"+
+		"background:url(http://gf3.geo.gfsrv.net/cdne7/1f57d944fff38ee51d49c027f574ef.gif);"+
+		"float:right;"+
+		"margin:8px 0 0 0;"+
+		"opacity:0.5;"+
+	"}"+
+	"#"+IDP+"config_but:hover{"+
+		"opacity:1;"+
+	"}"+
+	"#"+IDP+"window.config input[type=\"button\"]{"+
+		"margin:0 5px 0 5px;"+
+	"}"+
+	"#"+IDP+"config,"+
+	"#"+IDP+"window.config #"+IDP+"calc,"+
+	"#"+IDP+"window.config #"+IDP+"config_but,"+
+	//"#"+IDP+"window.config ."+IDP+"calc_only,"+
+	"#"+IDP+"window.calc ."+IDP+"config_only{"+
+		"display:none;"+
+	"}"+
+	"#"+IDP+"window.config #"+IDP+"config{"+
+		"display:block;"+
+	"}"+
+	"#"+IDP+"main{"+
+		"padding:15px 25px 0 25px;"+
+		"background: url(\"http://gf1.geo.gfsrv.net/cdn9e/4f73643e86a952be4aed7fdd61805a.gif\") repeat-y scroll 5px 0px transparent;"+
+	"}"+
+	"#"+IDP+"main *{"+
+		"font-size:11px;"+
+	"}"+
+	"#"+IDP+"window table{"+
+		"width:620px;"+ // 670 [window] - (25+25) [main padding] - 2 [border]
+		"background-color:#0D1014;"+
+		"border-collapse:collapse;"+
+		"clear:both;"+
+	"}"+
+	"#"+IDP+"window.calc table{"+
+		"border:1px solid #000;"+
+		"margin:0 0 20px 0;"+
+	"}"+
+	"#"+IDP+"window.calc table.last{"+
+		"margin:0;"+
+	"}"+
+	"#"+IDP+"window.config table{"+
+		"width:598px;"+ // 620 [prev style] - (5+5) [box margin] - (5+5) [box paddding] - 2 [box border]
+	"}"+
+	"#"+IDP+"main th{"+
+		"color:#6F9FC8;"+
+		//"color:#FFF;"+
+		"text-align:center;"+
+		"font-weight:bold;"+
+	"}"+
+	"."+IDP+"label,"+
+	"."+IDP+"label *{"+
+		"color:grey;"+
+		"text-align:left;"+
+	"}"+
+	"."+IDP+"label{"+
+		"padding:0 5px 0 5px;"+
+		"font-weight:bold;"+
+	"}"+
+	"#"+IDP+"window.config ."+IDP+"label{"+
+		"text-align:center;"+
+	"}"+
+	"#"+IDP+"main tr,"+
+	"#"+IDP+"main td,"+
+	"#"+IDP+"main th{"+
+		"height:28px;"+
+		"line-height:28px;"+
+	"}"+
+	"#"+IDP+"main input[type=\"text\"]{"+
+		"width:100px;"+
+		"text-align:center;"+
+	"}"+
+	"option."+IDP+"highlight{"+
+		"color:lime !important;"+
+		"font-weight:bold;"+
+	"}"+
+	"option."+IDP+"moon{"+
+		"color:orange;"+
+	"}"+
+	"."+IDP+"select{"+
+		"width:150px;"+
+		"text-align:left;"+
+	"}"+
+	"."+IDP+"select select{"+
+		"width:130px;"+
+		"text-align:center;"+
+	"}"+
+	"#"+IDP+"main option{"+
+		"padding:1px 5px 1px 5px;"+
+	"}"+
+	"."+IDP+"input,"+
+	"."+IDP+"output{"+
+		"width:112px;"+
+		"padding:0 2px 0 0;"+
+	"}"+
+	"."+IDP+"name{"+
+		"width:142px;"+
+		"padding:0 1px 0 1px;"+
+		"text-align:right;"+
+	"}"+
+	"#"+IDP+"main ."+IDP+"name input{"+
+		"width:130px;"+
+		"text-align:center;"+
+	"}"+
+	"."+IDP+"ratio{"+
+		"width:82px;"+
+		"padding:0 1px 0 1px;"+
+		"text-align:right;"+
+	"}"+
+	"#"+IDP+"main ."+IDP+"ratio input{"+
+		"width:70px;"+
+		"text-align:center;"+
+	"}"+
+	"#"+IDP+"ratio_illegal{"+
+		"color:red;"+
+	"}"+
+	"."+IDP+"output{"+
+		"text-align:center;"+
+		"font-weight:bold;"+
+	"}"+
+	"#"+IDP+"output_met{"+
+		"color:"+COLOR.MET+";"+
+	"}"+
+	"#"+IDP+"output_cry{"+
+		"color:"+COLOR.CRY+";"+
+	"}"+
+	"#"+IDP+"output_deu{"+
+		"color:"+COLOR.DEU+";"+
+	"}"+
+	"."+IDP+"textarea{"+
+		"padding:0 3px 0 3px !important;"+
+	"}"+
+	"#"+IDP+"message{"+
+		"width:601px;"+
+		"height:50px !important;"+
+		"margin:0 !important;"+
+	"}"+
+	"#"+IDP+"planet{"+
+		"width:auto;"+
+		"text-align:left;"+
+		"margin:0;"+
+	"}"+
+	"."+IDP+"select1row{"+
+		"padding-left:2px;"+
+	"}"+
+	"."+IDP+"select1row select{"+
+		"width:250px !important;"+
+		"text-align:left;"+
+		"margin:0;"+
+	"}"+
+	"#"+IDP+"selCurPla_button{"+
+		"margin-left:30px"+
+	"}"+
+	"#"+IDP+"footer{"+
+		"height:17px;"+
+		"background: url(\"http://gf1.geo.gfsrv.net/cdn30/aa3e8edec0a2681915b3c9c6795e6f.gif\") no-repeat scroll 2px 0px transparent;"+
+	"}"+
+	"."+IDP+"config_title{"+
+		"font-size:11px;"+
+		"font-weight:bold;"+
+		"color:#6F9FC8;"+
+		"line-height:22px;"+
+		"background:url(\"http://gf1.geo.gfsrv.net/cdn0b/d55059f8c9bab5ebf9e8a3563f26d1.gif\") no-repeat scroll 0 0 #13181D;"+
+		"height:22px;"+
+		"margin:0 0 10px 0;"+
+		"padding:0 0 0 40px;"+ /* (25+15)px :: div+label (OG options) */
+		"border:1px solid #000;"+
+		"overflow:hidden;"+
+		"cursor:pointer;"+
+	"}"+
+	"."+IDP+"config_title:hover{"+
+		"color:#A7AFB7;"+
+		"background-color:#23282D;"+
+		"border-color:#13181D;"+
+	"}"+
+	"."+IDP+"config_box{"+
+		"border:1px solid #000;"+
+		"margin:5px 5px 10px 5px;"+
+		"padding:5px;"+
+	"}"+
+	"#"+IDP+"new_ratio input{"+
+		//"border-color:#0D0;"+
+		"border-color:#9C0;"+
+	"}"+
+	"."+IDP+"check,"+
+	"."+IDP+"name_noedit{"+
+		"text-align:center;"+
+	"}"+
+	"."+IDP+"check input{"+
+		"vertical-align:text-bottom;"+
+	"}"+
+	"."+IDP+"check input[type=\"checkbox\"]{"+
+		"vertical-align:middle;"+
+	"}"+
+	"."+IDP+"action{"+
+		"text-align:center;"+
+		"padding:0 3px 0 3px;"+
+	"}"+
+	"."+IDP+"action a{"+
+		"background:url(\"http://gf1.geo.gfsrv.net/cdn94/297ee218d94064df0a66bd41a04d28.png\") scroll 0 0 no-repeat;"+
+		"width:16px;"+
+		"height:16px;"+
+		"display:inline-block;"+
+		"vertical-align:top;"+
+		"position:relative;"+
+		"top:5px;"+ // (28[line-h] - 18[this-h])/2
+		"border:1px solid #000;"+
+		"border-radius:2px;"+
+		//"margin: 0 0 0 1px;"+
+		"opacity:0.7;"+
+	"}"+
+	"a."+IDP+"icon_up,"+
+	"a."+IDP+"icon_down,"+
+	"a."+IDP+"icon_add{"+
+		"background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAwCAMAAAAvgQplAAAAAXNSR0IArs4c6QAAAvpQTFRFbomeXHaLb4mdgpyveJaxdpSweZKk////W3qXVnKNRWB6AAAANTU1PT09MUJTJzVD/6gAzAAA/9IA/wAAqsrjvtjrna25PlVsTWiCqbjESGF6YHyaOk9ldZOwTWeCPj4+PlRsVHeYRGKBUXCRQVx6VnibTGmFVnmbRWOERWSEXn+chJusPVhzU3SVQ19+TGyKU3aXPVRrTGqHkrHKPVZwUW6KQ2GAU3aZO09lcJCqYHqORV95UW6LTGeBQFlySGB5SmF6Q2B+VnmaUG2JVnSQS2qHSmeCL0RaXHmUU3WVoLzSqcTYQ2GCPFZxPVZxkaa1RWSDPFZyRl96XH2ZTGqGS2qJO1Ru1d7lV3SROk5kQVp0QVpz5erua4OWqLnGpcDUWn2ewMzVlK/EqLbCcY+qj6zESmF3r7zHob3TTGaAlqi2haO9XniNQ115TWiD8vX4k7DGZ4mqyNTdSmaBpcHWcImdjaKynbrRdY6hvMnTSWeHYXyaq7jDV3SQ6+/zo7/Ur8rd8PP1javGhaK82uLmq8bZq7vHh6a+0NrgnLjOhJqqUG+QpL/VsL7JdJOuXnmSytTcj6OxT2qE+Pn7eZm0zCszfZmxhqXBdZGpXHaOS2uKboynr73J4ebrhKO7obLAmLfR+vv9nLfNip+uX3yYXn+bdoyec42gobC9pbS/yNPbYX2aPVRtt8XPmLTLbo2odI2geI2fVHKT2OHo3OLoRGGBRmODkK7HaImkaomka4unjaCw/f7/mbjRXnyXd4+jf5Wmp8HWjq3IiqnEeZOqPlVtVHeXYH2ai6CxYYCbZIKfZn+TTGeDVnWQb5GtVnWRSWWASmWATGuKc5CpusXOU3GQlLPMXHqXUnSUZoSifJq0fJu3ZHyT/v//dpOwqcXZYHqSYnuQ7fDz7PD0XHyYWnaRkKW1TGiFTGmEj6zDYXuPPFdzPVdzrsndhpytVHaYh52uXn6c8PP2jqzFQFt5jKvFcYqeQl99gZ+52uHmRGKAyNTcV3iaqsbZDVW+rgAAAAF0Uk5TAEDm2GYAAAABYktHRACIBR1IAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3AsJFTcNV6u1fQAAAE9JREFUKM/dkjEOACAIA6tL//9jFaORqhtxsBO9CS4AyQXSKwkEpAfkIMgttNh4AUtCALQ/9NGPu4A87/erj/6DD30HBZuPwztsPmIFqY8CjdEFo21taJsAAAAASUVORK5CYII=);"+
+	"}"+
+	"a."+IDP+"icon_down{"+
+		"background-position:0px -16px"+
+	"}"+
+	"a."+IDP+"icon_add{"+
+		"background-position:0px -32px"+
+	"}"+
+	"."+IDP+"action a:hover{"+
+		"opacity:1;"+
+		"border-color:#08090b;"+
+	"}"+
+	"."+IDP+"action a.disabled,"+
+	"."+IDP+"action aldisabled:hover{"+
+		"opacity:0.1;"+
+		"cursor:default;"+
+	"}"+
+	/*"a."+IDP+"icon_checkmark{"+
+		"background-position:0px -608px"+
+	"}"+
+	/*"a."+IDP+"icon_edit{"+
+		"background-position:0px -336px"+
+	"}"+*/
+	"a."+IDP+"icon_trash{"+
+		"background-position:0px -304px"+
+	"}"+
+	"#"+IDP+"window.config .undermark,"+
+	"#"+IDP+"window.config .overmark{"+
+		"font-weight:bold;"+
+		"text-align:center;"+
+	"}"+
+	"#"+IDP+"window.config textarea{"+
+		"display:block;"+
+		"width:586px;"+
+		"margin:0 0 5px 0;"+
+	"}"+
+	"."+IDP+"ie_conf{"+
+		"text-align:center"+
+	"}"+
+	"."+IDP+"hidden{"+
+		"position:fixed;"+
+		"left:-10000px;"+
+	"}"+
+	"."+IDP+"fieldwrapper:before,"+ // from: .ui-helper-clearfix
+	"."+IDP+"fieldwrapper:after{"+
+		"content:\"\";"+
+		"display:table;"+
+	"}"+
+	"."+IDP+"fieldwrapper:after{"+ // from: .ui-helper-clearfix
+		"clear:both;"+
+	"}"+
+	"."+IDP+"fieldwrapper{"+
+		"padding:7px 0 7px 0;"+
+	"}"+
+	"."+IDP+"fieldwrapper label,"+
+	"."+IDP+"thefield{"+
+		"color:#6F9FC8;"+
+		"height:22px;"+
+		"line-height:22px;"+
+		"float:left;"+
+		"margin:2px 0 0 0;"+
+	"}"+
+	"."+IDP+"fieldwrapper label{"+
+		"font-weight:bold;"+
+		"width:320px;"+
+		"margin:0 15px 0 0;"+
+		"padding:0 0 0 10px;"+
+	"}"+
+	"."+IDP+"thefield input[type=\"text\"],"+
+	"."+IDP+"thefield select{"+
+		"width:200px"+
+	"}";
+	
+/*! [tpl=action_options] */
+TPL.ACTION_OPT =
+	'<option value="sell">'+I18N.SELL+'</option>'+
+	'<option value="buy">'+I18N.BUY+'</option>';
+	
+/*! [tpl=output_options] */
+TPL.OUTPUT_OPT =
+	'<option value="m">'+I18N.RES_MET+'</option>'+
+	'<option value="c">'+I18N.RES_CRY+'</option>'+
+	'<option value="d">'+I18N.RES_DEU+'</option>'+
+	'<option value="mc">'+I18N.RES_MET+' + '+I18N.RES_CRY+'</option>'+
+	'<option value="md">'+I18N.RES_MET+' + '+I18N.RES_DEU+'</option>'+
+	'<option value="cd">'+I18N.RES_CRY+' + '+I18N.RES_DEU+'</option>';
+	
+/*! [tpl=void_href] */
+TPL.VOID_HREF = 'href="javascript:void(0)"';
+
+/*! [tpl=window] */
+TPL.WINDOW =
+	'<div id="'+IDP+'window" class="calc">'+
+		'<div id="'+IDP+'header">'+
+			'<h4>'+I18N.TITLE+'<span class="'+IDP+'config_only"> &raquo; '+I18N.CONFIG+'</span></h4>'+
+			'<a id="'+IDP+'close" href="javascript:void(0);" class="close_details close_ressources"></a>'+
+			'<a id="'+IDP+'config_but" href="javascript:void(0);"></a>'+
+		'</div>'+
+		'<div id="'+IDP+'main">'+
+			//#
+			//# CALC
+			//#
+			'<div id="'+IDP+'calc">'+
+				'<table cellspacing="0" cellpadding="0"><tbody>'+
+					// calc titles
+					'<tr>'+
+						'<th colspan="2"></th>'+
+						'<th>'+I18N.RES_MET+'</th>'+
+						'<th>'+I18N.RES_CRY+'</th>'+
+						'<th>'+I18N.RES_DEU+'</th>'+
+					'</tr>'+
+					// action :: action & input resources
+					'<tr class="alt">'+
+						'<td class="'+IDP+'label">'+I18N.ACTION+'</td>'+
+						'<td class="'+IDP+'select">'+
+							'<select id="'+IDP+'action">'+
+								'{this.ACTION_OPT}'+
+							'</select>'+
+						'</td>'+
+						'<td class="'+IDP+'input">'+
+							'<input id="'+IDP+'input_met" type="text" value="">'+
+						'</td>'+
+						'<td class="'+IDP+'input">'+
+							'<input id="'+IDP+'input_cry" type="text" value="">'+
+						'</td>'+
+						'<td class="'+IDP+'input">'+
+							'<input id="'+IDP+'input_deu" type="text" value="">'+
+						'</td>'+
+					'</tr>'+
+					// ratio :: ratio select & ratio fields
+					'<tr>'+
+						'<td class="'+IDP+'label">'+
+							I18N.RATIO+
+							'<span id="'+IDP+'ratio_illegal">'+
+								' ('+I18N.ILLEGAL+')'+
+							'</span>'+
+						'</td>'+
+						'<td class="'+IDP+'select">'+
+							'<select id="'+IDP+'ratio"></select>'+
+						'</td>'+
+						'<td class="'+IDP+'input">'+
+							'<input id="'+IDP+'ratio_met" type="text" value="">'+
+						'</td>'+
+						'<td class="'+IDP+'input">'+
+							'<input id="'+IDP+'ratio_cry" type="text" value="">'+
+						'</td>'+
+						'<td class="'+IDP+'input">'+
+							'<input id="'+IDP+'ratio_deu" type="text" value="">'+
+						'</td>'+
+					'</tr>'+
+					// in exchange for :: output select & percent fields
+					'<tr class="alt">'+
+						'<td class="'+IDP+'label">'+I18N.IN_EXCH+'</td>'+
+						'<td class="'+IDP+'select">'+
+							'<select id="'+IDP+'output">'+
+								'{this.OUTPUT_OPT}'+
+							'</select>'+
+						'</td>'+
+						'<td class="'+IDP+'input">'+
+							'<input id="'+IDP+'percent_met" type="text" value="">'+
+						'</td>'+
+						'<td class="'+IDP+'input">'+
+							'<input id="'+IDP+'percent_cry" type="text" value="">'+
+						'</td>'+
+						'<td class="'+IDP+'input">'+
+							'<input id="'+IDP+'percent_deu" type="text" value="">'+
+						'</td>'+
+					'</tr>'+
+					// output resources
+					'<tr>'+
+						'<td class="'+IDP+'label" colspan="2">'+I18N.RESULT+'</td>'+
+						'<td class="'+IDP+'output" id="'+IDP+'output_met"></td>'+
+						'<td class="'+IDP+'output" id="'+IDP+'output_cry"></td>'+
+						'<td class="'+IDP+'output" id="'+IDP+'output_deu"></td>'+
+					'</tr>'+
+				'</tbody></table>'+
+				//
+				// CARGOS
+				//
+				'<table cellspacing="0" cellpadding="0"><tbody>'+
+					// cargos titles
+					'<tr>'+
+						'<th></th>'+
+						'<th>'+I18N.RES+'</th>'+
+						'<th>'+I18N.LC_SHIP+'</th>'+
+						'<th>'+I18N.SC_SHIP+'</th>'+
+					'</tr>'+
+					// send cargos
+					'<tr class="alt">'+
+						'<td class="'+IDP+'label">'+I18N.SEND+'</td>'+
+						'<td class="'+IDP+'output overmark" id="'+IDP+'sendRes">0</td>'+
+						'<td class="'+IDP+'output" id="'+IDP+'sendLC">0</td>'+
+						'<td class="'+IDP+'output" id="'+IDP+'sendSC">0</td>'+
+					'</tr>'+
+					// receive cargos
+					'<tr>'+
+						'<td class="'+IDP+'label">'+I18N.RECEIVE+'</td>'+
+						'<td class="'+IDP+'output undermark" id="'+IDP+'receiveRes">0</td>'+
+						'<td class="'+IDP+'output" id="'+IDP+'receiveLC">0</td>'+
+						'<td class="'+IDP+'output" id="'+IDP+'receiveSC">0</td>'+
+					'</tr>'+
+				'</tbody></table>'+
+				//
+				// PLACE OF DELIVERY
+				//
+				'<table cellspacing="0" cellpadding="0"><tbody>'+
+					// title
+					'<tr class="alt">'+
+						'<td class="'+IDP+'label" colspan="5">'+I18N.WHERE+'</td>'+
+					'</tr>'+
+					// select
+					'<tr class="alt">'+
+						'<td class="'+IDP+'select1row" colspan="5">'+
+							'<select id="'+IDP+'planet"></select>'+
+							'<a {this.VOID_HREF} id="'+IDP+'selCurPla_button">'+I18N.SEL_CUR+'</a>'+
+						'</td>'+
+					'</tr>'+
+				'</tbody></table>'+
+				//
+				// MESSAGE
+				//
+				'<table cellspacing="0" cellpadding="0" class="last"><tbody>'+
+					// title
+					'<tr class="alt">'+
+						'<td class="'+IDP+'label" colspan="5">'+I18N.MESSAGE+'</td>'+
+					'</tr>'+
+					// textarea
+					'<tr class="alt">'+
+						'<td class="'+IDP+'textarea" colspan="5">'+
+							'<textarea id="'+IDP+'message" cols="1" rows="1" readonly="readonly"></textarea>'+
+						'</td>'+
+					'</tr>'+
+				'</tbody></table>'+
+			'</div>'+
+			//#
+			//# CONFIG
+			//#
+			'<div id="'+IDP+'config">'+
+				//
+				// RATIO LIST
+				//
+				'<div class="'+IDP+'config_title">'+I18N.RAT_LST+'</div>'+
+				'<div class="'+IDP+'config_box">'+
+					'<table cellspacing="0" cellpadding="0">'+
+					'<tbody id="'+IDP+'ratioList">'+
+						// titles
+						'<tr>'+
+							'<th>#</th>'+
+							'<th>'+I18N.NAME+'</th>'+
+							'<th>'+I18N.RES_MET+'</th>'+
+							'<th>'+I18N.RES_CRY+'</th>'+
+							'<th>'+I18N.RES_DEU+'</th>'+
+							'<th>'+I18N.ACTION+'</th>'+
+							'<th>'+I18N.LEGAL+'</th>'+
+							'<th>'+I18N.DEFAULT+'</th>'+
+						'</tr>'+
+						// config.data.ratioList (added dynamically)
+					'</tbody>'+
+					'</table>'+
+				'</div>'+
+				//
+				// DEFAULT VALUES
+				//
+				'<div class="'+IDP+'config_title">'+I18N.DEF_VAL+'</div>'+
+				'<div class="'+IDP+'config_box '+IDP+'hidden">'+
+					// config.data.defAction
+					'<div class="'+IDP+'fieldwrapper">'+
+						'<label>'+I18N.ACTION+':</label>'+
+						'<div class="'+IDP+'thefield">'+
+							'<select id="'+IDP+'defAction">'+
+								'{this.ACTION_OPT}'+
+							'</select>'+
+						'</div>'+
+					'</div>'+
+					// config.data.defOutput
+					'<div class="'+IDP+'fieldwrapper">'+
+						'<label>'+I18N.IN_EXCH+':</label>'+
+						'<div class="'+IDP+'thefield">'+
+							'<select id="'+IDP+'defOutput">'+
+								'{this.OUTPUT_OPT}'+
+							'</select>'+
+						'</div>'+
+					'</div>'+
+					// config.data.selCurPla
+					'<div class="'+IDP+'fieldwrapper">'+
+						'<label>'+I18N.SEL_CUR+':</label>'+
+						'<div class="'+IDP+'thefield">'+
+							'<input id="'+IDP+'selCurPla" type="checkbox" />'+
+						'</div>'+
+					'</div>'+
+				'</div>'+
+				//
+				// ABBREVIATIONS & AUTOCOMPLETE KEYS
+				//
+				'<div class="'+IDP+'config_title">'+I18N.ABB_KEY+'</div>'+
+				'<div class="'+IDP+'config_box '+IDP+'hidden">'+
+					// config.data.abb
+					'<div class="'+IDP+'fieldwrapper">'+
+						'<label>'+I18N.USE_ABB+':</label>'+
+						'<div class="'+IDP+'thefield">'+
+							'<input id="'+IDP+'abb" type="checkbox" />'+
+						'</div>'+
+					'</div>'+
+					// config.data.overUnabb
+					'<div class="'+IDP+'fieldwrapper">'+
+						'<label>'+I18N.UNABB+':</label>'+
+						'<div class="'+IDP+'thefield">'+
+							'<input id="'+IDP+'overUnabb" type="checkbox" />'+
+						'</div>'+
+					'</div>'+
+					// config.data.millionAbb
+					'<div class="'+IDP+'fieldwrapper">'+
+						'<label>'+I18N.ABB_MIL+':</label>'+
+						'<div class="'+IDP+'thefield">'+
+							'<input id="'+IDP+'millionAbb" type="text" maxlength="10" />'+
+						'</div>'+
+					'</div>'+
+					// config.data.thousandAbb
+					'<div class="'+IDP+'fieldwrapper">'+
+						'<label>'+I18N.ABB_THO+':</label>'+
+						'<div class="'+IDP+'thefield">'+
+							'<input id="'+IDP+'thousandAbb" type="text" maxlength="10" />'+
+						'</div>'+
+					'</div>'+
+					// config.data.millionKey
+					'<div class="'+IDP+'fieldwrapper">'+
+						'<label>'+I18N.KEY_MIL+':</label>'+
+						'<div class="'+IDP+'thefield">'+
+							'<input id="'+IDP+'millionKey" type="text" maxlength="1" />'+
+						'</div>'+
+					'</div>'+
+					// config.data.thousandKey
+					'<div class="'+IDP+'fieldwrapper">'+
+						'<label>'+I18N.KEY_THO+':</label>'+
+						'<div class="'+IDP+'thefield">'+
+							'<input id="'+IDP+'thousandKey" type="text" maxlength="1" />'+
+						'</div>'+
+					'</div>'+
+				'</div>'+
+				//
+				// MESSAGE TEMPLATE
+				//
+				'<div class="'+IDP+'config_title">'+I18N.MES_TPL+'</div>'+
+				'<div class="'+IDP+'config_box '+IDP+'hidden">'+
+					'<textarea id="'+IDP+'messageTpl"></textarea>'+
+					'<div class="textCenter">'+
+						'<input id="'+IDP+'messageTpl_restore" type="button" value="'+I18N.RES_DTP+'" class="btn_blue">'+
+					'</div>'+
+				'</div>'+
+				//
+				// IMPORT & EXPORT
+				//
+				'<div class="'+IDP+'config_title">'+I18N.IE_CONF+'</div>'+
+				'<div class="'+IDP+'config_box '+IDP+'ie_conf '+IDP+'hidden">'+
+					'<textarea id="'+IDP+'ie_conf"></textarea>'+
+					'<input id="'+IDP+'ie_import" type="button" value="'+I18N.IMPORT+'" class="btn_blue">'+
+					'<input id="'+IDP+'ie_export" type="button" value="'+I18N.EXPORT+'" class="btn_blue">'+
+				'</div>'+
+				//
+				// CONTACT
+				//
+				'<div class="'+IDP+'config_title">'+I18N.CONTACT+'</div>'+
+				'<div class="'+IDP+'config_box '+IDP+'hidden">'+
+					'<table cellspacing="0" cellpadding="0"><tbody>'+
+						/*'<tr>'+
+							'<th>#</th>'+
+							'<th>Description</th>'+
+							'<th>Link</th>'+
+						'</tr>'+*/
+						'<tr class="alt">'+
+							'<td class="'+IDP+'label '+IDP+'pos">1</td>'+
+							'<td>GitHub</td>'+
+							'<td><a href="https://github.com/EliasGrande/OGameTradeCalculator/issues" target="_blank">Issues · EliasGrande/OGameTradeCalculator - github.com</a></td>'+
+						'</tr>'+
+						'<tr>'+
+							'<td class="'+IDP+'label '+IDP+'pos">2</td>'+
+							'<td>Ogame Origin</td>'+
+							'<td><a href="http://board.origin.ogame.de/board6-origin/board38-tools-scripts-skins/board39-tolerated-tools-addons-scripts/4367-ogame-trade-calculator/" target="_blank">[Tolerated] OGame Trade Calculator - board.origin.ogame.de</a></td>'+
+						'</tr>'+
+						'<tr class="alt">'+
+							'<td class="'+IDP+'label '+IDP+'pos">3</td>'+
+							'<td>Ogame España</td>'+
+							'<td><a href="http://board.ogame.com.es/board859-ogamelacomunidad/board860-comunidad/board422-utilidadesyskinsparaogame/1224751-scriptcalculadoradecomerciolegal/" target="_blank">[Script] Calculadora de Comercio [Legal] - board.ogame.com.es</a></td>'+
+						'</tr>'+
+					'</tbody></table>'+
+				'</div>'+
+				//
+				// BUTTONS
+				//
+				'<div class="textCenter">'+
+					'<input id="'+IDP+'config_accept" type="button" value="'+I18N.ACCEPT+'" class="btn_blue">'+
+					'<input id="'+IDP+'config_cancel" type="button" value="'+I18N.CANCEL+'" class="btn_blue">'+
+					'<input id="'+IDP+'config_default" type="button" value="'+I18N.RES_DEF+'" class="btn_blue">'+
+				'</div>'+
+			'</div>'+
+		'</div>'+
+		'<div id="'+IDP+'footer"></div>'+
+	'</div>';
+
+/*! [tpl=button] */
+TPL.MENUBUTTON =
+// menubutton must not use references to other TPLs, like "{this.VOID_HREF}"
+	'<li>'+
+		'<a id="'+IDP+'menubutton" class="menubutton" href="javascript:void(0)" accesskey="" target="_self">'+
+			'<span class="textlabel">'+I18N.MENU+'</span>'+
+		'</a>'+
+	'</li>';
+
+/*! [tpl=ratio_list_limit] */
+TPL.RATIO_LIST_LIMIT =
+	'<tr>'+
+		'<td class="'+IDP+'label '+IDP+'pos"></td>'+
+		'<td class="'+IDP+'name_noedit"></td>'+
+		'<td class="'+IDP+'ratio">'+
+			'<input class="'+IDP+'edit_ratio_met" type="text" />'+
+		'</td>'+
+		'<td class="'+IDP+'ratio">'+
+			'<input class="'+IDP+'edit_ratio_cry" type="text" />'+
+		'</td>'+
+		'<td class="'+IDP+'ratio">'+
+			'<input class="'+IDP+'edit_ratio_deu" type="text" />'+
+		'</td>'+
+		'<td class="'+IDP+'action">'+
+			'<a {this.VOID_HREF} class="'+IDP+'icon_up"></a>'+
+			'<a {this.VOID_HREF} class="'+IDP+'icon_down"></a>'+
+			'<a {this.VOID_HREF} class="'+IDP+'icon_trash disabled"></a>'+
+		'</td>'+
+		'<td class="'+IDP+'label">-</td>'+
+		'<td class="'+IDP+'check">'+
+			'<input name="'+IDP+'def_ratio" type="radio" />'+
+		'</td>'+
+	'</tr>';
+
+/*! [tpl=ratio_list_item] */
+TPL.RATIO_LIST_ITEM =
+	'<tr>'+
+		'<td class="'+IDP+'label '+IDP+'pos"></td>'+
+		'<td class="'+IDP+'name">'+
+			'<input class="'+IDP+'edit_ratio_name" type="text" />'+
+		'</td>'+
+		'<td class="'+IDP+'ratio">'+
+			'<input class="'+IDP+'edit_ratio_met" type="text" />'+
+		'</td>'+
+		'<td class="'+IDP+'ratio">'+
+			'<input class="'+IDP+'edit_ratio_cry" type="text" />'+
+		'</td>'+
+		'<td class="'+IDP+'ratio">'+
+			'<input class="'+IDP+'edit_ratio_deu" type="text" />'+
+		'</td>'+
+		'<td class="'+IDP+'action">'+
+			'<a {this.VOID_HREF} class="'+IDP+'icon_up"></a>'+
+			'<a {this.VOID_HREF} class="'+IDP+'icon_down"></a>'+
+			'<a {this.VOID_HREF} class="'+IDP+'icon_trash"></a>'+
+		'</td>'+
+		'<td class="'+IDP+'legal"></td>'+
+		'<td class="'+IDP+'check">'+
+			'<input name="'+IDP+'def_ratio" type="radio" />'+
+		'</td>'+
+	'</tr>';
+
+/*! [tpl=ratio_list_new] */
+TPL.RATIO_LIST_NEW =
+	'<tr id="'+IDP+'new_ratio">'+
+		'<td class="undermark '+IDP+'pos"></td>'+
+		'<td class="'+IDP+'name">'+
+			'<input class="'+IDP+'edit_ratio_name" type="text" />'+
+		'</td>'+
+		'<td class="'+IDP+'ratio">'+
+			'<input class="'+IDP+'edit_ratio_met" type="text" />'+
+		'</td>'+
+		'<td class="'+IDP+'ratio">'+
+			'<input class="'+IDP+'edit_ratio_cry" type="text" />'+
+		'</td>'+
+		'<td class="'+IDP+'ratio">'+
+			'<input class="'+IDP+'edit_ratio_deu" type="text" />'+
+		'</td>'+
+		'<td class="'+IDP+'action">'+
+			'<a {this.VOID_HREF} class="'+IDP+'icon_add"></a>'+
+		'</td>'+
+		'<td class="'+IDP+'legal"></td>'+
+		'<td class="'+IDP+'label">-</td>'+
+	'</tr>';
+
+TPL.init();
 
 var DEFAULT_RATIOS = (function()
 {
@@ -1460,8 +1418,8 @@ var config =
 {
 	getDefaultData : function ()
 	{
+		/*! [config=default] */
 		return {
-			/*! [config=default] */
 			version : SCRIPT.VERSION.slice(0),
 			defAction : 'sell',
 			ratioList :
@@ -1497,8 +1455,8 @@ var config =
 				"\n\n[b]* {I18N.RATIO}:[/b] {rm}:{rc}:{rd}"+
 				"{?w}\n[b]* {I18N.WHERE}:[/b] {wg}:{ws}:{wp} ({wt}){/w}"+
 				"\n\n[b][url={SCRIPT.HOME_URL}]{SCRIPT.NAME}[/url][/b]"
-			/*! [/config] */
-		}
+		};
+		/*! [/config] */
 	},
 	abbRE : /^\S+$/,
 	keyRE : /^\S$/,
@@ -1689,7 +1647,7 @@ var NumberFormat =
 		if (!w && config.data.abb) return nStr.replace(
 			/\D000\D000$/, config.data.millionAbb
 		).replace(
-			/\D(\d*[1-9]+)0*\D000$/, I18N.DEC_SEP+'$1'+config.data.millionAbb
+			/\D([1-9])00\D000$/, I18N.DEC_SEP+'$1'+config.data.millionAbb
 		).replace(
 			/\D000$/, config.data.thousandAbb
 		);
@@ -1929,7 +1887,7 @@ Input.prototype =
 	},
 	isDisabled : function ()
 	{
-		return (this.jqo.attr('disabled')=='disabled');
+		return this.jqo.prop('disabled');
 	}
 }
 
@@ -1962,7 +1920,7 @@ Checkbox.prototype = $.extend({},Input.prototype,
 	},
 	isChecked : function ()
 	{
-		return (this.jqo.attr('checked')=='checked');
+		return this.jqo.prop('checked');
 	}
 });
 
@@ -2558,19 +2516,23 @@ ConfigDropdown.prototype =
 	animateOpen : function()
 	{
 		var afterOpenCss = this.afterOpenCss;
-		this.updateOpenCss().box.css(this.closeCss).removeClass(IDP+'hidden').animate(this.openCss,this.duration,function()
-		{
-			$(this).css(afterOpenCss);
-		});
+		this.updateOpenCss().box.css(this.closeCss).removeClass(IDP+'hidden')
+			.animate(this.openCss,this.duration,function()
+			{
+				$(this).css(afterOpenCss);
+			});
 		return this.setOpen(true);
 	},
 	animateClose : function()
 	{
 		var _this = this;
-		this.updateOpenCss().box.css(this.openCss).animate(this.closeCss,this.duration,function()
-		{
-			$(this).addClass(IDP+'hidden').css(_this.openCss).css(_this.afterOpenCss);
-		});
+		this.updateOpenCss().box.css(this.openCss)
+			.animate(this.closeCss, this.duration, function()
+			{
+				$(this).addClass(IDP+'hidden')
+					.css(_this.openCss)
+					.css(_this.afterOpenCss);
+			});
 		return this.setOpen(false);
 	},
 	_click : function()
@@ -2600,7 +2562,8 @@ var configDropdownList =
 		});
 		this.list = [];
 		for (i=0; i<aux.length; i++)
-			this.list[i] = new ConfigDropdown (this,i,aux[i].title,aux[i].box,iface);
+			this.list[i] = new ConfigDropdown(
+				this,i,aux[i].title,aux[i].box,iface);
 	}
 }
 
@@ -2651,6 +2614,7 @@ var iface =
 		this.isHidden = false;
 		this.ogameHide.hide();
 		this.window.show();
+		this.menuButton.addClass('selected');
 		return this;
 	},
 	hide: function()
@@ -2658,6 +2622,7 @@ var iface =
 		this.isHidden = true;
 		this.window.hide();
 		this.ogameHide.show();
+		this.menuButton.removeClass('selected');
 		return this;
 	},
 	toggle: function()
@@ -2920,7 +2885,8 @@ var iface =
 	makeImportExport : function ()
 	{
 		var _this = this;
-		_this.ieInput = _this.findIDP('ie_conf').focus(function(){$(this).select();});
+		_this.ieInput = _this.findIDP('ie_conf').focus(
+			function(){$(this).select();});
 		_this.findIDP('ie_import').click(function()
 		{
 			try
@@ -2989,17 +2955,6 @@ var iface =
 	{
 		this.ieInput.val('');
 		return this;
-	},
-	needUpdate : false,
-	showUpdate : function ()
-	{
-		this.needUpdate = true;
-		this.menuButton.addClass('middlemark');
-		try
-		{
-			this.findIDP('main').before($(TPL.UPDATE));
-		}
-		catch(e){}
 	},
 	ogameDropDown : function (select)
 	{
@@ -3072,7 +3027,6 @@ var iface =
 		confRatioChecker = new RatioChecker();
 		var _this = this, defaultRatio = config.getRatioById(config.data.defRatio);
 		_this.ogameHide = $('#inhalt').after(this.window=$(TPL.WINDOW).hide());
-		if (_this.needUpdate) _this.showUpdate();
 		_this.addCss(TPL.CSS).show();
 		_this.ratioIllegal = _this.findIDP('ratio_illegal').hide();
 		_this.outputMessage = _this.findIDP('message').click(function(){$(this).select();});
@@ -3196,118 +3150,6 @@ var iface =
 }
 ).init();
 
-var getLatestVersion = (typeof(GM_xmlhttpRequest)=="undefined")
-// without Greasemonkey: JSONP => my Dropbox
-? function ()
-{
-	$('body').append($(
-		'<script src="'+SCRIPT.UPDATE_JSONP+'" type="text/javascript" />'
-	));
-}
-// with Greasemonkey: GM_xmlhttpRequest => userscript.org => .meta.js
-: function ()
-{
-	GM_xmlhttpRequest(
-	{
-		method: "GET",
-		url : SCRIPT.UPDATE_URL,
-		onload : function (response)
-		{
-			var lines = response.responseText.split("\n"),
-			i,
-			re = /^\s*\/\/\s*\@version\s+(\d+(?:\.\d+)*)\s*$/;
-			for (i in lines)
-				if (re.test(lines[i]))
-					return win[IDP+'onVersionFound'](
-						lines[i].replace(re,'$1')
-					);
-		}
-	});
-}
-
-var TIMESTAMP = Math.floor(utime()/1000);
-var cfuCache =
-{
-	defaultData : function ()
-	{
-		return {
-			interval  : 7,
-			noCheck   : false,
-			version   : SCRIPT.VERSION,
-			timestamp : 0,
-			versionOG : OGAME.VERSION
-		}
-	},
-	load : function ()
-	{
-		this.data = storage.get('cfu');
-		this.data = $.extend(
-			this.defaultData(),
-			(this.data==null) ? {} : this.data
-		);
-	},
-	update : function (version)
-	{
-		$.extend(this.data,
-		{
-			timestamp : TIMESTAMP,
-			versionOG : OGAME.VERSION,
-			version   : (arguments.length>0) ? version : this.data.version
-		});
-		storage.set('cfu',this.data);
-	},
-	save : function (data)
-	{
-		this.data = $.extend(this.defaultData(),this.data,(arguments.length>0)?data:{});
-		storage.set('cfu',this.data);
-	}
-}
-
-var checkForUpdates = function (onUpdateNeeded)
-{
-	var _onUpdateNeeded=onUpdateNeeded;
-	cfuCache.load ();
-	if (cfuCache.data.noCheck)
-		return cfuCache.update(SCRIPT.VERSION);
-
-	// the running version is older than the cached one
-	// no need to recheck
-	// win.console.log(SCRIPT.VERSION, cfuCache.data.version);
-	if (v1_less_than_v2(SCRIPT.VERSION, cfuCache.data.version))
-	{
-		cfuCache.update();
-		return _onUpdateNeeded();
-	}
-	
-	// win.console.log(cfuCache.data.versionOG, OGAME.VERSION);
-	// win.console.log(TIMESTAMP,cfuCache.data.timestamp+86400*cfuCache.data.interval);
-	if (
-		// new ogame version
-		(v1_less_than_v2(cfuCache.data.versionOG, OGAME.VERSION)) ||
-		// at least cache.interval days since the last check
-		(TIMESTAMP > cfuCache.data.timestamp+86400*cfuCache.data.interval)
-	)
-	{
-		// export onVersionFound function to the unsafeWindow
-		win[IDP+'onVersionFound'] = function (versionStr)
-		{
-			cfuCache.update(parseVersion(versionStr));
-			if (v1_less_than_v2(SCRIPT.VERSION,cfuCache.data.version))
-				_onUpdateNeeded();
-		}
-		// find out the latest version
-		// and run onVersionFound with it
-		getLatestVersion();
-	}
-}
- 
-// setTimeout to avoid freezing the script
-// seems that it waits for the GM_xmlhttpRequest response
-// is not a real problem, just ugly
-setTimeout(function(){
-	checkForUpdates(function(){iface.showUpdate();});
-},1);
-
 //////////////////////////////////
 //                              //
 //   END onDOMContentLoaded()   //
@@ -3333,13 +3175,11 @@ var initJQuery = function()
 }
 
 /*! [onDOMContentLoaded] by Dean Edwards & Matthias Miller & John Resig */
-var init = function()
+var initDone = false, init = function()
 {
 	// quit if this function has already been called
-	if (arguments.callee.done) return;
-
-	// flag this function so we don't do the same thing twice
-	arguments.callee.done = true;
+	if (initDone) return;
+	initDone = true;
 
 	// kill the timer
 	if (_timer) clearInterval(_timer);

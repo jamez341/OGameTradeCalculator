@@ -7,10 +7,6 @@
 	// Window title
 	TITLE   : "Calculateur d'échange",
 	CONFIG  : "Options",
-	// Update
-	UPD_AVA : "MaJ disponible",
-	INSTALL : "Installer",
-	GO_HOME : "Visiter le site web du script",
 	// Actions
 	ACTION  : "Action",
 	BUY     : "J'achète",

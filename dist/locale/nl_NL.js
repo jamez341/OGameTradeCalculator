@@ -7,10 +7,6 @@
 	// Window title
 	TITLE   : "Trade calculator",
 	CONFIG  : "Instellingen",
-	// Update
-	UPD_AVA : "Update beschikbaar",
-	INSTALL : "Installeren",
-	GO_HOME : "Bezoek de web van het script",
 	// Actions
 	ACTION  : "Actie",
 	BUY     : "Ik koop",

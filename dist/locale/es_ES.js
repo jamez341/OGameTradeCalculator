@@ -7,10 +7,6 @@
 	// Window title
 	TITLE   : "Calculadora de comercio",
 	CONFIG  : "Configuración",
-	// Update
-	UPD_AVA : "Actualización disponible",
-	INSTALL : "Instalar",
-	GO_HOME : "Visitar página del script",
 	// Actions
 	ACTION  : "Acción",
 	BUY     : "Compro",
