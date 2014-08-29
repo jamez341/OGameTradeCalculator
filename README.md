@@ -126,7 +126,7 @@ Script information for OGame forums
 [issues]:/../../issues
 [README.es\_ES.md]:README.es_ES.md
 [translations]:dist/locale
-[install link]:dist/releases/latest.user.js?raw=true
+[install link]:dist/releases/latest.user.js?raw=true&.user.js
 
 [screenshot-calculator]:dist/img/readme/calc.png?raw=true
 [screenshot-ratio_list]:dist/img/readme/ratio-list.png?raw=true
