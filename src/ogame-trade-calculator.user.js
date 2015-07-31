@@ -6,7 +6,7 @@
 // @updateURL    https://github.com/EliasGrande/OGameTradeCalculator/raw/master/dist/releases/latest.meta.js
 // @icon         https://github.com/EliasGrande/OGameTradeCalculator/raw/master/dist/img/icon.png
 // @version      3.0.0
-// @include      *://*.ogame.*/game/index.php?*page=*
+// @include      *://*.ogame.gameforge*/game/index.php?*page=*
 // ==/UserScript==
 /*! OGame Trade Calculator (C) 2014 Elías Grande Cásedas | MIT | opensource.org/licenses/MIT */
 (function(){
